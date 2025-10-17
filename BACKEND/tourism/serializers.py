@@ -89,4 +89,13 @@ class ContactInfoSerializer(serializers.ModelSerializer):
 class GalleryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryItem
-        fields = '__all__'
+        fields = ["id", "title", "media_type", "media_file", "order", "is_active"]
+
+    def validate(self, attrs):
+        f = attrs.get("media_file")
+        mt = attrs.get("media_type")
+        if f and mt == "IMAGE" and not f.content_type.startswith("image/"):
+            raise serializers.ValidationError({"media_file": "Debe ser una imagen."})
+        if f and mt == "VIDEO" and not f.content_type.startswith("video/"):
+            raise serializers.ValidationError({"media_file": "Debe ser un video."})
+        return attrs
