@@ -71,7 +71,7 @@ export default function Home() {
               {posts.map((p) => (
                 <div key={p.id} className="postCard-home" onClick={() => openPost(p)} title={p.title}>
                   <div className="postCard__media">
-                    {p.cover ? <img src={p.cover} alt={p.title} /> : <div className="postCard__ph">Sin imagen</div>}
+                    {p.cover_url ? <img src={p.cover_url} alt={p.title} /> : <div className="postCard__ph">Sin imagen</div>}
                   </div>
                   <div className="postCard__body">
                     <h3 className="postCard__title">{p.title}</h3>
