@@ -8,6 +8,8 @@ from .serializers import (
 )
 from .permissions import IsEditorOrAdmin, IsAdmin
 import os
+import cloudinary
+import cloudinary.uploader
 class PlaceViewSet(viewsets.ModelViewSet):
     serializer_class = PlaceSerializer
     lookup_field = "slug"
@@ -125,24 +127,26 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
         if self.request.method in permissions.SAFE_METHODS:
             return [permissions.AllowAny()]
         return [IsAdmin()]  
+    
     def perform_create(self, serializer):
-        # --- CÓDIGO DE DEPURACIÓN AVANZADO ---
-        print("==============================================")
-        print("VERIFICANDO VARIABLES DE ENTORNO LEÍDAS POR LA APP:")
-        
-        cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME")
-        api_key = os.environ.get("CLOUDINARY_API_KEY")
-        api_secret = os.environ.get("CLOUDINARY_API_SECRET")
+        print("--- INICIANDO PRUEBA DE FUEGO: SUBIDA DIRECTA ---")
+        file_to_upload = self.request.FILES.get('media_file')
 
-        print(f"Cloud Name Leído: '{cloud_name}'")
-        print(f"API Key Leído: '{api_key}'")
-        
-        # Por seguridad, solo imprimimos si el secret existe y sus primeros 5 caracteres
-        if api_secret:
-            print(f"API Secret Leído (primeros 5 chars): '{api_secret[:5]}...'")
-        else:
-            print("API Secret Leído: No encontrado (None)")
+        if file_to_upload:
+            try:
+                print(f"Intentando subir '{file_to_upload.name}' a Cloudinary DIRECTAMENTE...")
 
-        print("==============================================")
-        
-        serializer.save()
+                # Esta es la llamada directa a la API de Cloudinary
+                upload_result = cloudinary.uploader.upload(file_to_upload)
+
+                print("✅ ¡ÉXITO! LA SUBIDA DIRECTA FUNCIONÓ. Respuesta de Cloudinary:")
+                print(upload_result)
+
+            except Exception as e:
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print("🚨 ¡ERROR DIRECTO CAPTURADO! 🚨")
+                print(f"La subida directa a Cloudinary falló. Esta es la razón exacta:")
+                print(e)
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print("--- Procediendo con el guardado normal de Django ---")
+                serializer.save()
