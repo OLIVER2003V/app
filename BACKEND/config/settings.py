@@ -68,13 +68,15 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
 
 # Para CSRF confía en tu dominio de Render y tu frontend
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
-    FRONTEND_URL.replace('http://', 'https://')  # por si usas https en prod
+CORS_ALLOWED_ORIGINS = [
+    os.environ.get('FRONTEND_URL', 'http://localhost:5173'),
+    'https://jardin-frontend.onrender.com',
 ]
-# Si trabajas en local con http, Django 5 permite http://localhost en CSRF
-if FRONTEND_URL.startswith('http://'):
-    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+CSRF_TRUSTED_ORIGINS = [
+    'https://jardin-frontend.onrender.com',
+    'https://*.onrender.com',  # deja el comodín también
+]
+
 
 ROOT_URLCONF = 'config.urls'
 
