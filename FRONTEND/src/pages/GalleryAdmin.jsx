@@ -38,7 +38,7 @@ export default function GalleryAdmin() {
     const fd = new FormData();
     fd.append("title", title);
     fd.append("media_type", mediaType);
-    fd.append("media_file", file);                  // archivo crudo
+    fd.append("media_file_upload", file);                // archivo crudo
     fd.append("order", String(order));              // como string
     fd.append("is_active", isActive ? "true" : "false"); // boolean string
 
