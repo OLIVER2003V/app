@@ -12,8 +12,10 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Media (para desarrollo; en producción conviene usar S3/R2, etc.)
+
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = BASE_DIR / "media"   # ✅ con Path
+
 
 # Seguridad básica
 SECRET_KEY = os.environ.get('SECRET_KEY', 'clave-secreta-insegura-para-desarrollo')
