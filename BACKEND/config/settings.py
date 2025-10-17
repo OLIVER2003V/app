@@ -63,20 +63,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS/CSRF (ajusta FRONTEND_URL en Render)
+# CORS / CSRF
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
-CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
 
-# Para CSRF confía en tu dominio de Render y tu frontend
 CORS_ALLOWED_ORIGINS = [
-    os.environ.get('FRONTEND_URL', 'http://localhost:5173'),
-    'https://jardin-frontend.onrender.com',
+    FRONTEND_URL,
+    'https://jardin-frontend.onrender.com',  # explícito para evitar errores si cambia FRONTEND_URL
 ]
-CSRF_TRUSTED_ORIGINS = [
-    'https://jardin-frontend.onrender.com',
-    'https://*.onrender.com',  # deja el comodín también
-]
+CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Authorization', 'Content-Type']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://jardin-frontend.onrender.com',
+]
+# Si trabajas en local con http, Django 5 permite http://localhost en CSRF
+if FRONTEND_URL.startswith('http://'):
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
 ROOT_URLCONF = 'config.urls'
 
@@ -108,10 +111,10 @@ DATABASES = {
 
 # Password validators
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.user_attribute_similarity_validator.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.minimum_length_validator.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.common_password_validator.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.numeric_password_validator.NumericPasswordValidator',},
 ]
 
 # i18n / zona horaria (Bolivia)
@@ -144,3 +147,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    # HSTS suave (puedes subir el tiempo cuando todo esté estable)
+    SECURE_HSTS_SECONDS = 60 * 60 * 24
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
