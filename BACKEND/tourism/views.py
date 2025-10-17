@@ -129,24 +129,23 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
         return [IsAdmin()]  
     
     def perform_create(self, serializer):
-        print("--- INICIANDO PRUEBA DE FUEGO: SUBIDA DIRECTA ---")
-        file_to_upload = self.request.FILES.get('media_file')
+        # 1. Obtenemos el archivo de la petición
+        file_to_upload = self.request.FILES.get('media_file_upload')
 
-        if file_to_upload:
-            try:
-                print(f"Intentando subir '{file_to_upload.name}' a Cloudinary DIRECTAMENTE...")
+        if not file_to_upload:
+            # Si no hay archivo, dejamos que el serializador falle normalmente
+            return super().perform_create(serializer)
+        
+        try:
+            # 2. Subimos el archivo directamente a Cloudinary
+            upload_result = cloudinary.uploader.upload(file_to_upload)
+            
+            # 3. Obtenemos la URL segura
+            secure_url = upload_result.get('secure_url')
 
-                # Esta es la llamada directa a la API de Cloudinary
-                upload_result = cloudinary.uploader.upload(file_to_upload)
+            # 4. Guardamos el objeto en la BD, pasando la URL al campo correcto
+            serializer.save(media_file_url=secure_url)
 
-                print("✅ ¡ÉXITO! LA SUBIDA DIRECTA FUNCIONÓ. Respuesta de Cloudinary:")
-                print(upload_result)
-
-            except Exception as e:
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                print("🚨 ¡ERROR DIRECTO CAPTURADO! 🚨")
-                print(f"La subida directa a Cloudinary falló. Esta es la razón exacta:")
-                print(e)
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                print("--- Procediendo con el guardado normal de Django ---")
-                serializer.save()
+        except Exception as e:
+            # Si la subida falla, lanzamos un error para que el frontend lo sepa
+            raise serializers.ValidationError({"upload_error": f"La subida a Cloudinary falló: {e}"})

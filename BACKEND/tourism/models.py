@@ -104,7 +104,7 @@ class GalleryItem(models.Model):
     order = models.PositiveIntegerField(default=0, help_text="Número para ordenar (menor a mayor).")
     is_active = models.BooleanField(default=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
+    media_file_url = models.URLField(max_length=512)
     class Meta:
         ordering = ['order']
 

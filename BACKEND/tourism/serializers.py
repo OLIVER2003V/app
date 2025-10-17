@@ -105,22 +105,12 @@ class ContactInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GalleryItemSerializer(serializers.ModelSerializer):
+    # Añadimos un campo de solo escritura para recibir el archivo
+    media_file_upload = serializers.FileField(write_only=True)
+
     class Meta:
         model = GalleryItem
-        fields = ["id", "title", "media_type", "media_file", "order", "is_active"]
-
-    # CORRECCIÓN AQUÍ
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        if instance.media_file:
-            rep['media_file'] = instance.media_file.url
-        return rep
-
-    def validate(self, attrs):
-        f = attrs.get("media_file")
-        mt = attrs.get("media_type")
-        if f and mt == "IMAGE" and not f.content_type.startswith("image/"):
-            raise serializers.ValidationError({"media_file": "Debe ser una imagen."})
-        if f and mt == "VIDEO" and not f.content_type.startswith("video/"):
-            raise serializers.ValidationError({"media_file": "Debe ser un video."})
-        return attrs
+        # Actualiza los campos para usar la nueva URL y el campo de subida
+        fields = ["id", "title", "media_type", "media_file_url", "media_file_upload", "order", "is_active"]
+        # Hacemos que la URL sea de solo lectura, ya que la generaremos nosotros
+        read_only_fields = ["media_file_url"]
