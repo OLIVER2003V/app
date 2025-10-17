@@ -112,7 +112,7 @@ class ContactInfoViewSet(viewsets.ModelViewSet):
 class GalleryItemViewSet(viewsets.ModelViewSet):
     serializer_class = GalleryItemSerializer
     parser_classes = [MultiPartParser, FormParser] # To handle file uploads
-
+    
     def get_queryset(self):
         # Public users see only active items
         if self.request.method in permissions.SAFE_METHODS:
@@ -124,4 +124,8 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
         # Public can view (GET), only admins can change
         if self.request.method in permissions.SAFE_METHODS:
             return [permissions.AllowAny()]
-        return [IsAdmin()]
+        return [IsAdmin()]  
+    def perform_create(self, serializer):
+        print("====== INTENTO DE SUBIDA DETECTADO ======")
+        serializer.save()
+        print("====== SERIALIZER.SAVE() EJECUTADO SIN ERRORES ======")
