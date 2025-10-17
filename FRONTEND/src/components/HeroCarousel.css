@@ -16,7 +16,7 @@
 }
 
 .hero-static {
-  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/hero-background.jpg');
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
   background-size: cover;
   background-position: center;
   text-align: center;
