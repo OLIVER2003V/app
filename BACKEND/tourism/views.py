@@ -7,7 +7,7 @@ from .serializers import (
     ModerationReviewSerializer, GalleryItemSerializer
 )
 from .permissions import IsEditorOrAdmin, IsAdmin
-
+import os
 class PlaceViewSet(viewsets.ModelViewSet):
     serializer_class = PlaceSerializer
     lookup_field = "slug"
@@ -126,6 +126,23 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [IsAdmin()]  
     def perform_create(self, serializer):
-        print("====== INTENTO DE SUBIDA DETECTADO ======")
+        # --- CÓDIGO DE DEPURACIÓN AVANZADO ---
+        print("==============================================")
+        print("VERIFICANDO VARIABLES DE ENTORNO LEÍDAS POR LA APP:")
+        
+        cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME")
+        api_key = os.environ.get("CLOUDINARY_API_KEY")
+        api_secret = os.environ.get("CLOUDINARY_API_SECRET")
+
+        print(f"Cloud Name Leído: '{cloud_name}'")
+        print(f"API Key Leído: '{api_key}'")
+        
+        # Por seguridad, solo imprimimos si el secret existe y sus primeros 5 caracteres
+        if api_secret:
+            print(f"API Secret Leído (primeros 5 chars): '{api_secret[:5]}...'")
+        else:
+            print("API Secret Leído: No encontrado (None)")
+
+        print("==============================================")
+        
         serializer.save()
-        print("====== SERIALIZER.SAVE() EJECUTADO SIN ERRORES ======")
