@@ -6,22 +6,14 @@ class MediaSerializer(serializers.ModelSerializer):
         model = Media
         fields = ["id", "image", "caption", "created_at"]
 
-    # ▼▼▼ AÑADE ESTO ▼▼▼
-    # Asegura que siempre se devuelva la URL completa de la imagen
+    # CORRECCIÓN AQUÍ
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.image:
             rep['image'] = instance.image.url
         return rep
 
-class PlaceSimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Place
-        fields = ['name', 'slug']
-
-# ▼▼▼ SERIALIZADOR CORREGIDO ▼▼▼
 class ReviewSerializer(serializers.ModelSerializer):
-    # Campos adicionales para mostrar el nombre y slug del lugar en las lecturas
     place_name = serializers.CharField(source='place.name', read_only=True)
     place_slug = serializers.SlugRelatedField(source='place', read_only=True, slug_field='slug')
 
@@ -31,18 +23,18 @@ class ReviewSerializer(serializers.ModelSerializer):
             "id", "place", "place_name", "place_slug", "rating", "comment", 
             "author_name", "photo", "is_approved", "created_at"
         ]
-        # 'place' ahora es solo para escribir (recibe el ID al crear una opinión).
-        # 'place_name' y 'place_slug' son solo para leer.
         extra_kwargs = {
             'place': {'write_only': True}
         }
-        # 'is_approved' y 'created_at' son generados por el servidor
         read_only_fields = ["is_approved", "created_at"]
+
+    # CORRECCIÓN AQUÍ
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.photo:
             rep['photo'] = instance.photo.url
         return rep
+
 class PlaceSerializer(serializers.ModelSerializer):
     media = MediaSerializer(many=True, read_only=True)
     avg_rating = serializers.SerializerMethodField()
@@ -71,16 +63,24 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = "__all__"
         read_only_fields = ["created_by", "created_at"]
+
+    # CORRECCIÓN AQUÍ
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.cover:
             rep['cover'] = instance.cover.url
         return rep
+
     def create(self, validated_data):
         request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
             validated_data["created_by"] = request.user
         return super().create(validated_data)
+
+class PlaceSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Place
+        fields = ['name', 'slug']
 
 class ModerationReviewSerializer(serializers.ModelSerializer):
     place = PlaceSimpleSerializer(read_only=True)
@@ -90,27 +90,32 @@ class ModerationReviewSerializer(serializers.ModelSerializer):
         fields = ["id", "place", "rating", "comment", "author_name", "photo", "is_approved", "created_at"]
         read_only_fields = ["id", "place", "rating", "comment", "author_name", "photo", "created_at"]
 
-# En tu archivo 'serializers.py'
+    # CORRECCIÓN AQUÍ
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.photo:
+            rep['photo'] = instance.photo.url
+        return rep
 
 class ContactInfoSerializer(serializers.ModelSerializer):
-    # Opcional: para mostrar el nombre legible de la categoría
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     
     class Meta:
         model = ContactInfo
         fields = '__all__'
         
-# Add this new serializer to your serializers.py
-
 class GalleryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryItem
         fields = ["id", "title", "media_type", "media_file", "order", "is_active"]
+
+    # CORRECCIÓN AQUÍ
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.media_file:
             rep['media_file'] = instance.media_file.url
         return rep
+
     def validate(self, attrs):
         f = attrs.get("media_file")
         mt = attrs.get("media_type")
