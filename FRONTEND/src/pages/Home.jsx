@@ -10,43 +10,45 @@ const Star = () => <span className="testimonial-rating-star">⭐</span>;
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [galleryItems, setGalleryItems] = useState([]);
   const [trail, setTrail] = useState([]);
   const [mapError, setMapError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Cargar ítems para el carrusel
+    api.get("/gallery/")
+      .then(({ data }) => {
+        const activeItems = (data?.results || data || []).filter(item => item.is_active);
+        setGalleryItems(activeItems);
+      })
+      .catch(() => {});
+
     // Cargar publicaciones destacadas
     api.get("/posts/", { params: { limit: 4 } })
       .then(({ data }) => {
-        const arr = Array.isArray(data) ? data : (data?.results || []);
-        setPosts(arr.slice(0, 4));
+        setPosts(data?.results || data || []);
       })
       .catch(() => {});
 
     // Cargar las últimas opiniones
     api.get("/reviews/")
       .then(({ data }) => {
-        const arr = Array.isArray(data) ? data : (data?.results || []);
-        setReviews(arr.slice(0, 5));
+        setReviews((data?.results || data || []).slice(0, 5));
       })
       .catch(err => console.error("Error al cargar opiniones:", err));
       
-    // Cargar datos de la ruta para el mapa interactivo
+    // Cargar datos del mapa
     fetch('/ruta.json')
-      .then(response => {
-        if (!response.ok) throw new Error('No se pudo cargar la ruta del mapa.');
-        return response.json();
-      })
+      .then(response => response.ok ? response.json() : Promise.reject('No se pudo cargar la ruta.'))
       .then(geoJsonData => {
-        const coordinates = geoJsonData.features[0].geometry.coordinates;
-        const leafletCoords = coordinates.map(coord => [coord[1], coord[0]]);
-        setTrail(leafletCoords);
+        const coordinates = geoJsonData.features[0]?.geometry?.coordinates || [];
+        setTrail(coordinates.map(coord => [coord[1], coord[0]]));
       })
       .catch(error => {
         console.error("Error al cargar ruta.json:", error);
-        setMapError(error.message);
+        setMapError(String(error));
       });
-
   }, []);
 
   const openPost = (p) => {
@@ -59,7 +61,8 @@ export default function Home() {
 
   return (
     <div className="home">
-      <HeroCarousel />
+      <HeroCarousel items={galleryItems} />
+
       {posts.length > 0 && (
         <section className="home-section">
           <div className="home-container">
@@ -87,6 +90,7 @@ export default function Home() {
           </div>
         </section>
       )}
+      
       <section className="home-section alt-bg">
         <div className="home-container">
           <header className="section-header">
@@ -113,8 +117,6 @@ export default function Home() {
         </div>
       </section>
 
-      
-      
       {reviews.length > 0 && (
         <section className="home-section alt-bg testimonials">
            <div className="home-container">
@@ -122,6 +124,7 @@ export default function Home() {
             <div className="testimonials-grid">
               {reviews.map(review => (
                 <div key={review.id} className="testimonial-card">
+                  {review.photo_url && <img src={review.photo_url} alt={`Opinión de ${review.author_name}`} className="testimonial-photo" />}
                   <p className="testimonial-comment">"{review.comment}"</p>
                   <div className="testimonial-footer">
                     <div className="testimonial-author-info">
@@ -139,7 +142,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
+           </div>
         </section>
       )}
 
@@ -162,7 +165,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FOOTER CON TU INFORMACIÓN (NUEVA SECCIÓN) ===== */}
       <footer className="dev-footer">
         <p>
           Desarrollado por 
@@ -172,7 +174,6 @@ export default function Home() {
           | 2025
         </p>
       </footer>
-      {/* ======================================================= */}
     </div>
   );
 }
