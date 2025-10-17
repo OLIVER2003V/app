@@ -6,6 +6,14 @@ class MediaSerializer(serializers.ModelSerializer):
         model = Media
         fields = ["id", "image", "caption", "created_at"]
 
+    # ▼▼▼ AÑADE ESTO ▼▼▼
+    # Asegura que siempre se devuelva la URL completa de la imagen
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.image:
+            rep['image'] = instance.image.url
+        return rep
+
 class PlaceSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place
@@ -30,7 +38,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         }
         # 'is_approved' y 'created_at' son generados por el servidor
         read_only_fields = ["is_approved", "created_at"]
-
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.photo:
+            rep['photo'] = instance.photo.url
+        return rep
 class PlaceSerializer(serializers.ModelSerializer):
     media = MediaSerializer(many=True, read_only=True)
     avg_rating = serializers.SerializerMethodField()
@@ -59,7 +71,11 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = "__all__"
         read_only_fields = ["created_by", "created_at"]
-
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.cover:
+            rep['cover'] = instance.cover.url
+        return rep
     def create(self, validated_data):
         request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
@@ -90,7 +106,11 @@ class GalleryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryItem
         fields = ["id", "title", "media_type", "media_file", "order", "is_active"]
-
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.media_file:
+            rep['media_file'] = instance.media_file.url
+        return rep
     def validate(self, attrs):
         f = attrs.get("media_file")
         mt = attrs.get("media_type")
