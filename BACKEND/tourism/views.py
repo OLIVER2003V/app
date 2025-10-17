@@ -111,41 +111,12 @@ class ContactInfoViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [IsAdmin()]
     
+# tourism/views.py
+
 class GalleryItemViewSet(viewsets.ModelViewSet):
     serializer_class = GalleryItemSerializer
     parser_classes = [MultiPartParser, FormParser] # To handle file uploads
-    
-    def get_queryset(self):
-        # Public users see only active items
-        if self.request.method in permissions.SAFE_METHODS:
-            return GalleryItem.objects.filter(is_active=True)
-        # Admins see all items
-        return GalleryItem.objects.all()
+    queryset = GalleryItem.objects.all() # O tu queryset personalizado
+    permission_classes = [IsAdmin] # O el permiso que prefieras
 
-    def get_permissions(self):
-        # Public can view (GET), only admins can change
-        if self.request.method in permissions.SAFE_METHODS:
-            return [permissions.AllowAny()]
-        return [IsAdmin()]  
-    
-    def perform_create(self, serializer):
-        # 1. Obtenemos el archivo de la petición
-        file_to_upload = self.request.FILES.get('media_file_upload')
-
-        if not file_to_upload:
-            # Si no hay archivo, dejamos que el serializador falle normalmente
-            return super().perform_create(serializer)
-        
-        try:
-            # 2. Subimos el archivo directamente a Cloudinary
-            upload_result = cloudinary.uploader.upload(file_to_upload)
-            
-            # 3. Obtenemos la URL segura
-            secure_url = upload_result.get('secure_url')
-
-            # 4. Guardamos el objeto en la BD, pasando la URL al campo correcto
-            serializer.save(media_file_url=secure_url)
-
-        except Exception as e:
-            # Si la subida falla, lanzamos un error para que el frontend lo sepa
-            raise serializers.ValidationError({"upload_error": f"La subida a Cloudinary falló: {e}"})
+    # Ya no se necesita el método perform_create. ¡Bórralo!

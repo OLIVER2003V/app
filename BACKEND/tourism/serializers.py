@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Place, Media, Event, Post, Review, ContactInfo, GalleryItem
-
+import cloudinary
+import cloudinary.uploader
 class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
@@ -105,12 +106,26 @@ class ContactInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GalleryItemSerializer(serializers.ModelSerializer):
-    # Añadimos un campo de solo escritura para recibir el archivo
     media_file_upload = serializers.FileField(write_only=True)
 
     class Meta:
         model = GalleryItem
-        # Actualiza los campos para usar la nueva URL y el campo de subida
         fields = ["id", "title", "media_type", "media_file_url", "media_file_upload", "order", "is_active"]
-        # Hacemos que la URL sea de solo lectura, ya que la generaremos nosotros
         read_only_fields = ["media_file_url"]
+
+    def create(self, validated_data):
+        # 1. Extraemos el archivo del diccionario de datos validados.
+        file_to_upload = validated_data.pop('media_file_upload')
+        
+        # 2. Subimos el archivo a Cloudinary.
+        try:
+            upload_result = cloudinary.uploader.upload(file_to_upload)
+            secure_url = upload_result.get('secure_url')
+        except Exception as e:
+            raise serializers.ValidationError(f"La subida a Cloudinary falló: {e}")
+
+        # 3. Añadimos la URL obtenida al diccionario.
+        validated_data['media_file_url'] = secure_url
+
+        # 4. Creamos el objeto GalleryItem usando los datos ya limpios y correctos.
+        return super().create(validated_data)
