@@ -1,0 +1,154 @@
+.como-llegar-page {
+  background-color: #0f2027; /* Fondo oscuro principal */
+  color: #ecf0f1; /* Color de texto por defecto claro */
+  padding-bottom: 4rem;
+}
+
+.como-llegar-header {
+  padding: 4rem 2rem;
+  background-color: #1a2c3a; /* Un tono ligeramente más claro para el encabezado */
+  color: white;
+  text-align: center;
+  border-bottom: 1px solid #2c3e50;
+}
+
+.como-llegar-header h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+.como-llegar-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+}
+
+.steps-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 3rem;
+}
+
+.step-card {
+  display: flex;
+  gap: 2rem;
+  background: #1a2c3a; /* Fondo oscuro para las tarjetas */
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #2c3e50; /* Borde sutil en lugar de sombra */
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  background-color: #3498db;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.step-content h3 {
+  margin-top: 0;
+  font-size: 1.8rem;
+  color: #ffffff; /* Texto blanco para títulos */
+}
+
+.step-content p {
+  line-height: 1.7;
+  color: #bdc3c7; /* Texto gris claro para párrafos */
+  max-width: 700px;
+}
+
+.step-duration {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #95a5a6; /* Color más sutil para la duración */
+  margin-left: 0.5rem;
+}
+
+.step-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.transport-info {
+  margin-top: 2rem;
+  font-weight: 500;
+  color: #ecf0f1;
+}
+
+.transport-options {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.transport-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.badge {
+  background-color: #27ae60;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.badge--alt {
+  background-color: #e67e22;
+}
+
+.interactive-map-container {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.map-error-message {
+  padding: 1.5rem;
+  background-color: #fbeae5;
+  color: #c0392b;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.video-section {
+  margin-top: 4rem;
+  text-align: center;
+}
+
+.video-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #ffffff; /* Texto blanco para el título de la sección */
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

@@ -1,0 +1,113 @@
+/* src/pages/PostDetail.css */
+
+/* ▼▼▼ NUEVA REGLA PARA EL FONDO DE PÁGINA COMPLETA ▼▼▼ */
+.post-detail-page {
+  background-color: var(--bg);
+  min-height: 100vh;
+  padding: 24px 16px 48px; /* El padding ahora va aquí */
+}
+
+.post-detail-status {
+  background-color: var(--bg);
+  color: var(--text);
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 1.2rem;
+  min-height: 100vh;
+}
+
+/* ▼▼▼ REGLA MODIFICADA PARA EL CONTENEDOR/WRAPPER ▼▼▼ */
+.post-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--text);
+  /* Se quita el padding porque ahora lo maneja el contenedor padre */
+}
+
+.post-detail-header {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ffffff18;
+}
+
+.post-detail-cover {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+}
+
+.post-detail-title {
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.post-detail-meta {
+  margin-top: 16px;
+}
+
+.post-detail-place {
+  display: inline-block;
+  color: var(--muted);
+  text-decoration: none;
+  background-color: var(--surface);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #ffffff18;
+  transition: color .2s ease, background-color .2s ease;
+}
+
+.post-detail-place:hover {
+  background-color: var(--primary);
+  color: var(--bg);
+}
+
+.post-detail-body {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #e0e0e0; /* Color de texto ligeramente más suave que el blanco puro */
+}
+
+/* Estilos para el contenido que viene del backend (si usa HTML) */
+.post-detail-body p {
+  margin-bottom: 1.5em;
+}
+
+.post-detail-body h2 {
+  font-size: 1.8rem;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.post-detail-body ul,
+.post-detail-body ol {
+  padding-left: 2em;
+  margin-bottom: 1.5em;
+}
+
+.post-detail-body li {
+  margin-bottom: 0.5em;
+}
+
+.post-detail-author-date {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.post-detail-author-date .author {
+  font-weight: 600;
+}
+
+.post-detail-cta-container {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid #ffffff18;
+}

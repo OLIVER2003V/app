@@ -1,0 +1,173 @@
+.info-page {
+  background-color: #0f2027; /* Fondo oscuro principal */
+  color: #ecf0f1;
+  padding-bottom: 4rem;
+}
+
+.info-header {
+  padding: 4rem 2rem 2rem;
+  background: linear-gradient(rgba(15, 32, 39, 0.9), rgba(15, 32, 39, 1)), url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.info-header h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+.info-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+  color: #95a5a6;
+}
+
+.info-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.info-card {
+  background: #1a2c3a;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  border: 1px solid #2c3e50;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-card.intro-card {
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+  text-align: center;
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+  padding: 1rem 0;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #34495e;
+}
+
+.info-icon {
+  font-size: 1.5rem;
+}
+
+.info-card p {
+  line-height: 1.8;
+  color: #bdc3c7;
+}
+
+.info-card ul {
+  padding-left: 20px;
+  line-height: 2;
+  color: #bdc3c7;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.contact-list strong {
+  color: #ecf0f1;
+  font-weight: 600;
+}
+
+.contact-list .subsection-title {
+  margin-top: 0.75rem;
+}
+
+.contact-list span {
+  color: #bdc3c7;
+}
+
+.contact-list a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.contact-list a:hover {
+  text-decoration: underline;
+}
+
+.info-footer {
+  text-align: center;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid #2c3e50;
+}
+
+.info-footer h2 {
+  font-size: 2rem;
+  color: #ecf0f1;
+}
+/* ... (todos tus estilos existentes de Informacion.css) ... */
+
+/* --- NUEVOS ESTILOS PARA LA SECCIÓN DE HORARIOS Y TARIFAS --- */
+.info-highlight-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-box {
+  background: #2c3e50;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  gap: 1.5rem;
+}
+
+.info-box-icon {
+  font-size: 2.5rem;
+}
+
+.info-box-content h3 {
+  margin: 0 0 0.5rem;
+  color: #fff;
+}
+
+.info-box-content p {
+  margin: 0;
+  color: #bdc3c7;
+}
+
+/* --- ESTILOS PARA LA TARJETA DE REGLAS --- */
+.rules-card {
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+}
+
+.rules-card ul {
+  list-style-type: '🚫  ';
+  padding-left: 20px;
+}
+
+.rules-card li {
+  padding-left: 10px;
+  margin-bottom: 0.5rem;
+}

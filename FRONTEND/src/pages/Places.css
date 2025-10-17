@@ -1,0 +1,130 @@
+.places-page {
+  background-color: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  padding: 24px 16px 48px;
+}
+
+.places-page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.places-page-status {
+  background-color: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+}
+.places-page-status.error {
+  color: #e57373;
+}
+
+.places-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.places-header h1 {
+  font-size: clamp(30px, 5vw, 42px);
+  margin: 0 0 8px;
+}
+.places-summary {
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.places-summary b {
+  color: var(--primary);
+}
+
+.map-view-container {
+  height: 450px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 40px;
+  border: 1px solid #ffffff18;
+  background-color: #000;
+}
+
+.places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.place-card {
+  background-color: var(--surface);
+  border: 1px solid #ffffff10;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.place-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 35px #00000066;
+}
+
+.place-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.place-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.place-card-title {
+  font-size: 20px;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.place-card-category {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.category--mirador { background-color: #8e44ad; color: white; }
+.category--cascada { background-color: #3498db; color: white; }
+.category--ruta { background-color: #e67e22; color: white; }
+.category--gastronomia { background-color: #e74c3c; color: white; }
+.category--hospedaje { background-color: #1abc9c; color: white; }
+.category--otro { background-color: #7f8c8d; color: white; }
+
+.place-card-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+.places-no-results {
+  background-color: var(--surface);
+  padding: 40px;
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--muted);
+  grid-column: 1 / -1;
+}
