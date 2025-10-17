@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./admin-dashboard.css";
-
+import api from "../lib/api";
 const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 function Stat({ label, value, hint }) {
@@ -84,7 +84,21 @@ export default function AdminDashboard() {
     return "Buenas noches";
   }, []);
 
-  const openApi = (path) => window.open(`${BASE_URL}${path}`, "_blank", "noopener,noreferrer");
+ const openApi = async (path) => {
+  try {
+    const res = await api.get(path, { headers: { Accept: "application/json" } });
+    const data = res.data;
+    console.log(`GET ${path}`, data);
+    alert(`GET ${path} → ${res.status} OK (${Array.isArray(data) ? data.length + " items" : "objeto"})`);
+  } catch (err) {
+    if (err.response) {
+      console.error(`GET ${path} →`, err.response.status, err.response.data);
+      alert(`GET ${path} → ${err.response.status}: ${err.response.statusText}`);
+    } else {
+      alert("Error de red");
+    }
+  }
+};
 
   return (
     <main className="ad-container">
