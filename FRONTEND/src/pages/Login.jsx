@@ -1,8 +1,8 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../lib/api";
+import "./Login.css"; // 👈 Importa el CSS
 
 export default function Login() {
   const { login } = useAuth();
@@ -10,51 +10,68 @@ export default function Login() {
   const location = useLocation();
   const [form, setForm] = useState({ username: "", password: "" });
   const [err, setErr] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
 
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
+    setIsLoading(true); // Inicia la carga
     try {
       await login(form.username, form.password);
 
-      // 1) intenta volver a la ruta protegida original
       const from = location.state?.from?.pathname;
-
-      // 2) si no hay "from", decide por rol y manda al dashboard
       let role = null;
       try {
         const { data } = await api.get("/auth/me/");
-        role = data?.profile?.role || null; // "admin" | "editor" | etc.
+        role = data?.profile?.role || null;
       } catch {}
 
-      // en tu diseño, /dashboard ya renderiza Admin/Editor/User según el rol
       const fallback = "/dashboard";
       const target = from || fallback;
 
       nav(target, { replace: true });
     } catch (e) {
       setErr("Credenciales inválidas o servidor no disponible.");
+    } finally {
+      setIsLoading(false); // Finaliza la carga
     }
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Ingresar</h1>
-      <form onSubmit={onSubmit}>
-        <input
-          placeholder="Usuario"
-          value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
-        />
-        <input
-          placeholder="Contraseña"
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
-        <button type="submit">Entrar</button>
-      </form>
-      {err && <p style={{ color: "crimson" }}>{err}</p>}
+    <div className="login-page">
+      <div className="login-container">
+        <h1>Ingresar</h1>
+        <p className="login-subtitle">Accede a tu panel de control</p>
+        <form onSubmit={onSubmit} className="login-form">
+          <div className="input-group">
+            <label htmlFor="username">Usuario</label>
+            <input
+              id="username"
+              type="text"
+              placeholder="Escribe tu usuario"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              required
+              autoFocus
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="password">Contraseña</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Escribe tu contraseña"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
+          </div>
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? "Ingresando..." : "Entrar"}
+          </button>
+        </form>
+        {err && <p className="login-error">{err}</p>}
+      </div>
     </div>
   );
 }
