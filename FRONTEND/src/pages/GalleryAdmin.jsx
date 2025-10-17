@@ -43,9 +43,7 @@ export default function GalleryAdmin() {
     formData.append('is_active', isActive); // <-- NUEVO: Enviamos el estado activo
 
     try {
-      await api.post('/gallery/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/gallery/', formData);
       // Limpiar formulario y recargar
       setTitle('');
       setFile(null);
