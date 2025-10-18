@@ -8,7 +8,6 @@ import Login from "@pages/Login";
 import Places from "@pages/Places";
 import PlaceDetail from "@pages/PlaceDetail";
 import Events from "@pages/Events";
-import Contact from "@pages/Contact";
 import Dashboard from "@pages/Dashboard";
 import Home from "./pages/Home";
 // Si tu archivo es src/pages/CreatePost.jsx usa esta línea:
@@ -21,7 +20,6 @@ import ReviewsAdmin from "./pages/ReviewsAdmin";
 import ComoLlegar from "./pages/ComoLlegar";
 import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
-import CreateContact from "./pages/CreateContact";
 import GalleryAdmin from "./pages/GalleryAdmin";
 import { ListContact, CreateContact, EditContact } from "./pages/CreateContact";
 export default function App() {
