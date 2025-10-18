@@ -1,95 +1,308 @@
+/* === VARIABLES GLOBALES === */
 :root {
-  --bg: #0f172a;
-  --surface: #1f2937;
-  --stroke: #374151;
-  --text: #f5f7fa;
-  --muted: #9ca3af;
-  --primary: #3b82f6;
-  --ghost: #ffffff22;
-  --radius: 12px;
+  --primary-color: #2c5282; /* Un azul corporativo */
+  --secondary-color: #e53e3e; /* Un rojo para acentos */
+  --background-color: #ffffff;
+  --alt-background-color: #f7fafc; /* Un gris muy claro para secciones alternas */
+  --text-color: #2d3748;
+  --text-light-color: #718096;
+  --border-color: #e2e8f0;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --border-radius: 8px;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --container-width: 1100px;
 }
 
-html, body {
-  background-color: var(--bg);
+/* === ESTILOS BASE === */
+.home-page {
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--background-color);
 }
 
-.home {
-  background-color: var(--bg);
-  color: var(--text);
-}
-
-/* ==============================================
-   ====== HERO CAROUSEL (ALTURA FIJA) ======
-   ============================================== */
-.hero-carousel-section {
-  position: relative;
-  /* ▼▼▼ LA SOLUCIÓN DEFINITIVA: UNA ALTURA FIJA EN PÍXELES ▼▼▼ */
-  height: 400px; 
-  border-radius: var(--radius);
-  overflow: hidden;
-  background-color: var(--surface);
-}
-
-.hero-placeholder, .hero-static, .carousel-slide {
-  height: 100%;
-  width: 100%;
+.loading-container {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: var(--primary-color);
 }
 
-.carousel-slide {
-  position: relative;
-  overflow: hidden;
-}
-
-.carousel-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Esto hace que la imagen cubra el espacio sin deformarse */
-}
-
-.carousel-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 40%);
-}
-
-.carousel-caption {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  text-align: left;
-  transform: none;
-  width: auto;
-}
-
-.carousel-caption h1 {
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-}
-
-
-/* ==============================================
-   ====== ESTRUCTURA Y RESTO DE LA PÁGINA ======
-   ============================================== */
+/* === CONTENEDORES Y SECCIONES === */
 .home-section {
-  padding: 24px;
+  padding: 4rem 1.5rem;
+}
+
+.home-section.hero-section {
+  padding: 0;
+}
+
+.home-section.alt-bg {
+  background-color: var(--alt-background-color);
 }
 
 .home-container {
-  max-width: 1100px;
+  max-width: var(--container-width);
   margin: 0 auto;
 }
 
-/* ... (El resto de tus estilos están bien, los incluyo para que sea un solo archivo) ... */
-.section-header{text-align:center;margin-bottom:32px}.section-header h2{font-size:28px;margin:0 0 8px}.section-header p{color:var(--muted);max-width:600px;margin:0 auto}.section-footer{text-align:center;margin-top:32px}
-.featured-posts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));justify-content:center;gap:20px}.postCard{background:var(--surface);border:1px solid var(--stroke);overflow:hidden;border-radius:var(--radius);display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}.postCard:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.3)}.postCard__media{height:150px}.postCard__media img,.postCard__ph{width:100%;height:100%;object-fit:cover}.postCard__body{padding:16px;flex-grow:1;display:flex;flex-direction:column}.postCard__title{font-size:16px;font-weight:600;margin:0 0 8px}.postCard__place{color:var(--muted);font-size:12px;margin-top:auto;padding-top:8px}.postCard__read-more{color:var(--primary);font-weight:600;margin-top:12px}
-.quick__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.card{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius);padding:24px;text-decoration:none;color:var(--text);transition:transform .15s ease,box-shadow .15s ease}.card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.2)}.card__icon{font-size:28px;display:inline-block;margin-bottom:8px}.card h3{margin:4px 0 6px;font-size:18px}.card p{margin:0;color:var(--muted);font-size:14px}
-.testimonials__title{text-align:center;font-size:28px;margin-bottom:1rem}.testimonials-grid{display:grid;grid-auto-flow:column;grid-auto-columns:320px;gap:20px;overflow-x:auto;padding:24px;scroll-snap-type:x mandatory;scrollbar-width:none}.testimonials-grid::-webkit-scrollbar{display:none}.testimonial-card{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius);padding:24px;scroll-snap-align:start;display:flex;flex-direction:column}.testimonial-comment{font-style:italic;line-height:1.6;color:var(--muted);margin:0;flex-grow:1}.testimonial-footer{margin-top:16px;border-top:1px solid var(--stroke);padding-top:12px;display:flex;flex-direction:column}.testimonial-author-info{display:flex;justify-content:space-between;align-items:center}.testimonial-author{font-weight:700;color:var(--text)}.testimonial-place{display:inline-block;margin-top:8px;font-size:13px;color:var(--primary);font-weight:600;text-decoration:none}.testimonial-place:hover{text-decoration:underline}
-.home-map-container{height:500px;width:100%;border-radius:var(--radius);overflow:hidden;border:1px solid var(--stroke);box-shadow:0 10px 30px rgba(0,0,0,0.15)}.map-error-message{display:flex;align-items:center;justify-content:center;height:100%;background-color:#2c1d1b;color:#e74c3c}.map__links{text-align:center;margin-top:1.5rem}.map__links a{color:var(--primary);font-weight:600;text-decoration:none}.map__links a:hover{text-decoration:underline}
-.dev-footer{text-align:center;padding:2rem 1rem;margin-top:2rem;border-top:1px solid var(--stroke)}.dev-footer p{margin:0;color:var(--muted);font-size:.9rem}.dev-footer a{color:var(--text);font-weight:600;text-decoration:none;transition:color .2s}.dev-footer a:hover{color:var(--primary)}
-.btn{display:inline-block;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:600;border:1px solid transparent;transition:background-color .2s ease}.btn--ghost{background:var(--ghost);color:var(--text);border-color:#ffffff33}.btn--ghost:hover{background:#ffffff33}
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
 
-@media (max-width: 768px){.hero-carousel-section{height:250px}.home-section{padding:16px}.section-header h2,.testimonials__title{font-size:24px}.testimonials-grid{grid-auto-columns:85%;padding:16px}.home-map-container{height:350px}}
+.section-header h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+.section-header p {
+  font-size: 1.125rem;
+  color: var(--text-light-color);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-footer {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+/* === BOTONES Y ENLACES === */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn--ghost {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn--ghost:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn--link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn--link:hover {
+    text-decoration: underline;
+}
+
+/* === TARJETAS DE NOVEDADES (POSTS) === */
+.featured-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.post-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.post-card__media {
+  height: 200px;
+  background-color: var(--border-color);
+}
+
+.post-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-card__placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-light-color);
+}
+
+.post-card__body {
+  padding: 1.5rem;
+}
+
+.post-card__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--text-color);
+}
+
+.post-card__place {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-light-color);
+  margin-bottom: 1rem;
+}
+
+.post-card__read-more {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+
+/* === TARJETAS DE PLANIFICACIÓN === */
+.planning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  text-align: center;
+}
+
+.planning-card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  text-decoration: none;
+  color: var(--text-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.planning-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  color: var(--primary-color);
+}
+
+.planning-card__icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.planning-card h3 {
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.planning-card p {
+  color: var(--text-light-color);
+  margin: 0;
+  line-height: 1.6;
+}
+
+
+/* === TARJETAS DE OPINIONES (TESTIMONIALS) === */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.testimonial-card {
+  background-color: var(--alt-background-color);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1rem;
+}
+
+.testimonial-comment {
+  font-style: italic;
+  color: var(--text-color);
+  flex-grow: 1;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.testimonial-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.testimonial-author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-author {
+  font-weight: 700;
+}
+
+.testimonial-place {
+  font-size: 0.875rem;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.testimonial-place:hover {
+  text-decoration: underline;
+}
+
+/* === MAPA Y FOOTER === */
+.home-map-container {
+  height: 450px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.map-error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: var(--alt-background-color);
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.dev-footer {
+  background-color: #2d3748; /* Un gris oscuro */
+  color: #a0aec0; /* Un gris más claro para el texto */
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.dev-footer a {
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dev-footer a:hover {
+  text-decoration: underline;
+}
