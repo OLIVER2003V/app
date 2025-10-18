@@ -1,4 +1,5 @@
 import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@context/AuthContext";
 import ProtectedRoute from "@components/ProtectedRoute";
@@ -24,8 +25,7 @@ import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import GalleryAdmin from "./pages/GalleryAdmin";
 
-const TRACKING_ID = "G-23892RNY2C"; // ⬅️ Usa tu ID de Medición aquí
-ReactGA.initialize(TRACKING_ID);
+
 
 // 👇 CRUD unificado de contactos
 import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager";
@@ -34,7 +34,18 @@ import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager
 import Contact from "./pages/Contact";
 
 export default function App() {
-  usePageTracking();
+  const TRACKING_ID = "G-23892RNY2C"; // Aquí está bien definirla.
+
+    // 🎯 PASO CRÍTICO: Inicializa GA4 una sola vez al cargar el componente
+    useEffect(() => {
+        // La condición [ ] vacía asegura que se ejecute solo al montar (una vez)
+        ReactGA.initialize(TRACKING_ID);
+    }, []); 
+    
+    // El hook de seguimiento de página debe ir después de la inicialización
+    usePageTracking();
+
+
   return (
     <AuthProvider>
       <BrowserRouter>
