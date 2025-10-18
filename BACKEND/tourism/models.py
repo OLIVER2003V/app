@@ -26,7 +26,7 @@ class Place(models.Model):
 
 class Media(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="media")
-    image = models.ImageField(upload_to="places/")
+    image = models.ImageField(upload_to="places/") # <-- VOLVEMOS A ImageField
     caption = models.CharField(max_length=150, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

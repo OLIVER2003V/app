@@ -1,12 +1,30 @@
-import React from 'react';
-import { Carousel } from 'react-responsive-carousel';
-import 'react-responsive-carousel/lib/styles/carousel.min.css';
-import './HeroCarousel.css';
+import React, { useState, useEffect } from "react";
+import { Carousel } from "react-responsive-carousel";
+import api from "@/lib/api";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import "./HeroCarousel.css";
 
-// Este componente ahora es más simple. Recibe los items como un prop.
-export default function HeroCarousel({ items = [] }) {
-  
-  // Si no hay items, muestra un mensaje estático o de carga.
+const HeroCarousel = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get("gallery/")
+      .then(({ data }) => {
+        const galleryItems = (Array.isArray(data) ? data : data?.results || []).filter(item => item.is_active);
+        setItems(galleryItems);
+      })
+      .catch((err) => {
+        console.error("Error al cargar la galería:", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="hero-placeholder">Cargando Galería...</div>;
+  }
+
   if (items.length === 0) {
     return (
       <section className="hero-static">
@@ -29,8 +47,8 @@ export default function HeroCarousel({ items = [] }) {
         transitionTime={700}
       >
         {items.map((item) => {
-          // CORRECCIÓN: Usamos el campo nuevo 'media_file_url'
-          const src = item.media_file_url;
+          // REVERTIDO
+          const src = item.media_file; 
           const isVideo = (item.media_type || "").toUpperCase() === "VIDEO";
           
           return (
@@ -53,3 +71,5 @@ export default function HeroCarousel({ items = [] }) {
     </section>
   );
 };
+
+export default HeroCarousel;

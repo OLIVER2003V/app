@@ -7,11 +7,9 @@ class MediaSerializer(serializers.ModelSerializer):
         model = Media
         fields = ["id", "image", "caption", "created_at"]
 
-    # CORRECCIÓN AQUÍ
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.image:
-            rep['image'] = instance.image.url
+        if instance.image: rep['image'] = instance.image.url
         return rep
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -20,20 +18,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = [
-            "id", "place", "place_name", "place_slug", "rating", "comment", 
-            "author_name", "photo", "is_approved", "created_at"
-        ]
-        extra_kwargs = {
-            'place': {'write_only': True}
-        }
-        read_only_fields = ["is_approved", "created_at"]
-
-    # CORRECCIÓN AQUÍ
+        fields = ["id", "place", "rating", "comment", "author_name", "photo", "is_approved", "created_at"]
+    
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.photo:
-            rep['photo'] = instance.photo.url
+        if instance.photo: rep['photo'] = instance.photo.url
         return rep
 
 class PlaceSerializer(serializers.ModelSerializer):
@@ -63,20 +52,11 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
-        read_only_fields = ["created_by", "created_at"]
-
-    # CORRECCIÓN AQUÍ
+    
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.cover:
-            rep['cover'] = instance.cover.url
+        if instance.cover: rep['cover'] = instance.cover.url
         return rep
-
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and request.user and request.user.is_authenticated:
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)
 
 class PlaceSimpleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -106,26 +86,11 @@ class ContactInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GalleryItemSerializer(serializers.ModelSerializer):
-    media_file_upload = serializers.FileField(write_only=True)
-
     class Meta:
         model = GalleryItem
-        fields = ["id", "title", "media_type", "media_file_url", "media_file_upload", "order", "is_active"]
-        read_only_fields = ["media_file_url"]
+        fields = ["id", "title", "media_type", "media_file", "order", "is_active"]
 
-    def create(self, validated_data):
-        # 1. Extraemos el archivo del diccionario de datos validados.
-        file_to_upload = validated_data.pop('media_file_upload')
-        
-        # 2. Subimos el archivo a Cloudinary.
-        try:
-            upload_result = cloudinary.uploader.upload(file_to_upload)
-            secure_url = upload_result.get('secure_url')
-        except Exception as e:
-            raise serializers.ValidationError(f"La subida a Cloudinary falló: {e}")
-
-        # 3. Añadimos la URL obtenida al diccionario.
-        validated_data['media_file_url'] = secure_url
-
-        # 4. Creamos el objeto GalleryItem usando los datos ya limpios y correctos.
-        return super().create(validated_data)
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.media_file: rep['media_file'] = instance.media_file.url
+        return rep

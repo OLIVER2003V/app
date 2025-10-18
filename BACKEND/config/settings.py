@@ -2,10 +2,20 @@
 Django settings for config project (Render + Cloudinary).
 """
 
+# config/settings.py
 from pathlib import Path
 import os
 import dj_database_url
+import cloudinary # <-- Asegúrate de tener este import
 
+# ▼▼▼ AÑADE ESTE BLOQUE COMPLETO ▼▼▼
+# Configuración explícita de Cloudinary
+cloudinary.config(
+  cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME"),
+  api_key = os.environ.get("CLOUDINARY_API_KEY"),
+  api_secret = os.environ.get("CLOUDINARY_API_SECRET"),
+  secure = True
+)
 # -----------------------------
 # Paths
 # -----------------------------
@@ -153,14 +163,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
-    "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
-    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
-    "SECURE": True,
-    # 👇 permite image y video automáticamente
-    "RESOURCE_TYPE": "auto",
-}
+
 
 
 # Si usas FileField/ImageField, obj.campo.url devolverá una URL https pública.

@@ -10,20 +10,11 @@ const Star = () => <span className="testimonial-rating-star">⭐</span>;
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [galleryItems, setGalleryItems] = useState([]);
   const [trail, setTrail] = useState([]);
   const [mapError, setMapError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Cargar ítems para el carrusel
-    api.get("/gallery/")
-      .then(({ data }) => {
-        const activeItems = (data?.results || data || []).filter(item => item.is_active);
-        setGalleryItems(activeItems);
-      })
-      .catch(() => {});
-
     // Cargar publicaciones destacadas
     api.get("/posts/", { params: { limit: 4 } })
       .then(({ data }) => {
@@ -61,7 +52,7 @@ export default function Home() {
 
   return (
     <div className="home">
-      <HeroCarousel items={galleryItems} />
+      <HeroCarousel />
 
       {posts.length > 0 && (
         <section className="home-section">
@@ -74,7 +65,8 @@ export default function Home() {
               {posts.map((p) => (
                 <div key={p.id} className="postCard-home" onClick={() => openPost(p)} title={p.title}>
                   <div className="postCard__media">
-                    {p.cover_url ? <img src={p.cover_url} alt={p.title} /> : <div className="postCard__ph">Sin imagen</div>}
+                    {/* REVERTIDO */}
+                    {p.cover ? <img src={p.cover} alt={p.title} /> : <div className="postCard__ph">Sin imagen</div>}
                   </div>
                   <div className="postCard__body">
                     <h3 className="postCard__title">{p.title}</h3>
@@ -124,7 +116,8 @@ export default function Home() {
             <div className="testimonials-grid">
               {reviews.map(review => (
                 <div key={review.id} className="testimonial-card">
-                  {review.photo_url && <img src={review.photo_url} alt={`Opinión de ${review.author_name}`} className="testimonial-photo" />}
+                  {/* REVERTIDO */}
+                  {review.photo && <img src={review.photo} alt={`Opinión de ${review.author_name}`} className="testimonial-photo" />}
                   <p className="testimonial-comment">"{review.comment}"</p>
                   <div className="testimonial-footer">
                     <div className="testimonial-author-info">
