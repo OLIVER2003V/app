@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 import api from "@/lib/api";
-import HeroCarousel from "../components/HeroCarousel";
+import { HeroCarousel } from "../components/HeroCarousel";
 import InteractiveTrailMap from "../components/InteractiveTrailMap";
 
 const Star = () => <span className="testimonial-rating-star">⭐</span>;
