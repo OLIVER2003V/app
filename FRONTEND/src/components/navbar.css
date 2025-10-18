@@ -1,121 +1,121 @@
-:root{
-  --bg:#0e0f10;
-  --bg-elev:#141518;
-  --stroke:#ffffff20;
-  --text:#f5f7fa;
-  --muted:#a8b0b7;
-  --primary:#2ecc71;
+:root {
+  --bg: #0f172a;       /* Fondo azul oscuro */
+  --bg-elev: #1f2937;  /* Panel ligeramente más claro */
+  --stroke: #374151;   /* Borde sutil */
+  --text: #f5f7fa;     /* Texto blanco */
+  --muted: #9ca3af;    /* Texto secundario gris */
+  --primary: #3b82f6;  /* Azul primario para acentos */
 }
 
 /* ==============================================
    ====== BARRA DE NAVEGACIÓN PRINCIPAL ======
    ============================================== */
-.nav{
+.nav {
   position: sticky; top:0; z-index: 50;
   transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
   border-bottom: 1px solid transparent;
   backdrop-filter: saturate(120%) blur(6px);
 }
-.nav--top{ background: linear-gradient(#00000066, #00000022); }
-.nav--scrolled{ background: #0c0d0fef; border-color: var(--stroke); box-shadow: 0 6px 24px #0005; }
+.nav--top { background: linear-gradient(#0c1158ec, #085d63de); }
+.nav--scrolled { background: #0f172aef; border-color: var(--stroke); box-shadow: 0 6px 24px #0005; }
 
-.nav__inner{
+.nav__inner {
   max-width: 1200px; margin: 0 auto; height: 64px;
-  display: grid; grid-template-columns: auto 1fr auto auto; /* Ajustado para mejor distribución */
+  display: grid; grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 14px; padding: 0 16px;
 }
 
 /* --- Logo y Marca --- */
-.nav__brand{
+.nav__brand {
   display:flex; align-items:center; gap:10px; color:var(--text);
   font-weight:700; text-decoration:none;
 }
-.nav__logo{ font-size: 22px; }
+.nav__logo { font-size: 22px; }
 
 /* --- Enlaces de Escritorio --- */
-.nav__links{
-  display:flex; justify-content: center; /* Centra los enlaces */
+.nav__links {
+  display:flex; justify-content: center;
   align-items:center; gap: 14px;
 }
-.nav__link{
+.nav__link {
   color: var(--muted); text-decoration:none; font-weight:600; padding: 8px 10px;
   border-radius: 10px; transition: color .2s ease, background .2s ease;
 }
-.nav__link:hover{ color:var(--text); background:#ffffff10; }
-.nav__link.active{ color: var(--text); background:#ffffff12; }
+.nav__link:hover { color:var(--text); background:#ffffff10; }
+.nav__link.active { color: var(--text); background:#ffffff12; }
 
 /* --- Menú Desplegable --- */
-.nav__dropdown{ position: relative; }
-.nav__dropdownBtn{ cursor: pointer; background: transparent; border:0; }
-.nav__menu{
+.nav__dropdown { position: relative; }
+.nav__dropdownBtn { cursor: pointer; background: transparent; border:0; }
+.nav__menu {
   position:absolute; top: 42px; left:0; min-width: 200px;
   background: var(--bg-elev); border:1px solid var(--stroke); border-radius: 12px;
   box-shadow: 0 10px 30px #0007; padding: 6px; display:grid; gap:4px;
 }
-.nav__menuItem{
+.nav__menuItem {
   color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px;
 }
-.nav__menuItem:hover{ background:#ffffff12; }
+.nav__menuItem:hover { background:#ffffff12; }
 
 /* --- Botones y Buscador --- */
-.nav__cta{ display:flex; align-items:center; gap:8px; }
-.btn{
+.nav__cta { display:flex; align-items:center; gap:8px; }
+.btn {
   display:inline-flex; justify-content:center; align-items:center;
   padding: 10px 14px; border-radius: 999px; border:1px solid #ffffff22;
   color:var(--text); background:#ffffff14; text-decoration:none; font-weight:700;
   transition: transform .12s ease, background .2s ease, border-color .2s ease;
 }
-.btn:hover{ transform: translateY(-1px); background:#ffffff22; }
-.btn--sm{ padding: 8px 12px; font-size: 14px; }
-.btn--ghost{ background: transparent; }
-.btn--whatsapp{ background: #25D366; color:#042; border-color: #25D36655; }
-.btn--whatsapp:hover{ background: #1fb257; }
-.btn--full{ width:100%; }
+.btn:hover { transform: translateY(-1px); background:#ffffff22; }
+.btn--sm { padding: 8px 12px; font-size: 14px; }
+.btn--ghost { background: transparent; }
+.btn--whatsapp { background: #25D366; color:#fff; border-color: transparent; }
+.btn--whatsapp:hover { background: #1fb257; }
+.btn--full { width:100%; }
 
-.nav__search{
+.nav__search {
   display:flex; align-items:center; gap:8px; margin-left: 8px;
 }
-.nav__search input{
+.nav__search input {
   height: 36px; padding: 0 12px; border-radius: 10px;
-  border:1px solid var(--stroke); background:#0f1114; color: var(--text);
+  border:1px solid var(--stroke); background: var(--bg); color: var(--text);
   width: 220px;
 }
-.nav__search input::placeholder{ color: var(--muted); }
+.nav__search input::placeholder { color: var(--muted); }
 
 /* --- Menú Móvil (Hamburguesa y Panel) --- */
-.nav__burger{
-  display:none; /* Oculto por defecto */
+.nav__burger {
+  display:none;
   width:40px; height:40px; border:1px solid #ffffff22; border-radius: 12px;
   background: transparent; padding: 8px; cursor: pointer;
 }
-.nav__burger span{
+.nav__burger span {
   display:block; height:2px; background: var(--text); margin: 5px 0; border-radius: 2px;
 }
 
-.nav__mobile{
-  display:none; /* El panel móvil está oculto por defecto */
+.nav__mobile {
+  display:none;
   background: var(--bg); border-top:1px solid var(--stroke);
   padding: 12px; box-shadow: 0 12px 26px #0007;
 }
 .nav.is-open .nav__mobile {
-  display: block; /* Se muestra cuando .nav tiene la clase .is-open */
+  display: block;
 }
-.nav__mItem, .nav__mSub{
+.nav__mItem, .nav__mSub {
   display:block; color: var(--text); text-decoration:none;
   padding: 12px; border-radius: 10px; font-weight: 600;
 }
-.nav__mItem:hover, .nav__mSub:hover{ background:#ffffff10; }
-.nav__mGroup{ padding: 8px 4px; }
-.nav__mLabel{ color: var(--muted); padding: 6px 12px; display:block; }
+.nav__mItem:hover, .nav__mSub:hover { background:#ffffff10; }
+.nav__mGroup { padding: 8px 4px; }
+.nav__mLabel { color: var(--muted); padding: 6px 12px; display:block; }
 
-.nav__mSearch{
+.nav__mSearch {
   display:grid; gap:8px; margin-bottom: 10px;
 }
-.nav__mSearch input{
+.nav__mSearch input {
   width: 100%;
   height: 40px; padding: 0 12px; border-radius: 10px;
-  border:1px solid var(--stroke); background:#0f1114; color: var(--text);
+  border:1px solid var(--stroke); background:var(--bg-elev); color: var(--text);
 }
 
 /* ================================================================
