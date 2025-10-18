@@ -10,7 +10,6 @@ import PlaceDetail from "@pages/PlaceDetail";
 import Events from "@pages/Events";
 import Dashboard from "@pages/Dashboard";
 import Home from "./pages/Home";
-// Si tu archivo es src/pages/CreatePost.jsx usa esta línea:
 import CreatePost from "./pages/CreatePost";
 import PostsAdmin from "./pages/PostsAdmin";
 import Posts from "./pages/Posts";
@@ -21,30 +20,33 @@ import ComoLlegar from "./pages/ComoLlegar";
 import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import GalleryAdmin from "./pages/GalleryAdmin";
+
+// 👇 CRUD unificado de contactos
 import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager";
+
+// 👇 Página pública de contactos
 import Contact from "./pages/Contact";
+
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Rutas que comparten el mismo layout (Navbar fijo) */}
+          {/* Rutas con el mismo layout (Navbar fijo) */}
           <Route element={<Layout />}>
-            {/* públicas */}
+            {/* Públicas */}
             <Route path="/" element={<Home />} />
             <Route path="/places" element={<Places />} />
             <Route path="/places/:slug" element={<PlaceDetail />} />
             <Route path="/events" element={<Events />} />
-            <Route path="contactos" element={<ListContacts />} />
-            <Route path="contactos/nuevo" element={<CreateContact />} />
-            <Route path="contactos/:id/editar" element={<EditContact />} />
             <Route path="/posts" element={<Posts />} />
             <Route path="/posts/:id" element={<PostDetail />} />
             <Route path="/como-llegar" element={<ComoLlegar />} />
             <Route path="/informacion" element={<Informacion />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
-             <Route path="/contact" element={<Contact />} /> 
-            {/* privadas (anidar con ProtectedRoute como “gate”) */}
+
+            {/* Admin / privadas */}
             <Route
               path="/admin/posts/new"
               element={
@@ -62,12 +64,12 @@ export default function App() {
               }
             />
             <Route
-            path="/admin/posts"
-            element={
+              path="/admin/posts"
+              element={
                 <ProtectedRoute roles={["admin", "editor"]}>
-                <PostsAdmin />
+                  <PostsAdmin />
                 </ProtectedRoute>
-            }
+              }
             />
             <Route
               path="/admin/places"
@@ -80,22 +82,63 @@ export default function App() {
             <Route
               path="/admin/reviews"
               element={
-                <ProtectedRoute roles={["admin"]}> {/* Usualmente solo el admin puede moderar */}
+                <ProtectedRoute roles={["admin"]}>
                   <ReviewsAdmin />
                 </ProtectedRoute>
               }
             />
-            <Route path="/admin/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
-            <Route path="/admin/create-contact" element={<ProtectedRoute><CreateContact /></ProtectedRoute>} />
-            <Route path="/admin/gallery" element={<ProtectedRoute><GalleryAdmin /></ProtectedRoute>} />
-          </Route> 
-          
+            <Route
+              path="/admin/create-event"
+              element={
+                <ProtectedRoute>
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
+            {/* 👇 NUEVAS rutas correctas para Contactos (protegidas) */}
+            <Route
+              path="/admin/contactos"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <ListContacts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/contactos/nuevo"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <CreateContact />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/contactos/:id/editar"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <EditContact />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* login puede ir fuera del layout si no quieres mostrar el Navbar */}
-          
+            {/* 👇 elimina esta si aún la tenías, ya no se usa */}
+            {/* <Route path="/admin/create-contact" element={<ProtectedRoute><CreateContact /></ProtectedRoute>} /> */}
 
-          {/* 404 opcional */}
-          <Route path="*" element={<div style={{ padding: 20 }}>Página no encontrada</div>} />
+            <Route
+              path="/admin/gallery"
+              element={
+                <ProtectedRoute>
+                  <GalleryAdmin />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+
+          {/* 404 */}
+          <Route
+            path="*"
+            element={<div style={{ padding: 20 }}>Página no encontrada</div>}
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
