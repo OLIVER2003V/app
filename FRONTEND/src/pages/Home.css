@@ -1,15 +1,17 @@
 /* === VARIABLES GLOBALES === */
 :root {
-  --primary-color: #2c5282; /* Un azul corporativo */
-  --secondary-color: #e53e3e; /* Un rojo para acentos */
+  --primary-color: #2c5282;
+  --secondary-color: #e53e3e;
   --background-color: #ffffff;
-  --alt-background-color: #f7fafc; /* Un gris muy claro para secciones alternas */
+  --alt-background-color: #f7fafc;
   --text-color: #2d3748;
   --text-light-color: #718096;
   --border-color: #e2e8f0;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --border-radius: 8px;
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                 Helvetica, Arial, sans-serif;
   --container-width: 1100px;
 }
 
@@ -35,7 +37,7 @@
 }
 
 .home-section.hero-section {
-  padding: 0;
+  padding: 0; /* el hero va pegado arriba */
 }
 
 .home-section.alt-bg {
@@ -97,13 +99,13 @@
 }
 
 .btn--link {
-    color: var(--primary-color);
-    font-weight: 600;
-    text-decoration: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .btn--link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* === TARJETAS DE NOVEDADES (POSTS) === */
@@ -124,7 +126,8 @@
 
 .post-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .post-card__media {
@@ -169,7 +172,6 @@
   color: var(--primary-color);
 }
 
-
 /* === TARJETAS DE PLANIFICACIÓN === */
 .planning-grid {
   display: grid;
@@ -190,7 +192,8 @@
 
 .planning-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
   color: var(--primary-color);
 }
 
@@ -210,7 +213,6 @@
   margin: 0;
   line-height: 1.6;
 }
-
 
 /* === TARJETAS DE OPINIONES (TESTIMONIALS) === */
 .testimonials-grid {
@@ -280,18 +282,18 @@
 }
 
 .map-error-message {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    background-color: var(--alt-background-color);
-    color: var(--secondary-color);
-    font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: var(--alt-background-color);
+  color: var(--secondary-color);
+  font-weight: 500;
 }
 
 .dev-footer {
-  background-color: #2d3748; /* Un gris oscuro */
-  color: #a0aec0; /* Un gris más claro para el texto */
+  background-color: #2d3748;
+  color: #a0aec0;
   text-align: center;
   padding: 1.5rem;
   font-size: 0.875rem;
@@ -306,3 +308,113 @@
 .dev-footer a:hover {
   text-decoration: underline;
 }
+
+/* ===========================
+   HERO 16:9 — CONTENEDOR
+   =========================== */
+.hero-16x9 .hero-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;   /* clave del 16:9 */
+  max-height: 720px;
+  min-height: 320px;
+  background: #0f2027;    /* fondo mientras carga */
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Si necesitas compatibilidad sin aspect-ratio, descomenta:
+.hero-16x9 .hero-frame::before {
+  content: "";
+  display: block;
+  padding-top: 56.25%;
+}
+.hero-16x9 .hero-frame { position: relative; }
+*/
+
+/* ===========================
+   HERO — SLIDES Y MEDIA
+   =========================== */
+.hero-carousel,
+.hero-carousel * {
+  box-sizing: border-box;
+}
+
+.hero-carousel {
+  position: absolute;
+  inset: 0;
+}
+
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+}
+
+.carousel-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;       /* recorta manteniendo proporción */
+  object-position: center;
+  display: block;
+}
+
+/* Overlay para legibilidad del título */
+.carousel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.20) 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* Título centrado y responsivo */
+.carousel-caption {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90%, 960px);
+  text-align: center;
+  color: #fff;
+  padding: 0 1rem;
+}
+
+.carousel-caption h1 {
+  font-size: clamp(1.8rem, 4.8vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* (Opcional) pista del endpoint usada */
+.endpoint-hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Ajustes responsive */
+@media (max-width: 768px) {
+  .hero-16x9 .hero-frame {
+    max-height: 520px;
+    min-height: 240px;
+  }
+  .carousel-caption { bottom: 10%; }
+}
+
+/* ===== LIMPIEZA DE ESTILOS ANTIGUOS (si los tenías) =====
+   Ya no uses: .hero-carousel-section, .carousel-video, .carousel-image
+   con alturas fijas. Todo depende de .hero-frame (16:9).
+*/
