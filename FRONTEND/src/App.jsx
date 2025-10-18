@@ -5,7 +5,7 @@ import ProtectedRoute from "@components/ProtectedRoute";
 import Layout from "@components/Layout";
 
 import ReactGA from 'react-ga4';
-import usePageTracking from './hooks/usePageTracking';
+import usePageTracking from "./hooks/usePageTracking";
 
 import Login from "@pages/Login";
 import Places from "@pages/Places";
@@ -34,6 +34,7 @@ import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager
 import Contact from "./pages/Contact";
 
 export default function App() {
+  usePageTracking();
   return (
     <AuthProvider>
       <BrowserRouter>
