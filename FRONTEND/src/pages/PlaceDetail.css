@@ -1,201 +1,210 @@
 /* ==============================================
    ====== ESTILOS DE LA PÁGINA DE DETALLE ======
    ============================================== */
-:root {
-  /* Estas variables deberían estar definidas en un archivo global,
-     pero las incluyo aquí como referencia */
-  --bg: #0e0f10;
-  --surface: #141518;
-  --text: #f5f7fa;
-  --muted: #9aa0a6;
-  --radius: 12px;
+:root{
+  --bg:#0e0f10;
+  --surface:#141518;
+  --text:#f5f7fa;
+  --muted:#9aa0a6;
+  --radius:12px;
+
+  /* tipografía fluida y contenedor */
+  --container: 1200px;
+  --gutter: 16px;
 }
 
-.place-detail-page {
-  background-color: var(--bg);
-  min-height: 100vh;
-  color: var(--text);
+*{box-sizing:border-box}
+img{max-width:100%;height:auto}
+
+/* Previene desbordes de palabras largas */
+p, h1, h2, h3, .address-info { overflow-wrap: anywhere; }
+
+/* --- Página base --- */
+.place-detail-page{
+  background-color:var(--bg);
+  min-height:100vh;
+  color:var(--text);
 }
 
-/* --- Estados de Carga y Error --- */
-.place-detail-status {
-  background-color: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  font-size: 1.2rem;
-  padding: 1rem;
-  text-align: center;
+/* --- Estados de Carga/Error --- */
+.place-detail-status{
+  background-color:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  font-size:1.1rem;
+  padding:1rem;
+  text-align:center;
 }
-.place-detail-status.error { color: #e57373; }
+.place-detail-status.error{color:#ff8a8a}
 
-/* --- Sección Hero --- */
-.place-detail-hero {
-  background-color: #111;
-  background-size: cover;
-  background-position: center;
-  padding: 60px 0;
-  position: relative;
-  text-align: center;
+/* --- Hero --- */
+.place-detail-hero{
+  background-color:#111;
+  background-size:cover;
+  background-position:center;
+  padding:clamp(36px,6vw,60px) 0;
+  position:relative;
+  text-align:center;
 }
-.place-detail-hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
+.place-detail-hero-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.75));
 }
-.place-detail-hero .place-detail-wrapper {
-  position: relative;
+.place-detail-hero .place-detail-wrapper{ position:relative; }
+.place-detail-hero h1{
+  font-size:clamp(28px,6vw,52px);
+  margin:10px 0 0;
+  text-shadow:0 4px 15px rgba(0,0,0,.5);
 }
-.place-detail-hero h1 {
-  font-size: clamp(36px, 6vw, 52px);
-  margin: 10px 0 0;
-  text-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-.place-detail-category {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 99px;
-  text-transform: uppercase;
-  display: inline-block;
-}
-
-/* --- Contenedor Principal --- */
-.place-detail-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
+.place-detail-category{
+  font-size:12px;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:999px;
+  text-transform:uppercase;
+  display:inline-block;
+  background:#222;
+  color:#fff;
 }
 
-.content-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 32px;
-  padding-top: 40px;
-  padding-bottom: 48px;
-}
-.main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
-}
-.sidebar .sidebar-widget {
-  background-color: var(--surface);
-  border-radius: var(--radius);
-  padding: 20px;
-  border: 1px solid #ffffff10;
-}
-.sidebar h3 {
-  margin-top: 0;
-  font-size: 20px;
-  border-bottom: 1px solid #ffffff18;
-  padding-bottom: 10px;
-  margin-bottom: 16px;
-}
-.map-container-detail {
-  height: 250px;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: #000;
-}
-.address-info {
-  margin-top: 12px;
-  font-size: 14px;
-  color: var(--muted);
+/* --- Contenedor --- */
+.place-detail-wrapper{
+  max-width:var(--container);
+  margin:0 auto;
+  padding:0 var(--gutter);
 }
 
-/* --- Secciones de Contenido --- */
-section h2 {
-  font-size: 24px;
-  margin-bottom: 16px;
+/* --- Grid principal --- */
+.content-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:32px;
+  padding:40px 0 48px;
 }
-.description-section p {
-  line-height: 1.7;
-  color: var(--muted);
+.main-content{ display:flex; flex-direction:column; gap:40px; }
+.sidebar .sidebar-widget{
+  background-color:var(--surface);
+  border-radius:var(--radius);
+  padding:20px;
+  border:1px solid #ffffff10;
+}
+.sidebar h3{
+  margin:0 0 16px 0;
+  font-size:clamp(18px,2.5vw,20px);
+  border-bottom:1px solid #ffffff18;
+  padding-bottom:10px;
+}
+.map-container-detail{
+  height:clamp(220px, 30vh, 300px);
+  border-radius:12px;
+  overflow:hidden;
+  background-color:#000;
+  margin-bottom:10px;
+}
+.address-info{
+  margin-top:8px;
+  font-size:14px;
+  color:var(--muted);
 }
 
-/* --- Lista de Opiniones --- */
-.reviews-list { display: flex; flex-direction: column; gap: 16px; }
-.review-card {
-  background-color: #1a1b1f;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #ffffff10;
+/* --- Secciones --- */
+section h2{
+  font-size:clamp(20px,2.8vw,24px);
+  margin-bottom:12px;
 }
-.review-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;}
-.review-author { font-weight: 600; }
-.review-rating { font-size: 14px; }
-.review-comment { margin: 0 0 10px; font-style: italic; color: var(--muted); }
-.review-date { font-size: 12px; color: #7f8c8d; }
-.review-photo {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-bottom: 10px;
+.description-section p{
+  line-height:1.7;
+  color:var(--muted);
 }
 
-/* --- Formulario de Opinión --- */
-.review-form { display: flex; flex-direction: column; gap: 16px; }
-.review-form .form-group { display: flex; flex-direction: column; }
-.review-form label { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.review-form input, .review-form textarea {
-  background-color: #0e0f10;
-  border: 1px solid #ffffff22;
-  border-radius: 8px;
-  padding: 12px;
-  color: var(--text);
-  font-size: 16px;
-  font-family: inherit;
+/* --- Opiniones --- */
+.reviews-list{ display:flex; flex-direction:column; gap:16px; }
+.review-card{
+  background-color:#1a1b1f;
+  border-radius:12px;
+  padding:16px;
+  border:1px solid #ffffff10;
 }
-.review-form input[type="file"] {
-  padding: 8px;
-  background-color: var(--surface);
+.review-card-header{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:8px; flex-wrap:wrap; gap:8px;
 }
-.review-form button { align-self: flex-start; }
+.review-author{ font-weight:600; }
+.review-rating{ font-size:14px; }
+.review-comment{ margin:0 0 10px; font-style:italic; color:var(--muted); }
+.review-date{ font-size:12px; color:#7f8c8d; }
+.review-photo{ border-radius:8px; margin-bottom:10px; display:block; }
 
-/* --- Calificación por Estrellas --- */
-.star-rating { display: flex; }
-.star-rating button { background: none; border: none; cursor: pointer; padding: 0 2px; }
-.star-rating .star { font-size: 28px; transition: color 0.2s; }
-.star-rating button.off .star { color: #555; }
-.star-rating button.on .star { color: #f1c40f; }
+/* --- Formulario --- */
+.review-form{ display:flex; flex-direction:column; gap:16px; }
+.review-form .form-group{ display:flex; flex-direction:column; gap:6px; }
+.review-form label{ font-size:14px; font-weight:600; }
+.review-form input, .review-form textarea{
+  background-color:#0e0f10;
+  border:1px solid #ffffff22;
+  border-radius:8px;
+  padding:12px;
+  color:var(--text);
+  font-size:16px;
+  font-family:inherit;
+}
+.review-form input[type="file"]{ padding:8px; background-color:var(--surface); }
 
-/* --- Categorías (Colores) --- */
-.category--mirador { background-color: #8e44ad; color: white; }
-.category--cascada { background-color: #3498db; color: white; }
-.category--ruta { background-color: #e67e22; color: white; }
-.category--gastronomia { background-color: #e74c3c; color: white; }
-.category--hospedaje { background-color: #1abc9c; color: white; }
-.category--otro { background-color: #7f8c8d; color: white; }
+/* Botón base */
+.btn{
+  appearance:none; border:0; cursor:pointer;
+  display:inline-block; font-weight:700;
+  border-radius:10px; padding:12px 16px;
+  transition:transform .15s ease, filter .15s ease;
+}
+.btn:active{ transform:scale(.98); }
+.btn--primary{ background:#2e7d32; color:#fff; }
+.btn--primary:hover{ filter:brightness(1.05); }
 
+/* --- Estrellas --- */
+.star-rating{
+  display:flex; gap:6px;
+  /* más grandes y cómodas en móvil */
+}
+.star-rating button{
+  background:none; border:none; cursor:pointer; padding:6px;
+  line-height:1; touch-action:manipulation;
+}
+.star-rating .star{ font-size:clamp(24px,5vw,30px); transition:color .2s; }
+.star-rating button.off .star{ color:#555; }
+.star-rating button.on .star{ color:#f1c40f; }
 
-/* ================================================================
-   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
-   ================================================================ */
-@media (max-width: 900px) {
-  .place-detail-hero {
-    padding: 40px 0; /* Reduce el espaciado vertical */
+/* --- Categorías (colores) --- */
+.category--mirador{ background:#8e44ad; color:#fff; }
+.category--cascada{ background:#3498db; color:#fff; }
+.category--ruta{ background:#e67e22; color:#fff; }
+.category--gastronomia{ background:#e74c3c; color:#fff; }
+.category--hospedaje{ background:#1abc9c; color:#fff; }
+.category--otro{ background:#7f8c8d; color:#fff; }
+
+/* =========================
+   ====== Responsive ======
+   ========================= */
+
+/* Tablets y abajo */
+@media (max-width: 1024px){
+  .content-grid{
+    grid-template-columns:1fr;    /* una sola columna */
+    gap:24px;
+    padding-top:32px;
   }
+  .sidebar{ order:-1; }           /* mapa primero en pantallas pequeñas */
+  .review-form .btn{ width:100%; }/* botón full width */
+}
 
-  .content-grid { 
-    grid-template-columns: 1fr; /* Apila el contenido y la barra lateral */
-    padding-top: 32px;
-    gap: 24px;
-  }
-  
-  .sidebar { 
-    order: -1; /* Mueve la barra lateral hacia arriba */
-  }
-
-  /* Mejora la legibilidad de los títulos en móviles */
-  section h2, .sidebar h3 {
-    font-size: 20px;
-  }
-
-  /* Botón del formulario a ancho completo para fácil acceso */
-  .review-form button {
-    align-self: stretch; /* Ocupa todo el ancho */
-    text-align: center;
-  }
+/* Móviles pequeños */
+@media (max-width: 480px){
+  :root{ --gutter: 12px; }
+  .place-detail-hero{ padding:32px 0; }
+  .map-container-detail{ height: 220px; }
+  .review-card{ padding:14px; }
+  .review-form input, .review-form textarea{ padding:12px; }
+  .star-rating{ gap:4px; }
 }
