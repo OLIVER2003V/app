@@ -115,6 +115,7 @@ export default function Events() {
             {error && <p className="error-message">{error}</p>}
             <Calendar
               localizer={localizer}
+              culture="es" // <-- AÑADIDO: Esta línea activa el idioma español
               events={allEvents}
               startAccessor="start"
               endAccessor="end"

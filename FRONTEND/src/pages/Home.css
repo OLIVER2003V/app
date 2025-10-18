@@ -14,7 +14,9 @@
   background: var(--bg);
 }
 
-/* ESTRUCTURA GENERAL DE SECCIONES */
+/* ============================
+   ESTRUCTURA GENERAL
+   ============================ */
 .home-section {
   padding: 64px 24px;
 }
@@ -43,42 +45,9 @@
   margin-top: 32px;
 }
 
-/* HERO */
-.hero {
-  position: relative;
-  background: url("/hero.jpg") center/cover no-repeat;
-  text-align: center;
-  padding: 120px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.hero::before { /* Reemplaza el div de overlay por un pseudo-elemento */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
-}
-.hero__content {
-  position: relative; /* Para que esté sobre el overlay */
-}
-.hero__content h1 {
-  font-size: clamp(38px, 6vw, 56px);
-  margin: 0 0 12px;
-  text-shadow: 0 6px 24px #0007;
-}
-.hero__content p {
-  color: var(--muted);
-  font-size: clamp(16px, 2.2vw, 18px);
-}
-.hero__cta {
-  margin-top: 24px;
-  display: inline-flex;
-  gap: 12px;
-}
-
-/* BOTONES (Reutilizables) */
+/* ============================
+   BOTONES
+   ============================ */
 .btn {
   display: inline-block;
   padding: 12px 24px;
@@ -86,19 +55,35 @@
   text-decoration: none;
   font-weight: 600;
   border: 1px solid transparent;
-  transition: background-color .2s ease;
+  transition: background-color 0.2s ease;
 }
-.btn--primary { background: var(--primary); color: #0d0f0e; }
-.btn--primary:hover { background: var(--primary-700); }
-.btn--ghost { background: var(--ghost); color: var(--text); border-color: #ffffff33; }
-.btn--ghost:hover { background: #ffffff33; }
+.btn--primary {
+  background: var(--primary);
+  color: #0d0f0e;
+}
+.btn--primary:hover {
+  background: var(--primary-700);
+}
+.btn--ghost {
+  background: var(--ghost);
+  color: var(--text);
+  border-color: #ffffff33;
+}
+.btn--ghost:hover {
+  background: #ffffff33;
+}
 
-/* FEATURED POSTS */
+/* ============================
+   NOVEDADES (POSTS)
+   ============================ */
 .featured-posts-grid {
   display: grid;
+  /* Esto ya es responsivo: crea columnas de mínimo 250px */
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 }
+
+/* Estilos de la tarjeta de publicación */
 .postCard {
   background: var(--surface);
   border: 1px solid #ffffff10;
@@ -111,23 +96,63 @@
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Clave para ordenar imagen y texto */
 }
 .postCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 30px #00000055;
 }
-.postCard__media { height: 150px; width: 100%; background-color: #000; }
-.postCard__media img { width: 100%; height: 100%; object-fit: cover; }
-.postCard__ph { width: 100%; height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 13px; }
-.postCard__body { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; }
-.postCard__title { color: var(--text); font-size: 16px; font-weight: 600; margin: 0 0 8px; line-height: 1.4; }
-.postCard__place { color: var(--muted); font-size: 12px; display: block; margin-top: auto; padding-top: 8px; }
-.postCard__cta { background-color: var(--primary); color: var(--bg); font-size: 12px; font-weight: 700; border-radius: 99px; padding: 4px 8px; margin-top: 8px; text-align: center; }
+.postCard__media {
+  height: 150px;
+  width: 100%;
+  background-color: #000;
+}
+.postCard__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Evita que la imagen se deforme */
+}
+.postCard__ph {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.postCard__body {
+  padding: 16px;
+  flex-grow: 1; /* Hace que el cuerpo ocupe el espacio restante */
+  display: flex;
+  flex-direction: column;
+}
+.postCard__title {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+.postCard__place {
+  color: var(--muted);
+  font-size: 12px;
+  display: block;
+  margin-top: auto; /* Empuja este elemento hacia abajo */
+  padding-top: 8px;
+}
+.postCard__read-more {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 12px;
+}
 
-/* QUICK ACTIONS (PLANNING SECTION) */
+/* ============================
+   PLANIFICA TU VISITA
+   ============================ */
 .quick__grid {
   display: grid;
+  /* También es responsivo por defecto */
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
 }
@@ -138,113 +163,174 @@
   padding: 24px;
   text-decoration: none;
   color: var(--text);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.2s ease;
 }
-.card:hover { transform: translateY(-3px); border-color: #ffffff22; box-shadow: 0 10px 30px #0006; }
-.card__icon { font-size: 28px; display: inline-block; margin-bottom: 8px; }
-.card h3 { margin: 4px 0 6px; font-size: 18px; }
-.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #ffffff22;
+  box-shadow: 0 10px 30px #0006;
+}
+.card__icon {
+  font-size: 28px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.card h3 {
+  margin: 4px 0 6px;
+  font-size: 18px;
+}
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
 
-/* INFO GRID (GALLERY & PRICING) */
-.info-grid {
+/* ============================
+   TESTIMONIOS
+   ============================ */
+.testimonials__title {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 1rem;
+}
+.testimonials-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: start;
+  grid-auto-flow: column; /* Permite el scroll horizontal */
+  grid-auto-columns: 320px;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 24px;
+  scroll-snap-type: x mandatory; /* Efecto de "imán" al hacer scroll */
+  scrollbar-width: none; /* Oculta la barra de scroll en Firefox */
 }
-@media (max-width: 768px) {
-  .info-grid { grid-template-columns: 1fr; }
+.testimonials-grid::-webkit-scrollbar {
+  display: none; /* Oculta la barra de scroll en Chrome/Safari */
 }
-.gallery h2, .pricing h2 { font-size: 22px; margin: 0 0 16px; }
-.gallery__rail { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.gallery__rail img { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid #ffffff12; }
-.pricing__rows { display: grid; gap: 8px; }
-.pricing__row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #1a1b1f; border-radius: 12px; border: 1px solid #ffffff10; }
-.badge { background: var(--primary); color: #0d0f0e; padding: 6px 10px; border-radius: 999px; font-weight: 700; }
-.badge--alt { background: #22c55e; }
-.pricing__desc { color: var(--muted); margin: 4px 6px 10px; font-size: 14px; }
+.testimonial-card {
+  background: var(--surface);
+  border: 1px solid #ffffff10;
+  border-radius: var(--radius);
+  padding: 24px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+}
+.testimonial-comment {
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+  flex-grow: 1;
+}
+.testimonial-footer {
+  margin-top: 16px;
+  border-top: 1px solid #ffffff18;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.testimonial-author-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.testimonial-author {
+  font-weight: 700;
+  color: var(--text);
+}
+.testimonial-place {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.testimonial-place:hover {
+  text-decoration: underline;
+}
 
-/* TESTIMONIALS */
-.testimonials h2 { text-align: center; font-size: 28px; }
-.testimonials-grid { display: grid; grid-auto-flow: column; grid-auto-columns: 320px; gap: 20px; overflow-x: auto; padding: 24px; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.testimonials-grid::-webkit-scrollbar { display: none; }
-.testimonial-card { background: var(--surface); border: 1px solid #ffffff10; border-radius: var(--radius); padding: 24px; scroll-snap-align: start; display: flex; flex-direction: column; }
-.testimonial-comment { font-style: italic; line-height: 1.6; color: var(--muted); margin: 0; flex-grow: 1; position: relative; padding-left: 20px; }
-.testimonial-comment::before { content: '“'; font-size: 48px; color: var(--primary); position: absolute; left: -10px; top: -15px; opacity: 0.3; }
-.testimonial-footer { margin-top: 16px; border-top: 1px solid #ffffff18; padding-top: 12px; }
-.testimonial-author-info { display: flex; justify-content: space-between; align-items: center; }
-.testimonial-author { font-weight: 700; color: var(--text); }
-.testimonial-rating { font-size: 14px; }
-.testimonial-place { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
-.testimonial-place:hover { text-decoration: underline; }
-
-/* MAP */
-.map__frame { border-radius: var(--radius); overflow: hidden; border: 1px solid #ffffff10; height: 400px; background: #0b0c0e; }
-.map__frame iframe { width: 100%; height: 100%; display: block; }
-.map__links { display: flex; justify-content: center; gap: 24px; margin-top: 16px; }
-.map__links a { color: var(--primary); text-decoration: none; font-weight: 600; }
-.map__links a:hover { text-decoration: underline; }
-
-/* ... (todos tus estilos existentes de home.css) ... */
-
-/* --- NUEVOS ESTILOS PARA LA SECCIÓN DEL MAPA --- */
+/* ============================
+   MAPA
+   ============================ */
 .home-map-container {
   height: 500px;
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #2c3e50;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border: 1px solid #ffffff10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
-
 .map-error-message {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  background-color: #fbeae5;
-  color: #c0392b;
+  background-color: #2c1d1b;
+  color: #e74c3c;
 }
-
 .map__links {
   text-align: center;
   margin-top: 1.5rem;
 }
-
 .map__links a {
-  color: #3498db;
+  color: var(--primary);
   font-weight: 600;
   text-decoration: none;
 }
-
 .map__links a:hover {
   text-decoration: underline;
 }
-/* ... (todos tus estilos existentes de home.css) ... */
 
-/* --- NUEVOS ESTILOS PARA EL FOOTER DEL DESARROLLADOR --- */
+/* ============================
+   FOOTER
+   ============================ */
 .dev-footer {
-  background-color: #0f2027; /* Mismo color de fondo base */
   text-align: center;
   padding: 2rem 1rem;
   margin-top: 2rem;
-  border-top: 1px solid #2c3e50;
+  border-top: 1px solid #ffffff18;
 }
-
 .dev-footer p {
   margin: 0;
-  color: #95a5a6; /* Color de texto sutil */
+  color: var(--muted);
   font-size: 0.9rem;
 }
-
 .dev-footer a {
-  color: #bdc3c7; /* Un poco más claro para que resalte */
+  color: var(--text);
   font-weight: 600;
   text-decoration: none;
-  margin: 0 5px;
   transition: color 0.2s;
 }
-
 .dev-footer a:hover {
-  color: #3498db; /* Color de acento al pasar el mouse */
+  color: var(--primary);
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES Y TABLETS ======
+   ================================================================ */
+@media (max-width: 768px) {
+  /* Reduce el espaciado en las secciones para pantallas más pequeñas */
+  .home-section {
+    padding: 48px 16px;
+  }
+
+  /* Reduce el tamaño de los títulos principales */
+  .section-header h2,
+  .testimonials__title {
+    font-size: 24px;
+  }
+
+  /* Ajusta el tamaño de las tarjetas de testimonios para que quepan mejor */
+  .testimonials-grid {
+    grid-auto-columns: 85%; /* Cada tarjeta ocupa el 85% del ancho */
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Reduce la altura del mapa en móviles */
+  .home-map-container {
+    height: 350px;
+  }
 }

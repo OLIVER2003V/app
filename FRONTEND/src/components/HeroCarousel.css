@@ -3,11 +3,11 @@
   height: 70vh;
   min-height: 450px;
   color: white;
+  background-color: #0f2027; /* Fallback background */
 }
 
 .hero-loader, .hero-static {
-  height: 70vh;
-  min-height: 450px;
+  height: 100%; /* Ocupa el espacio del contenedor padre */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,8 +23,7 @@
 }
 
 .carousel-slide {
-  height: 70vh;
-  min-height: 450px;
+  height: 100%; /* Ocupa el espacio del contenedor padre */
   position: relative;
   overflow: hidden;
 }
@@ -46,7 +45,7 @@
 
 .carousel-caption {
   position: absolute;
-  bottom: 10%;
+  bottom: 15%; /* Elevado un poco para mejor visibilidad */
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -59,4 +58,22 @@
   font-weight: 700;
   text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
   margin: 0;
+  line-height: 1.2; /* Mejora la legibilidad en caso de salto de línea */
+}
+
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .hero-carousel-section, .hero-loader, .hero-static, .carousel-slide {
+    /* Reduce la altura en pantallas más pequeñas */
+    height: 60vh;
+    min-height: 400px;
+  }
+
+  .carousel-caption h1 {
+    /* Hace el texto del título adaptable al tamaño de la pantalla */
+    font-size: clamp(2rem, 8vw, 3.5rem);
+  }
 }

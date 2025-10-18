@@ -1,13 +1,22 @@
 /* src/pages/Posts.css */
 
+:root {
+  /* Estas variables deberían estar definidas en un archivo global,
+     pero las incluyo aquí como referencia */
+  --bg: #0e0f10;
+  --surface: #141518;
+  --text: #f5f7fa;
+  --muted: #9aa0a6;
+  --primary: #2ecc71;
+  --radius: 12px;
+}
+
 .posts-page {
   background-color: var(--bg);
   min-height: 100vh;
   color: var(--text);
-  /* Las propiedades max-width, margin y padding se mueven al wrapper */
 }
 
-/* ▼▼▼ NUEVA REGLA PARA EL WRAPPER ▼▼▼ */
 .posts-page__wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -16,7 +25,7 @@
 
 .posts-page-loading {
   color: var(--text);
-  background-color: var(--bg); /* Aseguramos fondo oscuro también en la carga */
+  background-color: var(--bg);
   text-align: center;
   padding: 50px;
   font-size: 1.2rem;
@@ -111,7 +120,7 @@
   /* Cortar texto a 4 líneas */
   display: -webkit-box;
   -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
@@ -125,4 +134,18 @@
 
 .full-post-card__readmore:hover {
   text-decoration: underline;
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .posts-page__wrapper {
+    padding-top: 16px;
+  }
+
+  .posts-grid {
+    /* Reduce la separación entre tarjetas en pantallas más pequeñas */
+    gap: 16px;
+  }
 }

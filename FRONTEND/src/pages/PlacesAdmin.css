@@ -1,3 +1,12 @@
+:root {
+  /* Estas variables deberían estar definidas en un archivo global,
+     pero las incluyo aquí como referencia */
+  --bg: #0e0f10;
+  --text: #f5f7fa;
+  --primary: #2ecc71;
+  --radius: 12px;
+}
+
 .admin-page-container {
   background-color: var(--bg);
   min-height: 100vh;
@@ -14,6 +23,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* Permite que los elementos se ajusten */
+  gap: 16px;
   margin-bottom: 20px;
 }
 .admin-page-header h1 { margin: 0; }
@@ -75,17 +86,19 @@
 
 .admin-alert { padding: 10px; border-radius: 8px; background-color: #333; margin-bottom: 10px; }
 .admin-checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.admin-actions { display: flex; gap: 10px; margin-top: 15px; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
 
 .admin-btn-primary {
   background-color: var(--primary); color: var(--bg); font-weight: bold;
   padding: 12px; border: none; border-radius: 8px; cursor: pointer;
+  flex-grow: 1; /* Permite que los botones crezcan si es necesario */
 }
 .admin-btn-primary:disabled { background-color: #555; cursor: not-allowed; }
 
 .admin-btn-danger {
   background-color: #e53e3e; color: white; font-weight: bold;
   padding: 12px; border: none; border-radius: 8px; cursor: pointer;
+  flex-grow: 1;
 }
 
 .coords-picker {
@@ -105,6 +118,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 10px;
 }
 
@@ -123,4 +138,37 @@
 .admin-btn-location:hover {
   background-color: var(--primary);
   color: var(--bg);
+}
+
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 900px) {
+  .admin-page-container {
+    padding: 16px;
+  }
+
+  /* Apila la grilla principal en una sola columna */
+  .admin-page-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Apila los campos de coordenadas */
+  .coords-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-actions {
+    /* Los botones ocuparán el ancho completo si es necesario */
+    flex-direction: column;
+  }
+  .admin-btn-primary, .admin-btn-danger {
+    width: 100%;
+  }
 }

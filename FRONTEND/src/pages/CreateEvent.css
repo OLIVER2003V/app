@@ -1,3 +1,6 @@
+/* ==============================================
+   ====== ESTILOS BASE DEL FORMULARIO ======
+   ============================================== */
 .create-event-page {
   background-color: #0f2027;
   min-height: calc(100vh - 80px); /* Resta la altura del navbar */
@@ -49,6 +52,7 @@
   border-radius: 6px;
   color: #ecf0f1;
   font-size: 1rem;
+  transition: border-color 0.2s ease-in-out; /* Added for smooth focus */
 }
 
 .event-form input:focus,
@@ -56,6 +60,11 @@
 .event-form textarea:focus {
   outline: none;
   border-color: #3498db;
+}
+
+/* Estilo para los campos de fecha */
+.event-form input[type="datetime-local"] {
+  -webkit-appearance: none;
 }
 
 .form-row {
@@ -78,4 +87,41 @@
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .create-event-page {
+    /* Reduce padding and align container to the top */
+    padding: 1rem;
+    align-items: flex-start;
+  }
+
+  .create-event-container {
+    /* Reduce padding for smaller screens */
+    padding: 2rem 1.5rem;
+  }
+
+  .create-event-container h1 {
+    font-size: 1.75rem; /* Slightly smaller title */
+  }
+
+  /* Stack two-column rows into a single column */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem; /* Keep vertical gap */
+  }
+
+  /* Stack form action buttons and make them full width */
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .form-actions .btn {
+    width: 100%; /* Requires a .btn class on the button elements */
+    justify-content: center;
+  }
 }

@@ -7,6 +7,9 @@
   --primary:#2ecc71;
 }
 
+/* ==============================================
+   ====== BARRA DE NAVEGACIÓN PRINCIPAL ======
+   ============================================== */
 .nav{
   position: sticky; top:0; z-index: 50;
   transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
@@ -18,20 +21,22 @@
 
 .nav__inner{
   max-width: 1200px; margin: 0 auto; height: 64px;
-  display: grid; grid-template-columns: 1fr auto auto; align-items: center;
+  display: grid; grid-template-columns: auto 1fr auto auto; /* Ajustado para mejor distribución */
+  align-items: center;
   gap: 14px; padding: 0 16px;
 }
 
-/* BRAND */
+/* --- Logo y Marca --- */
 .nav__brand{
   display:flex; align-items:center; gap:10px; color:var(--text);
   font-weight:700; text-decoration:none;
 }
 .nav__logo{ font-size: 22px; }
 
-/* LINKS DESKTOP */
+/* --- Enlaces de Escritorio --- */
 .nav__links{
-  display:flex; align-items:center; gap: 14px;
+  display:flex; justify-content: center; /* Centra los enlaces */
+  align-items:center; gap: 14px;
 }
 .nav__link{
   color: var(--muted); text-decoration:none; font-weight:600; padding: 8px 10px;
@@ -40,7 +45,7 @@
 .nav__link:hover{ color:var(--text); background:#ffffff10; }
 .nav__link.active{ color: var(--text); background:#ffffff12; }
 
-/* DROPDOWN */
+/* --- Menú Desplegable --- */
 .nav__dropdown{ position: relative; }
 .nav__dropdownBtn{ cursor: pointer; background: transparent; border:0; }
 .nav__menu{
@@ -53,7 +58,7 @@
 }
 .nav__menuItem:hover{ background:#ffffff12; }
 
-/* CTA + AUTH */
+/* --- Botones y Buscador --- */
 .nav__cta{ display:flex; align-items:center; gap:8px; }
 .btn{
   display:inline-flex; justify-content:center; align-items:center;
@@ -66,55 +71,65 @@
 .btn--ghost{ background: transparent; }
 .btn--whatsapp{ background: #25D366; color:#042; border-color: #25D36655; }
 .btn--whatsapp:hover{ background: #1fb257; }
-
 .btn--full{ width:100%; }
 
-/* HAMBURGER */
-.nav__burger{
-  display:none; width:40px; height:40px; border:1px solid #ffffff22; border-radius: 12px;
-  background: transparent; padding: 8px;
-}
-.nav__burger span{
-  display:block; height:2px; background: var(--text); margin: 5px 0; border-radius: 2px;
-}
-
-/* MOBILE PANEL */
-.nav__mobile{
-  display:none;
-  background: var(--bg); border-top:1px solid var(--stroke);
-  padding: 12px; box-shadow: 0 12px 26px #0007;
-}
-.nav__mItem, .nav__mSub{
-  display:block; color: var(--text); text-decoration:none;
-  padding: 12px; border-radius: 10px;
-}
-.nav__mItem:hover, .nav__mSub:hover{ background:#ffffff10; }
-.nav__mGroup{ padding: 8px 4px; }
-.nav__mLabel{ color: var(--muted); padding: 6px 12px; display:block; }
-
-/* RESPONSIVE */
-@media (max-width: 900px){
-  .nav__links{ display:none; }
-  .nav__cta{ display:none; }
-  .nav__burger{ display:block; margin-left:auto; }
-  .nav__mobile{ display:block; }
-}
-/* buscador desktop */
 .nav__search{
   display:flex; align-items:center; gap:8px; margin-left: 8px;
 }
 .nav__search input{
   height: 36px; padding: 0 12px; border-radius: 10px;
   border:1px solid var(--stroke); background:#0f1114; color: var(--text);
-  min-width: 220px;
+  width: 220px;
 }
 .nav__search input::placeholder{ color: var(--muted); }
 
-/* buscador mobile */
+/* --- Menú Móvil (Hamburguesa y Panel) --- */
+.nav__burger{
+  display:none; /* Oculto por defecto */
+  width:40px; height:40px; border:1px solid #ffffff22; border-radius: 12px;
+  background: transparent; padding: 8px; cursor: pointer;
+}
+.nav__burger span{
+  display:block; height:2px; background: var(--text); margin: 5px 0; border-radius: 2px;
+}
+
+.nav__mobile{
+  display:none; /* El panel móvil está oculto por defecto */
+  background: var(--bg); border-top:1px solid var(--stroke);
+  padding: 12px; box-shadow: 0 12px 26px #0007;
+}
+.nav.is-open .nav__mobile {
+  display: block; /* Se muestra cuando .nav tiene la clase .is-open */
+}
+.nav__mItem, .nav__mSub{
+  display:block; color: var(--text); text-decoration:none;
+  padding: 12px; border-radius: 10px; font-weight: 600;
+}
+.nav__mItem:hover, .nav__mSub:hover{ background:#ffffff10; }
+.nav__mGroup{ padding: 8px 4px; }
+.nav__mLabel{ color: var(--muted); padding: 6px 12px; display:block; }
+
 .nav__mSearch{
   display:grid; gap:8px; margin-bottom: 10px;
 }
 .nav__mSearch input{
+  width: 100%;
   height: 40px; padding: 0 12px; border-radius: 10px;
   border:1px solid var(--stroke); background:#0f1114; color: var(--text);
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES Y TABLETS ======
+   ================================================================ */
+@media (max-width: 900px){
+  .nav__inner {
+    grid-template-columns: auto 1fr auto; /* Logo, Espacio, Hamburguesa */
+  }
+  .nav__links, .nav__cta, .nav__search {
+    display: none; /* Oculta todos los elementos de escritorio */
+  }
+  .nav__burger{
+    display: block;
+    grid-column: 3; /* Asegura que la hamburguesa esté al final */
+  }
 }

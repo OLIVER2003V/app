@@ -1,3 +1,6 @@
+/* ==============================================
+   ====== VARIABLES Y ESTILOS BASE ======
+   ============================================== */
 :root {
   --pa-bg: #f7f8fb;
   --pa-card: #0f172a;
@@ -26,15 +29,21 @@
   }
 }
 
-html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937 0%, transparent 60%); }
+html, body, #root { 
+  background: radial-gradient(1200px 600px at 0% -20%, #1f2937 0%, transparent 60%), var(--pa-bg);
+  color: var(--pa-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
 
 .pa-container {
   padding: 22px;
   max-width: 1200px;
   margin: 0 auto;
-  color: var(--pa-text);
 }
 
+/* ==============================================
+   ====== COMPONENTES DE LAYOUT ======
+   ============================================== */
 .pa-head {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -42,10 +51,6 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   align-items: end;
   margin-bottom: 18px;
 }
-@media (max-width: 768px) {
-  .pa-head { grid-template-columns: 1fr; gap: 10px; }
-}
-
 .pa-title { margin: 0; font-size: clamp(22px, 2.6vw, 28px); }
 .pa-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -54,10 +59,6 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   grid-template-columns: 1.1fr 1fr;
   gap: 16px;
 }
-@media (max-width: 1024px) {
-  .pa-grid { grid-template-columns: 1fr; }
-}
-
 .pa-col-full { grid-column: 1 / -1; }
 
 .pa-card {
@@ -69,7 +70,6 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   transition: box-shadow .18s ease, border-color .18s ease;
 }
 .pa-card:hover { box-shadow: var(--pa-shadow-lg); border-color: color-mix(in srgb, var(--pa-border) 70%, var(--pa-primary) 30%); }
-
 .pa-card__header {
   display: flex;
   gap: 10px;
@@ -79,6 +79,9 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
 }
 .pa-card__title { margin: 0; font-size: 18px; }
 
+/* ==============================================
+   ====== FORMULARIOS Y BOTONES ======
+   ============================================== */
 .pa-input, .pa-textarea {
   width: 100%;
   padding: 10px 12px;
@@ -86,11 +89,11 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   border-radius: 10px;
   background: transparent;
   color: inherit;
+  font-size: 1rem;
   transition: border-color .18s ease, box-shadow .18s ease;
 }
 .pa-input:focus, .pa-textarea:focus { outline: none; border-color: var(--pa-primary); box-shadow: var(--pa-ring); }
 .pa-input.has-error, .pa-textarea.has-error { border-color: #ef4444; }
-
 .pa-textarea { resize: vertical; min-height: 120px; }
 
 .pa-field { margin-bottom: 12px; }
@@ -107,21 +110,20 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   padding: 10px 14px;
   border-radius: 12px;
   cursor: pointer;
+  font-weight: 600;
   transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 .pa-btn:hover { background: color-mix(in srgb, var(--pa-primary) 8%, transparent); border-color: color-mix(in srgb, var(--pa-primary) 40%, var(--pa-border)); }
 .pa-btn:active { transform: translateY(1px); }
-
-.pa-btn--primary {
-  background: var(--pa-primary);
-  color: #fff;
-  border-color: transparent;
-}
+.pa-btn--primary { background: var(--pa-primary); color: #fff; border-color: transparent; }
 .pa-btn--primary:hover { background: var(--pa-primary-600); }
 .pa-btn--ghost { background: transparent; }
 
-.pa-actions { display: flex; gap: 10px; margin-top: 8px; }
+.pa-actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 
+/* ==============================================
+   ====== LISTAS Y ELEMENTOS UI ======
+   ============================================== */
 .pa-list {
   display: grid;
   gap: 8px;
@@ -143,7 +145,6 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
 }
 .pa-listitem:hover { border-color: var(--pa-primary); box-shadow: var(--pa-ring); }
 .pa-listitem.is-active { border-color: var(--pa-primary); background: color-mix(in srgb, var(--pa-primary) 6%, transparent); }
-
 .pa-listitem__title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display:flex; align-items:center; gap:8px; }
 .pa-listitem__meta { color: var(--pa-muted); font-size: 12px; }
 
@@ -163,15 +164,9 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   color: #0f172a;
   font-size: 12px;
 }
-@media (prefers-color-scheme: dark) {
-  .pa-badge { color: #e5e7eb; }
-}
+@media (prefers-color-scheme: dark) { .pa-badge { color: #e5e7eb; } }
 
-.pa-empty {
-  padding: 16px;
-  color: var(--pa-muted);
-  text-align: center;
-}
+.pa-empty { padding: 16px; color: var(--pa-muted); text-align: center; }
 
 .pa-alert {
   margin: 10px 0;
@@ -182,21 +177,56 @@ html, body, #root { background: radial-gradient(1200px 600px at 0% -20%, #1f2937
   border-radius: 10px;
   font-size: 14px;
 }
-@media (prefers-color-scheme: dark) {
-  .pa-alert { background: #3f2d0c; border-color: #a16207; color: #fde68a; }
-}
+@media (prefers-color-scheme: dark) { .pa-alert { background: #3f2d0c; border-color: #a16207; color: #fde68a; } }
 
 .pa-idpick { display: flex; gap: 8px; align-items: center; }
-
 .pa-detail {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 10px;
 }
-@media (max-width: 768px) {
-  .pa-detail { grid-template-columns: 1fr; }
-}
-
 .pa-split { display: grid; gap: 10px; }
 .pa-error { margin-top: 6px; color: #ef4444; font-size: 13px; }
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES Y TABLETS ======
+   ================================================================ */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .pa-grid { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+/* Tablets en vertical y móviles grandes */
+@media (max-width: 768px) {
+  .pa-head { 
+    grid-template-columns: 1fr; 
+    gap: 10px; 
+  }
+  .pa-detail { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .pa-container {
+    padding: 16px;
+  }
+  .pa-card {
+    padding: 12px;
+  }
+  .pa-actions {
+    flex-direction: column;
+  }
+  .pa-actions .pa-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .pa-idpick {
+    flex-wrap: wrap; /* Permite que el selector de ID se ajuste */
+  }
+}

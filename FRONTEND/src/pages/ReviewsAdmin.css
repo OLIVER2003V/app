@@ -1,3 +1,15 @@
+:root {
+  /* Estas variables deberían estar definidas en un archivo global,
+     pero las incluyo aquí como referencia */
+  --bg: #0e0f10;
+  --surface: #141518;
+  --text: #f5f7fa;
+  --muted: #9aa0a6;
+  --primary: #2ecc71;
+  --radius: 12px;
+  --ghost: #ffffff22;
+}
+
 .admin-page-container {
   background-color: var(--bg);
   min-height: 100vh;
@@ -14,6 +26,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* Permite que el botón se mueva debajo del título */
+  gap: 16px;
   margin-bottom: 24px;
   border-bottom: 1px solid #ffffff18;
   padding-bottom: 16px;
@@ -47,6 +61,7 @@
   background-color: var(--surface);
   padding: 5px;
   border-radius: 12px;
+  flex-wrap: wrap; /* Las pestañas se ajustarán si no caben */
 }
 
 .tab {
@@ -105,7 +120,7 @@
 }
 
 .review-card-main { padding: 20px; }
-.review-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.review-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
 .review-author { font-size: 1.1rem; font-weight: 700; }
 .review-rating { font-size: 1rem; }
 .review-comment { font-style: italic; color: var(--muted); margin: 0 0 16px; line-height: 1.6; }
@@ -129,7 +144,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: auto;
+  margin-top: auto; /* Empuja las acciones al final */
 }
 
 .review-actions button {
@@ -143,11 +158,40 @@
 .review-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-approve { background-color: var(--primary); color: var(--bg); }
-.btn-unapprove { background-color: #f39c12; color: var(--bg); } /* Color naranja para desaprobar */
+.btn-unapprove { background-color: #f39c12; color: var(--bg); }
 .btn-delete { background-color: #c0392b; color: white; }
 
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
 @media (max-width: 768px) {
-  .admin-toolbar { flex-direction: column; align-items: stretch; }
-  .review-moderation-card { grid-template-columns: 1fr; }
-  .review-card-meta { border-top: 1px solid #ffffff10; }
+  .admin-page-container {
+    padding: 16px;
+  }
+  .admin-page-header h1 {
+    font-size: 24px; /* Reduce el tamaño del título */
+  }
+
+  .admin-toolbar { 
+    flex-direction: column; 
+    align-items: stretch; 
+  }
+
+  .review-moderation-card { 
+    grid-template-columns: 1fr; /* Apila el contenido principal y la metadata */
+    gap: 0; /* Quita el gap lateral, se manejará con padding */
+  }
+  
+  .review-card-main, .review-card-meta {
+    padding: 16px; /* Reduce el padding interno */
+  }
+  
+  .review-card-meta { 
+    border-top: 1px solid #ffffff10; 
+  }
+  
+  .review-actions {
+    /* Apila los botones de acción para que sean más fáciles de presionar */
+    grid-template-columns: 1fr;
+  }
 }

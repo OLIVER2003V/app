@@ -1,3 +1,6 @@
+/* ==============================================
+   ====== ESTILOS BASE DE LA PÁGINA ======
+   ============================================== */
 .gallery-admin-page {
   background-color: #0f2027;
   min-height: calc(100vh - 80px);
@@ -19,6 +22,9 @@
   margin-top: 0;
 }
 
+/* ==============================================
+   ====== FORMULARIO DE SUBIDA ======
+   ============================================== */
 .upload-form {
   margin-top: 2rem;
   padding-bottom: 2rem;
@@ -60,7 +66,9 @@
   cursor: pointer;
 }
 
-
+/* ==============================================
+   ====== LISTA DE IMÁGENES ======
+   ============================================== */
 .items-list {
   margin-top: 2rem;
 }
@@ -70,7 +78,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: #2c3e50;
   margin-bottom: 1rem;
 }
@@ -82,6 +90,7 @@
 }
 
 .item-status {
+  flex-shrink: 0; /* Evita que el círculo se encoja */
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -120,4 +129,39 @@
   padding: 0.5rem 1rem;
   border-radius: 5px;
   cursor: pointer;
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .gallery-admin-page {
+    padding: 1rem;
+  }
+
+  .gallery-admin-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .gallery-admin-container h1 {
+    font-size: 1.75rem;
+  }
+
+  /* Apila los campos del formulario de subida */
+  .upload-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Apila la información y las acciones de cada ítem */
+  .gallery-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* Hace que la sección de acciones ocupe todo el ancho y alinea los botones a la derecha */
+  .item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

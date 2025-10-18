@@ -65,7 +65,8 @@ export default function Home() {
               {posts.map((p) => (
                 <div
                   key={p.id}
-                  className="postCard-home"
+                  // AQUÍ ESTABA EL ERROR: Cambiado de "postCard-home" a "postCard"
+                  className="postCard"
                   onClick={() => openPost(p)}
                   title={p.title}
                 >

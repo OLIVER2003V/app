@@ -6,6 +6,7 @@
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   margin-top: 1.5rem;
+  background-color: #e0e0e0; /* Fallback color while map tiles load */
 }
 
 .leaflet-container {
@@ -18,7 +19,7 @@
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 1000; /* Ensures it's above map controls */
   background-color: #e74c3c;
   color: white;
   padding: 10px 20px;
@@ -68,5 +69,15 @@
   100% {
     transform: translate(-50%, -50%) scale(3);
     opacity: 0;
+  }
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .map-wrapper {
+    /* Reduce la altura del mapa en pantallas más pequeñas */
+    height: 350px;
   }
 }

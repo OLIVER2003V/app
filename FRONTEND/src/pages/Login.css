@@ -19,6 +19,7 @@
   min-height: 100vh;
   background-color: var(--background-color);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 1rem; /* Añade un poco de espacio en los bordes */
 }
 
 /* --- Tarjeta de Login --- */
@@ -108,7 +109,6 @@
   cursor: not-allowed;
 }
 
-
 /* --- Mensaje de Error --- */
 .login-error {
   background-color: var(--error-bg-color);
@@ -119,4 +119,19 @@
   margin-top: 1.5rem;
   font-size: 0.875rem;
   text-align: center;
+}
+
+/* ==============================================
+   ====== AJUSTES PARA PANTALLAS PEQUEÑAS ======
+   ============================================== */
+@media (max-width: 480px) {
+  .login-container {
+    /* Reduce el padding para dar más espacio al contenido */
+    padding: 2rem 1.5rem;
+  }
+
+  .login-container h1 {
+    /* Reduce un poco el tamaño del título */
+    font-size: 1.75rem;
+  }
 }

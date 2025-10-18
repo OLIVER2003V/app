@@ -1,9 +1,23 @@
+/* ==============================================
+   ====== ESTILOS DE LA PÁGINA DE DETALLE ======
+   ============================================== */
+:root {
+  /* Estas variables deberían estar definidas en un archivo global,
+     pero las incluyo aquí como referencia */
+  --bg: #0e0f10;
+  --surface: #141518;
+  --text: #f5f7fa;
+  --muted: #9aa0a6;
+  --radius: 12px;
+}
+
 .place-detail-page {
   background-color: var(--bg);
   min-height: 100vh;
   color: var(--text);
 }
 
+/* --- Estados de Carga y Error --- */
 .place-detail-status {
   background-color: var(--bg);
   color: var(--text);
@@ -11,9 +25,12 @@
   display: grid;
   place-items: center;
   font-size: 1.2rem;
+  padding: 1rem;
+  text-align: center;
 }
 .place-detail-status.error { color: #e57373; }
 
+/* --- Sección Hero --- */
 .place-detail-hero {
   background-color: #111;
   background-size: cover;
@@ -41,8 +58,10 @@
   padding: 4px 12px;
   border-radius: 99px;
   text-transform: uppercase;
+  display: inline-block;
 }
 
+/* --- Contenedor Principal --- */
 .place-detail-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -86,6 +105,7 @@
   color: var(--muted);
 }
 
+/* --- Secciones de Contenido --- */
 section h2 {
   font-size: 24px;
   margin-bottom: 16px;
@@ -95,7 +115,7 @@ section h2 {
   color: var(--muted);
 }
 
-/* Reviews List */
+/* --- Lista de Opiniones --- */
 .reviews-list { display: flex; flex-direction: column; gap: 16px; }
 .review-card {
   background-color: #1a1b1f;
@@ -103,7 +123,7 @@ section h2 {
   padding: 16px;
   border: 1px solid #ffffff10;
 }
-.review-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.review-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;}
 .review-author { font-weight: 600; }
 .review-rating { font-size: 14px; }
 .review-comment { margin: 0 0 10px; font-style: italic; color: var(--muted); }
@@ -115,7 +135,7 @@ section h2 {
   margin-bottom: 10px;
 }
 
-/* Review Form */
+/* --- Formulario de Opinión --- */
 .review-form { display: flex; flex-direction: column; gap: 16px; }
 .review-form .form-group { display: flex; flex-direction: column; }
 .review-form label { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
@@ -134,21 +154,48 @@ section h2 {
 }
 .review-form button { align-self: flex-start; }
 
-/* Star Rating */
+/* --- Calificación por Estrellas --- */
 .star-rating { display: flex; }
 .star-rating button { background: none; border: none; cursor: pointer; padding: 0 2px; }
 .star-rating .star { font-size: 28px; transition: color 0.2s; }
 .star-rating button.off .star { color: #555; }
 .star-rating button.on .star { color: #f1c40f; }
 
-@media (max-width: 900px) {
-  .content-grid { grid-template-columns: 1fr; }
-  .sidebar { order: -1; }
-}
-
+/* --- Categorías (Colores) --- */
 .category--mirador { background-color: #8e44ad; color: white; }
 .category--cascada { background-color: #3498db; color: white; }
 .category--ruta { background-color: #e67e22; color: white; }
 .category--gastronomia { background-color: #e74c3c; color: white; }
 .category--hospedaje { background-color: #1abc9c; color: white; }
 .category--otro { background-color: #7f8c8d; color: white; }
+
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 900px) {
+  .place-detail-hero {
+    padding: 40px 0; /* Reduce el espaciado vertical */
+  }
+
+  .content-grid { 
+    grid-template-columns: 1fr; /* Apila el contenido y la barra lateral */
+    padding-top: 32px;
+    gap: 24px;
+  }
+  
+  .sidebar { 
+    order: -1; /* Mueve la barra lateral hacia arriba */
+  }
+
+  /* Mejora la legibilidad de los títulos en móviles */
+  section h2, .sidebar h3 {
+    font-size: 20px;
+  }
+
+  /* Botón del formulario a ancho completo para fácil acceso */
+  .review-form button {
+    align-self: stretch; /* Ocupa todo el ancho */
+    text-align: center;
+  }
+}

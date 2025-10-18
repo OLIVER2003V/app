@@ -276,3 +276,52 @@
 }
 .color-box.event { background-color: #3498db; }
 .color-box.holiday { background-color: #e74c3c; }
+
+
+/* ==============================================
+   ====== ESTILOS PARA DISPOSITIVOS MÓVILES ======
+   ============================================== */
+@media (max-width: 992px) {
+  .events-header {
+    padding: 2rem 1rem;
+  }
+  .events-header h1 {
+    font-size: 2rem;
+  }
+  .events-header p {
+    font-size: 1rem;
+  }
+
+  /* Cambia el layout a una sola columna */
+  .events-layout {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+    margin-top: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  /* Ajusta el alto del calendario en móviles */
+  .rbc-calendar {
+    height: 65vh !important; /* Sobreescribe el estilo en línea */
+  }
+
+  /* Permite que la barra de herramientas del calendario se ajuste */
+  .rbc-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .rbc-toolbar-label {
+    font-size: 1.25em;
+  }
+
+  /* Reduce el padding en la sección del calendario */
+  .calendar-main, .upcoming-events {
+    padding: 1rem;
+  }
+
+  /* Reduce el tamaño de fuente de los días de la semana */
+  .rbc-header {
+    font-size: 0.8rem;
+    padding: 8px 2px;
+  }
+}

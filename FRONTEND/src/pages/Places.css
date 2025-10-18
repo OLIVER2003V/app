@@ -1,3 +1,17 @@
+/* ==============================================
+   ====== ESTILOS DE LA PÁGINA DE LUGARES ======
+   ============================================== */
+:root {
+  /* Estas variables deberían estar definidas en un archivo global,
+     pero las incluyo aquí como referencia */
+  --bg: #0e0f10;
+  --surface: #141518;
+  --text: #f5f7fa;
+  --muted: #9aa0a6;
+  --primary: #2ecc71;
+  --radius: 12px;
+}
+
 .places-page {
   background-color: var(--bg);
   min-height: 100vh;
@@ -10,6 +24,7 @@
   margin: 0 auto;
 }
 
+/* --- Estados de Carga y Error --- */
 .places-page-status {
   background-color: var(--bg);
   min-height: 100vh;
@@ -17,11 +32,14 @@
   display: grid;
   place-items: center;
   font-size: 1.2rem;
+  padding: 1rem;
+  text-align: center;
 }
 .places-page-status.error {
   color: #e57373;
 }
 
+/* --- Encabezado de la Página --- */
 .places-header {
   text-align: center;
   margin-bottom: 32px;
@@ -38,6 +56,7 @@
   color: var(--primary);
 }
 
+/* --- Vista del Mapa --- */
 .map-view-container {
   height: 450px;
   border-radius: var(--radius);
@@ -47,12 +66,15 @@
   background-color: #000;
 }
 
+/* --- Grid de Lugares --- */
 .places-grid {
   display: grid;
+  /* Esta línea es fantástica y ya hace el grid responsivo */
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
 }
 
+/* --- Tarjeta de Lugar --- */
 .place-card {
   background-color: var(--surface);
   border: 1px solid #ffffff10;
@@ -101,6 +123,7 @@
   flex-shrink: 0;
 }
 
+/* --- Colores de Categorías --- */
 .category--mirador { background-color: #8e44ad; color: white; }
 .category--cascada { background-color: #3498db; color: white; }
 .category--ruta { background-color: #e67e22; color: white; }
@@ -114,17 +137,42 @@
   color: var(--muted);
   margin: 0;
   flex-grow: 1;
+  /* Truncar texto a 3 líneas */
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* --- Estado sin Resultados --- */
 .places-no-results {
   background-color: var(--surface);
   padding: 40px;
   border-radius: var(--radius);
   text-align: center;
   color: var(--muted);
-  grid-column: 1 / -1;
+  grid-column: 1 / -1; /* Ocupa todo el ancho del grid */
+}
+
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .places-page {
+    /* Reduce el espaciado vertical en móviles */
+    padding: 16px 16px 32px;
+  }
+
+  .map-view-container {
+    /* Reduce la altura del mapa para que no ocupe tanta pantalla */
+    height: 300px;
+    margin-bottom: 32px;
+  }
+
+  .places-grid {
+    /* Reduce la separación entre tarjetas en pantallas más pequeñas */
+    gap: 16px;
+    /* Tu `minmax(320px, 1fr)` ya hace que se vea a 1 columna aquí. ¡Perfecto! */
+  }
 }
