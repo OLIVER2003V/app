@@ -5,26 +5,27 @@ import cloudinary.uploader
 class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
-        fields = ["id", "image", "caption", "created_at"]
+        fields = ("id", "place", "image", "caption", "created_at")
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.image: rep['image'] = instance.image.url
+        if instance.image:
+            rep['image'] = instance.image.url
         return rep
 
 class ReviewSerializer(serializers.ModelSerializer):
     place_name = serializers.CharField(source='place.name', read_only=True)
     place_slug = serializers.SlugRelatedField(source='place', read_only=True, slug_field='slug')
-
+    
     class Meta:
         model = Review
-        fields = ["id", "place", "rating", "comment", "author_name", "photo", "is_approved", "created_at"]
+        fields = ("id", "place", "place_name", "place_slug", "rating", "comment", "author_name", "photo", "is_approved", "created_at")
     
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.photo: rep['photo'] = instance.photo.url
+        if instance.photo:
+            rep['photo'] = instance.photo.url
         return rep
-
 class PlaceSerializer(serializers.ModelSerializer):
     media = MediaSerializer(many=True, read_only=True)
     avg_rating = serializers.SerializerMethodField()
@@ -55,7 +56,8 @@ class PostSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.cover: rep['cover'] = instance.cover.url
+        if instance.cover:
+            rep['cover'] = instance.cover.url
         return rep
 
 class PlaceSimpleSerializer(serializers.ModelSerializer):
@@ -88,9 +90,10 @@ class ContactInfoSerializer(serializers.ModelSerializer):
 class GalleryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryItem
-        fields = ["id", "title", "media_type", "media_file", "order", "is_active"]
+        fields = ("id", "title", "media_type", "media_file", "order", "is_active")
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if instance.media_file: rep['media_file'] = instance.media_file.url
+        if instance.media_file:
+            rep['media_file'] = instance.media_file.url
         return rep
