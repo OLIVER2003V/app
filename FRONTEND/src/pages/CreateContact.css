@@ -1,0 +1,204 @@
+/* =========================================================
+   🎨 ESTILOS ADMIN: TABLAS Y BOTONES
+   ========================================================= */
+
+/* --- Contenedor principal --- */
+.admin-page,
+.create-event-page {
+  background-color: #0e0f10;
+  color: #f5f7fa;
+  min-height: 100vh;
+  padding: 40px 16px;
+}
+
+.create-event-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #141518;
+  border: 1px solid #ffffff10;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+}
+
+.create-event-container h1 {
+  margin-top: 0;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.create-event-container p {
+  color: #9aa0a6;
+  margin-bottom: 32px;
+}
+
+/* --- Tabla de administración --- */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background-color: #1a1b1f;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.admin-table thead {
+  background-color: #202124;
+  border-bottom: 2px solid #2c2d31;
+}
+
+.admin-table th {
+  font-weight: 600;
+  color: #e5e5e5;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.admin-table tr {
+  border-bottom: 1px solid #2c2d31;
+  transition: background 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #26272b;
+}
+
+/* --- Acciones --- */
+.btn {
+  display: inline-block;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.btn--primary {
+  background: linear-gradient(90deg, #0077ff, #00b4d8);
+  color: #fff;
+  padding: 10px 20px;
+  box-shadow: 0 0 12px rgba(0, 119, 255, 0.3);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(90deg, #0099ff, #00c4e6);
+  box-shadow: 0 0 18px rgba(0, 160, 255, 0.45);
+}
+
+.btn--secondary {
+  background-color: transparent;
+  border: 1px solid #0077ff;
+  color: #0077ff;
+  padding: 10px 20px;
+}
+
+.btn--secondary:hover {
+  background-color: rgba(0, 119, 255, 0.1);
+}
+
+.btn--small {
+  padding: 6px 12px;
+  font-size: 14px;
+  margin-right: 6px;
+  background-color: #1e1f23;
+  color: #f1f1f1;
+  border: 1px solid #2d2e33;
+}
+
+.btn--small:hover {
+  background-color: #2b2c30;
+}
+
+.btn--danger {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+}
+
+.btn--danger:hover {
+  background-color: #e74c3c;
+}
+
+/* --- Formulario compartido (ya coherente con CreateEvent.css) --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select {
+  background-color: #0e0f10;
+  border: 1px solid #ffffff22;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #f5f7fa;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-error {
+  background-color: #e74c3c22;
+  border-left: 4px solid #e74c3c;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #ffbdbd;
+  margin-bottom: 16px;
+}
+
+/* --- Acciones de formulario --- */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* --- Adaptabilidad móvil --- */
+@media (max-width: 800px) {
+  .create-event-container {
+    padding: 20px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

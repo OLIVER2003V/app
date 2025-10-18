@@ -23,6 +23,7 @@ import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import CreateContact from "./pages/CreateContact";
 import GalleryAdmin from "./pages/GalleryAdmin";
+import { ListContact, CreateContact, EditContact } from "./pages/CreateContact";
 export default function App() {
   return (
     <AuthProvider>
@@ -35,7 +36,9 @@ export default function App() {
             <Route path="/places" element={<Places />} />
             <Route path="/places/:slug" element={<PlaceDetail />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="contactos" element={<ListContacts />} />
+            <Route path="contactos/nuevo" element={<CreateContact />} />
+            <Route path="contactos/:id/editar" element={<EditContact />} />
             <Route path="/posts" element={<Posts />} />
             <Route path="/posts/:id" element={<PostDetail />} />
             <Route path="/como-llegar" element={<ComoLlegar />} />
