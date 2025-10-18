@@ -33,7 +33,7 @@ import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager
 import Contact from "./pages/Contact";
 
 export default function App() {
-  const TRACKING_ID = "G-23892RNY2C"; // Aquí está bien definirla.
+  const TRACKING_ID = "G-23092RNY2C"; // Aquí está bien definirla.
 
     // 🎯 PASO CRÍTICO: Inicializa GA4 una sola vez al cargar el componente
     useEffect(() => {
