@@ -1,49 +1,36 @@
-/* ==============================================
-   ====== TEMA DE COLOR Y ESTILOS BASE ======
-   ============================================== */
 :root {
-  --bg: #0f172a;       /* Fondo azul oscuro principal */
-  --surface: #1f2937;  /* Superficies/tarjetas un poco más claras */
-  --stroke: #374151;   /* Bordes sutiles */
-  --text: #f5f7fa;     /* Texto blanco/claro */
-  --muted: #9ca3af;    /* Texto secundario/gris */
-  --primary: #3b82f6;  /* Azul primario para acentos */
+  --bg: #0f172a;
+  --surface: #1f2937;
+  --stroke: #374151;
+  --text: #f5f7fa;
+  --muted: #9ca3af;
+  --primary: #3b82f6;
   --ghost: #ffffff22;
   --radius: 12px;
 }
 
-/* --- Base de la página --- */
 html, body {
   background-color: var(--bg);
-  margin: 0;
-  padding: 0;
 }
 
 .home {
   background-color: var(--bg);
   color: var(--text);
-  overflow-x: hidden;
 }
 
-
 /* ==============================================
-   ====== HERO CAROUSEL (FULL-WIDTH, ASPECT-RATIO) ======
+   ====== HERO CAROUSEL (ALTURA FIJA) ======
    ============================================== */
 .hero-carousel-section {
   position: relative;
-  width: 100%;
-  /* ▼▼▼ CAMBIO CLAVE: Usamos aspect-ratio en lugar de height ▼▼▼ */
-  aspect-ratio: 16 / 6; /* Define una proporción rectangular (ej: 16:6). Ajusta este valor si quieres que sea más o menos rectangular. */
-  max-height: 500px; /* Límite de altura máxima para pantallas muy grandes */
-  min-height: 250px; /* Altura mínima para asegurar visibilidad en móviles */
-  color: white;
-  background-color: var(--bg);
+  /* ▼▼▼ LA SOLUCIÓN DEFINITIVA: UNA ALTURA FIJA EN PÍXELES ▼▼▼ */
+  height: 400px; 
+  border-radius: var(--radius);
+  overflow: hidden;
+  background-color: var(--surface);
 }
 
-/* Contenedores de carga y estado estático */
-.hero-placeholder, 
-.hero-static, 
-.carousel-slide {
+.hero-placeholder, .hero-static, .carousel-slide {
   height: 100%;
   width: 100%;
   display: flex;
@@ -51,7 +38,7 @@ html, body {
   justify-content: center;
 }
 
-.carousel-slide, .hero-static {
+.carousel-slide {
   position: relative;
   overflow: hidden;
 }
@@ -59,45 +46,36 @@ html, body {
 .carousel-media {
   width: 100%;
   height: 100%;
-  /* ▼▼▼ Esto es importante: Asegura que la imagen mantenga su proporción y cubra el área ▼▼▼ */
-  object-fit: cover; 
-  /* object-position: center center; */ /* Opcional: para centrar el enfoque de la imagen */
+  object-fit: cover; /* Esto hace que la imagen cubra el espacio sin deformarse */
 }
 
 .carousel-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 40%);
 }
 
 .carousel-caption {
   position: absolute;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  width: 90%;
-  max-width: 800px;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  text-align: left;
+  transform: none;
+  width: auto;
 }
 
 .carousel-caption h1 {
-  font-size: clamp(2rem, 8vw, 3.5rem);
-  font-weight: 700;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-  margin: 0;
-  line-height: 1.2;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 
 /* ==============================================
-   ====== ESTRUCTURA GENERAL DE SECCIONES ======
+   ====== ESTRUCTURA Y RESTO DE LA PÁGINA ======
    ============================================== */
 .home-section {
-  padding: 64px 24px;
-}
-
-.home-section.alt-bg {
-  background-color: rgba(0, 0, 0, 0.2);
+  padding: 24px;
 }
 
 .home-container {
@@ -105,134 +83,13 @@ html, body {
   margin: 0 auto;
 }
 
-.section-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.section-header h2 {
-  font-size: 28px;
-  margin: 0 0 8px;
-}
-
-.section-header p {
-  color: var(--muted);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.section-footer {
-  text-align: center;
-  margin-top: 32px;
-}
-
-/* ==============================================
-   ====== TARJETAS DE NOVEDADES (POSTS) ======
-   ============================================== */
-.featured-posts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  justify-content: center;
-  gap: 20px;
-}
-
-.postCard {
-  background: var(--surface);
-  border: 1px solid var(--stroke);
-  overflow: hidden;
-  border-radius: var(--radius);
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.postCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.postCard__media {
-  height: 150px;
-}
-
-.postCard__media img, .postCard__ph {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.postCard__body {
-  padding: 16px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.postCard__title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 8px;
-}
-
-.postCard__place {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: auto;
-  padding-top: 8px;
-}
-
-.postCard__read-more {
-  color: var(--primary);
-  font-weight: 600;
-  margin-top: 12px;
-}
-
-/* ==============================================
-   ====== TARJETAS RÁPIDAS (PLANIFICA VISITA) ======
-   ============================================== */
-.quick__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--stroke);
-  border-radius: var(--radius);
-  padding: 24px;
-  text-decoration: none;
-  color: var(--text);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* ==============================================
-   ====== MAPA, FOOTER Y OTROS ======
-   ============================================== */
-.card__icon{font-size:28px;display:inline-block;margin-bottom:8px}.card h3{margin:4px 0 6px;font-size:18px}.card p{margin:0;color:var(--muted);font-size:14px}
+/* ... (El resto de tus estilos están bien, los incluyo para que sea un solo archivo) ... */
+.section-header{text-align:center;margin-bottom:32px}.section-header h2{font-size:28px;margin:0 0 8px}.section-header p{color:var(--muted);max-width:600px;margin:0 auto}.section-footer{text-align:center;margin-top:32px}
+.featured-posts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));justify-content:center;gap:20px}.postCard{background:var(--surface);border:1px solid var(--stroke);overflow:hidden;border-radius:var(--radius);display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}.postCard:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.3)}.postCard__media{height:150px}.postCard__media img,.postCard__ph{width:100%;height:100%;object-fit:cover}.postCard__body{padding:16px;flex-grow:1;display:flex;flex-direction:column}.postCard__title{font-size:16px;font-weight:600;margin:0 0 8px}.postCard__place{color:var(--muted);font-size:12px;margin-top:auto;padding-top:8px}.postCard__read-more{color:var(--primary);font-weight:600;margin-top:12px}
+.quick__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.card{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius);padding:24px;text-decoration:none;color:var(--text);transition:transform .15s ease,box-shadow .15s ease}.card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.2)}.card__icon{font-size:28px;display:inline-block;margin-bottom:8px}.card h3{margin:4px 0 6px;font-size:18px}.card p{margin:0;color:var(--muted);font-size:14px}
 .testimonials__title{text-align:center;font-size:28px;margin-bottom:1rem}.testimonials-grid{display:grid;grid-auto-flow:column;grid-auto-columns:320px;gap:20px;overflow-x:auto;padding:24px;scroll-snap-type:x mandatory;scrollbar-width:none}.testimonials-grid::-webkit-scrollbar{display:none}.testimonial-card{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius);padding:24px;scroll-snap-align:start;display:flex;flex-direction:column}.testimonial-comment{font-style:italic;line-height:1.6;color:var(--muted);margin:0;flex-grow:1}.testimonial-footer{margin-top:16px;border-top:1px solid var(--stroke);padding-top:12px;display:flex;flex-direction:column}.testimonial-author-info{display:flex;justify-content:space-between;align-items:center}.testimonial-author{font-weight:700;color:var(--text)}.testimonial-place{display:inline-block;margin-top:8px;font-size:13px;color:var(--primary);font-weight:600;text-decoration:none}.testimonial-place:hover{text-decoration:underline}
 .home-map-container{height:500px;width:100%;border-radius:var(--radius);overflow:hidden;border:1px solid var(--stroke);box-shadow:0 10px 30px rgba(0,0,0,0.15)}.map-error-message{display:flex;align-items:center;justify-content:center;height:100%;background-color:#2c1d1b;color:#e74c3c}.map__links{text-align:center;margin-top:1.5rem}.map__links a{color:var(--primary);font-weight:600;text-decoration:none}.map__links a:hover{text-decoration:underline}
 .dev-footer{text-align:center;padding:2rem 1rem;margin-top:2rem;border-top:1px solid var(--stroke)}.dev-footer p{margin:0;color:var(--muted);font-size:.9rem}.dev-footer a{color:var(--text);font-weight:600;text-decoration:none;transition:color .2s}.dev-footer a:hover{color:var(--primary)}
 .btn{display:inline-block;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:600;border:1px solid transparent;transition:background-color .2s ease}.btn--ghost{background:var(--ghost);color:var(--text);border-color:#ffffff33}.btn--ghost:hover{background:#ffffff33}
 
-
-/* ==============================================
-   ====== AJUSTES PARA MÓVILES (RESPONSIVE) ======
-   ============================================== */
-@media (max-width: 768px){
-  .hero-carousel-section {
-    aspect-ratio: 16 / 9; /* En móviles puede ser una proporción más cuadrada */
-    max-height: 400px;
-    min-height: 200px;
-  }
-  .home-section{padding:16px}
-  .section-header h2,.testimonials__title{font-size:24px}
-  .testimonials-grid{grid-auto-columns:85%;padding:16px}
-  .home-map-container{height:350px}
-}
+@media (max-width: 768px){.hero-carousel-section{height:250px}.home-section{padding:16px}.section-header h2,.testimonials__title{font-size:24px}.testimonials-grid{grid-auto-columns:85%;padding:16px}.home-map-container{height:350px}}
