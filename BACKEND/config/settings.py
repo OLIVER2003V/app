@@ -2,24 +2,18 @@
 Django settings for config project (Render + Cloudinary).
 """
 
-# config/settings.py
+# --- Arranque de settings.py (orden correcto) ---
 from pathlib import Path
 import os
-import dj_database_url
-import cloudinary # <-- Asegúrate de tener este import
+from dotenv import load_dotenv  # <-- importar primero
 
-# ▼▼▼ AÑADE ESTE BLOQUE COMPLETO ▼▼▼
-# Configuración explícita de Cloudinary
-cloudinary.config(
-  cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME"),
-  api_key = os.environ.get("CLOUDINARY_API_KEY"),
-  api_secret = os.environ.get("CLOUDINARY_API_SECRET"),
-  secure = True
-)
-# -----------------------------
-# Paths
-# -----------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent  # <-- definir BASE_DIR
+load_dotenv(BASE_DIR / ".env")  # <-- recién aquí cargar .env
+
+import dj_database_url
+import cloudinary
+# --- el resto de tu settings sigue igual ---
+
 
 # -----------------------------
 # Seguridad básica
@@ -39,10 +33,8 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
-    "https://jardin-frontend.onrender.com",  # explícito
+    "https://jardin-frontend.onrender.com",
 ]
-# Usas Token, no cookies; credenciales no son necesarias.
-# Déjalo True si en algún punto vas a usar cookies/CSRf desde front.
 CORS_ALLOW_CREDENTIALS = False
 CORS_EXPOSE_HEADERS = ["Authorization", "Content-Type"]
 
@@ -55,6 +47,7 @@ if FRONTEND_URL.startswith("http://"):
 
 # -----------------------------
 # Apps
+# (orden recomendado por django-cloudinary-storage)
 # -----------------------------
 INSTALLED_APPS = [
     # Django
@@ -63,7 +56,6 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    
 
     # Terceros
     "rest_framework",
@@ -71,7 +63,6 @@ INSTALLED_APPS = [
     "corsheaders",
 
     # Media en Cloudinary
-    
     "cloudinary_storage",
     "django.contrib.staticfiles",
     "cloudinary",
@@ -83,7 +74,7 @@ INSTALLED_APPS = [
 
 # -----------------------------
 # Middleware
-# (WhiteNoise debe ir justo tras SecurityMiddleware)
+# (WhiteNoise va justo tras SecurityMiddleware)
 # -----------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -161,13 +152,28 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # -----------------------------
 # Media (Cloudinary)
 # -----------------------------
-# NO usamos MEDIA_ROOT en disco. Cloudinary devuelve URL absolutas.
-MEDIA_URL = "/media/"
-
+# Con CLOUDINARY_URL en el entorno, django-cloudinary-storage se configura solo.
+# Aun así, dejamos DEFAULT_FILE_STORAGE para obligar a usar Cloudinary.
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
+# MEDIA_URL no se usa realmente con Cloudinary, pero no estorba.
+MEDIA_URL = "/media/"
 
-# Si usas FileField/ImageField, obj.campo.url devolverá una URL https pública.
+# (Opcional) Config explícita si NO quieres usar CLOUDINARY_URL:
+# CLOUDINARY_STORAGE = {
+#     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+#     "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+#     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
+#     "SECURE": True,
+# }
+
+# (Opcional) Config del cliente cloudinary (para cloudinary.uploader)
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
 
 # -----------------------------
 # DRF
@@ -189,7 +195,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 60 * 60 * 24  # 1 día (puedes subirlo)
+    SECURE_HSTS_SECONDS = 60 * 60 * 24  # 1 día
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
@@ -197,4 +203,3 @@ if not DEBUG:
 # Clave primaria por defecto
 # -----------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-# ya tienes cloudinary + cloudinary_storage en INSTALLED_APPS
