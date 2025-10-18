@@ -22,7 +22,7 @@ import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import GalleryAdmin from "./pages/GalleryAdmin";
 import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager";
-
+import Contact from "./pages/Contact";
 export default function App() {
   return (
     <AuthProvider>
@@ -43,6 +43,7 @@ export default function App() {
             <Route path="/como-llegar" element={<ComoLlegar />} />
             <Route path="/informacion" element={<Informacion />} />
             <Route path="/login" element={<Login />} />
+             <Route path="/contact" element={<Contact />} /> 
             {/* privadas (anidar con ProtectedRoute como “gate”) */}
             <Route
               path="/admin/posts/new"
