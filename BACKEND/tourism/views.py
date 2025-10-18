@@ -116,34 +116,23 @@ class ContactInfoViewSet(viewsets.ModelViewSet):
 class GalleryItemViewSet(viewsets.ModelViewSet):
     serializer_class = GalleryItemSerializer
     parser_classes = [MultiPartParser, FormParser]
-    queryset = GalleryItem.objects.all()
-    permission_classes = [IsAdmin]
+    queryset = GalleryItem.objects.all()  # base
+    permission_classes = [IsAdmin]  # <- se ignora por get_permissions abajo
 
-    def perform_create(self, serializer):
-        instance = serializer.save()
-        # autollenar url
-        if instance.media_file and not instance.media_file_url:
-            instance.media_file_url = instance.media_file.url
-        # autodetectar tipo
-        f = getattr(instance.media_file, "file", None)
-        ctype = getattr(f, "content_type", None)
-        if ctype:
-            if ctype.startswith("image/"):
-                instance.media_type = "IMAGE"
-            elif ctype.startswith("video/"):
-                instance.media_type = "VIDEO"
-        instance.save()
+    # ✅ Lectura pública (GET/HEAD/OPTIONS), escritura solo admin
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [IsAdmin()]
 
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        if instance.media_file:
-            instance.media_file_url = instance.media_file.url
-            f = getattr(instance.media_file, "file", None)
-            ctype = getattr(f, "content_type", None)
-            if ctype:
-                instance.media_type = "IMAGE" if ctype.startswith("image/") else ("VIDEO" if ctype.startswith("video/") else instance.media_type)
-        instance.save()
-        
+    # ✅ Solo items activos para público; todo para admin
+    def get_queryset(self):
+        qs = GalleryItem.objects.all()
+        if self.request.method in permissions.SAFE_METHODS:
+            return qs.filter(is_active=True).order_by("order", "-id")
+        return qs.order_by("order", "-id")
+
+    # ✅ Asegura request en el serializer para construir URLs absolutas
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
         ctx["request"] = self.request
