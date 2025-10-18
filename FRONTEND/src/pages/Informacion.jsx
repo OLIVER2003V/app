@@ -51,6 +51,7 @@ export default function Informacion() {
               <li>Prohibido hacer fogatas fuera de las áreas designadas.</li>
               <li>No dejar basura. Ayúdanos a mantener el lugar limpio.</li>
               <li>Respetar la flora y fauna local. No extraer plantas ni molestar a los animales.</li>
+              <li>Para su seguridad y la conservación del lugar, está prohibido desviarse de los senderos o ingresar a zonas restringidas sin un guía.</li>
             </ul>
           </div>
 
