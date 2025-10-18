@@ -168,11 +168,7 @@ export default function Home() {
           <div className="hero-frame">
             <div className="hero-inner">
               <HeroCarousel items={galleryItems} />
-              {galleryEndpoint && (
-                <small className="endpoint-hint">
-                  Usando endpoint: <code>{galleryEndpoint}</code>
-                </small>
-              )}
+              {galleryEndpoint }
             </div>
           </div>
         </section>
