@@ -113,17 +113,28 @@ class ContactInfoViewSet(viewsets.ModelViewSet):
     
 # tourism/views.py
 
+import mimetypes
+import logging
+
+log = logging.getLogger(__name__)
+
 class GalleryItemViewSet(viewsets.ModelViewSet):
     serializer_class = GalleryItemSerializer
     queryset = GalleryItem.objects.all().order_by("order", "-id")
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_permissions(self):
-        # GET público; escritura admin (ajusta a tu permiso)
+        # GET público; escritura solo admin (ajusta si usas otro permiso)
         if self.request.method in permissions.SAFE_METHODS:
             return [permissions.AllowAny()]
         from .permissions import IsAdmin
         return [IsAdmin()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.method in permissions.SAFE_METHODS:
+            return qs.filter(is_active=True)
+        return qs
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -131,11 +142,10 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
         return ctx
 
     def _detect_media_type(self, instance):
-        ctype = None
-        # 1) intenta content_type desde el archivo subido
+        # 1) Intenta leer content_type del archivo subido
         f = getattr(instance.media_file, "file", None)
         ctype = getattr(f, "content_type", None)
-        # 2) si no hay, intenta por extensión
+        # 2) Si no hay, intenta por extensión
         if not ctype:
             guess, _ = mimetypes.guess_type(getattr(instance.media_file, "name", ""))
             ctype = guess
@@ -147,16 +157,17 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         try:
-            instance = serializer.save()   # aquí se sube a Cloudinary por el storage
-            # URL pública (Cloudinary)
+            instance = serializer.save()  # ⬅️ aquí se sube a Cloudinary por el storage
             if instance.media_file and not instance.media_file_url:
+                # URL https pública (Cloudinary)
                 instance.media_file_url = instance.media_file.url
-            # detectar tipo
             self._detect_media_type(instance)
             instance.save()
         except Exception as e:
-            # Devuelve 400 con el mensaje real (en Network verás el detalle)
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            log.exception("Error subiendo a Cloudinary")
+            # Devuelve detalle al cliente (en Network → Response verás el mensaje)
+            raise  # Si prefieres 400 legible, comenta la línea anterior y descomenta la de abajo:
+            # return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_update(self, serializer):
         try:
@@ -166,7 +177,9 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
             self._detect_media_type(instance)
             instance.save()
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            log.exception("Error actualizando media")
+            raise
+            # return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 class MediaCreateView(generics.CreateAPIView):
     queryset = Media.objects.all()
