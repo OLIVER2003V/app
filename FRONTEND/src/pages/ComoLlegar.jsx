@@ -4,7 +4,8 @@ import InteractiveTrailMap from '../components/InteractiveTrailMap';
 import './ComoLlegar.css';
 
 // Coordenadas del ÚLTIMO PUNTO NAVEGABLE (Plaza de El Torno)
-const WAYPOINT_COORDS = { lat: -17.9855, lng: -63.3820 };
+const WAYPOINT_COORDS = { lat: -17.991109, lng: -63.389442 };
+
 // Reemplaza con el ID de tu video de YouTube real
 const YOUTUBE_VIDEO_ID = "rMBSyYd7JJE";
 

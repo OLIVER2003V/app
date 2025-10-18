@@ -21,7 +21,8 @@ import ComoLlegar from "./pages/ComoLlegar";
 import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import GalleryAdmin from "./pages/GalleryAdmin";
-import { ListContact, CreateContact, EditContact } from "./pages/CreateContact";
+import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager";
+
 export default function App() {
   return (
     <AuthProvider>
