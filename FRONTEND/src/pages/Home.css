@@ -312,7 +312,7 @@ body.tour-active {
   border-top: 4px solid var(--primary-color);
   opacity: 0;
   transform: translateX(-50%) scale(0.95);
-  transform-origin: center top;
+  transform-origin: center;
   transition: opacity 0.3s var(--ease), transform 0.3s var(--ease), top 0.4s var(--ease);
   cursor: auto;
 }

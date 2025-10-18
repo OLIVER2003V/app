@@ -59,14 +59,21 @@ const smoothScrollTo = (element, onScrollEnd) => {
     scrollTimeout = setTimeout(() => {
       window.removeEventListener('scroll', scrollListener);
       onScrollEnd();
-    }, 150);
+    }, 100); // Un delay corto es suficiente
   };
-  window.addEventListener('scroll', scrollListener);
-  // Fallback por si el scroll no se dispara (p.ej. ya está en posición)
-  setTimeout(() => {
-    window.removeEventListener('scroll', scrollListener);
+
+  // Verificamos si realmente necesitamos escuchar el scroll
+  if (Math.abs(window.scrollY - newScrollPosition) < 1) {
+    // Si ya estamos en la posición, ejecutamos el callback directamente
     onScrollEnd();
-  }, 500);
+  } else {
+    window.addEventListener('scroll', scrollListener, { passive: true });
+     // Fallback por si el evento de scroll no se dispara por alguna razón
+    setTimeout(() => {
+        window.removeEventListener('scroll', scrollListener);
+        onScrollEnd();
+    }, 400); // Tiempo máximo de espera para el scroll
+  }
 };
 
 const GuidedTour = ({ onComplete }) => {
@@ -87,7 +94,7 @@ const GuidedTour = ({ onComplete }) => {
     if (element) {
       const updatePosition = () => {
         const rect = element.getBoundingClientRect();
-        const tooltipHeight = 210; // Altura MÁXIMA estimada del tooltip
+        const tooltipHeight = 210;
         const margin = 20;
 
         const spaceBelow = window.innerHeight - rect.bottom;
@@ -100,9 +107,11 @@ const GuidedTour = ({ onComplete }) => {
           top = rect.top + rect.height + margin;
         }
 
-        // Si aún así se sale, lo anclamos abajo
         if ((top + tooltipHeight) > window.innerHeight) {
           top = window.innerHeight - tooltipHeight - margin;
+        }
+        if (top < margin) {
+            top = margin;
         }
 
         setStyles({
@@ -162,6 +171,7 @@ const GuidedTour = ({ onComplete }) => {
     </div>
   );
 };
+
 
 // --- Utilidades de Normalización (sin cambios) ---
 function normalizeGalleryItem(raw, idx) {
