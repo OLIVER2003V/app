@@ -331,7 +331,7 @@ export default function Home() {
               <h3>Información Útil</h3>
               <p>Horarios, tarifas y contacto.</p>
             </Link>
-            <a className="planning-card" href="https://wa.me/59172672767" target="_blank" rel="noreferrer noopener">
+            <a className="planning-card" href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx" target="_blank" rel="noreferrer noopener">
               <span className="planning-card__icon">💬</span>
               <h3>WhatsApp</h3>
               <p>Atención turística directa.</p>
