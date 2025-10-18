@@ -1,6 +1,6 @@
 :root {
-  --bg: #0f172a;       /* Fondo azul oscuro */
-  --bg-elev: #1f2937;  /* Panel ligeramente más claro */
+  --bg: #040916;       /* Fondo azul oscuro */
+  --bg-elev: #dae8d6;  /* Panel ligeramente más claro */
   --stroke: #374151;   /* Borde sutil */
   --text: #f5f7fa;     /* Texto blanco */
   --muted: #9ca3af;    /* Texto secundario gris */
@@ -16,8 +16,8 @@
   border-bottom: 1px solid transparent;
   backdrop-filter: saturate(120%) blur(6px);
 }
-.nav--top { background: linear-gradient(#0c1158ec, #085d63de); }
-.nav--scrolled { background: #0f172aef; border-color: var(--stroke); box-shadow: 0 6px 24px #0005; }
+.nav--top { background: linear-gradient(#033b45ec, #1a8d98c2); }
+.nav--scrolled { background: #035a46ea; border-color: var(--stroke); box-shadow: 0 6px 24px #0005; }
 
 .nav__inner {
   max-width: 1200px; margin: 0 auto; height: 64px;
