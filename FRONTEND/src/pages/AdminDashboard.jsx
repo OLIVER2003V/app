@@ -167,10 +167,12 @@ export default function AdminDashboard() {
         </Card>
 
         <Card title="Contactos" icon="📞" desc="Gestiona los contactos públicos del sitio (solo admin).">
-          <Btn onClick={() => nav("/admin/create-contact")}>➕ Añadir contacto</Btn>
-          <Btn variant="secondary" onClick={() => nav("/contact")}>📋 Ver página</Btn>
+          <Btn onClick={() => nav("/admin/contactos/nuevo")}>➕ Añadir contacto</Btn>
+          <Btn variant="secondary" onClick={() => nav("/contacto")}>📋 Ver página</Btn>
+          <Btn variant="ghost" onClick={() => nav("/admin/contactos")}>🗂 Gestionar lista</Btn>
           <Btn variant="ghost" onClick={() => openApi("contact/")}>🔎 GET /api/contact/</Btn>
         </Card>
+
       </section>
 
       <section className="ad-note">
