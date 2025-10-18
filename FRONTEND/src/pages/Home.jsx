@@ -5,7 +5,8 @@ import "./Home.css";
 
 // Componentes importados
 import { HeroCarousel } from "@/components/HeroCarousel"; // export nombrado
-import { InteractiveTrailMap } from "@/components/InteractiveTrailMap"; // export nombrado (ajústalo si es default)
+import InteractiveTrailMap from "@/components/InteractiveTrailMap";
+
 
 // Componente pequeño para las estrellas de calificación
 const Star = () => <span className="testimonial-rating-star">⭐</span>;
