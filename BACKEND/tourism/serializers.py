@@ -9,9 +9,13 @@ class MediaSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        request = self.context.get("request")
         if instance.image:
-            rep['image'] = instance.image.url
+            rep["image"] = (
+                abs_url_or_none(request, instance.image.url) if request else instance.image.url
+            )
         return rep
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     place_name = serializers.CharField(source='place.name', read_only=True)
@@ -23,8 +27,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        request = self.context.get("request")
         if instance.photo:
-            rep['photo'] = instance.photo.url
+            rep["photo"] = (
+                abs_url_or_none(request, instance.photo.url) if request else instance.photo.url
+            )
         return rep
 class PlaceSerializer(serializers.ModelSerializer):
     media = MediaSerializer(many=True, read_only=True)
@@ -53,12 +60,16 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
-    
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        request = self.context.get("request")
         if instance.cover:
-            rep['cover'] = instance.cover.url
+            rep["cover"] = (
+                abs_url_or_none(request, instance.cover.url) if request else instance.cover.url
+            )
         return rep
+
 
 class PlaceSimpleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,8 +87,11 @@ class ModerationReviewSerializer(serializers.ModelSerializer):
     # CORRECCIÓN AQUÍ
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        request = self.context.get("request")
         if instance.photo:
-            rep['photo'] = instance.photo.url
+            rep["photo"] = (
+                abs_url_or_none(request, instance.photo.url) if request else instance.photo.url
+            )
         return rep
 
 class ContactInfoSerializer(serializers.ModelSerializer):
@@ -96,4 +110,26 @@ class GalleryItemSerializer(serializers.ModelSerializer):
         read_only_fields = ("uploaded_at", "media_file_url")
 
     def get_media_file_url(self, obj):
-        return obj.media_file.url if obj.media_file else None
+        request = self.context.get("request")
+        raw = obj.media_file.url if obj.media_file else None
+        return abs_url_or_none(request, raw) if request else raw
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        # por compatibilidad, asegura que media_file también sea absoluto
+        request = self.context.get("request")
+        if instance.media_file:
+            rep["media_file"] = abs_url_or_none(request, instance.media_file.url) if request else instance.media_file.url
+        return rep
+
+    
+def abs_url_or_none(request, url_value):
+    if not url_value:
+        return None
+    url = str(url_value)
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    # Si viene como '/media/...' o 'posts/archivo.jpg'
+    if url.startswith("/"):
+        return request.build_absolute_uri(url)
+    return request.build_absolute_uri("/" + url)
