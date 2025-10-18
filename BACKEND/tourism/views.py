@@ -1,10 +1,10 @@
-from rest_framework import viewsets, mixins, permissions
+from rest_framework import viewsets, mixins, permissions, generics
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Place, Event, Post, Review, ContactInfo, GalleryItem
+from .models import Place, Event, Post, Review, ContactInfo, GalleryItem, Media
 from .serializers import (
     PlaceSerializer, EventSerializer, PostSerializer,
     ReviewSerializer, ContactInfoSerializer,
-    ModerationReviewSerializer, GalleryItemSerializer
+    ModerationReviewSerializer, GalleryItemSerializer, MediaSerializer
 )
 from .permissions import IsEditorOrAdmin, IsAdmin
 import os
@@ -115,8 +115,37 @@ class ContactInfoViewSet(viewsets.ModelViewSet):
 
 class GalleryItemViewSet(viewsets.ModelViewSet):
     serializer_class = GalleryItemSerializer
-    parser_classes = [MultiPartParser, FormParser] # To handle file uploads
-    queryset = GalleryItem.objects.all() # O tu queryset personalizado
-    permission_classes = [IsAdmin] # O el permiso que prefieras
+    parser_classes = [MultiPartParser, FormParser]
+    queryset = GalleryItem.objects.all()
+    permission_classes = [IsAdmin]
 
-    # Ya no se necesita el método perform_create. ¡Bórralo!
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        # autollenar url
+        if instance.media_file and not instance.media_file_url:
+            instance.media_file_url = instance.media_file.url
+        # autodetectar tipo
+        f = getattr(instance.media_file, "file", None)
+        ctype = getattr(f, "content_type", None)
+        if ctype:
+            if ctype.startswith("image/"):
+                instance.media_type = "IMAGE"
+            elif ctype.startswith("video/"):
+                instance.media_type = "VIDEO"
+        instance.save()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if instance.media_file:
+            instance.media_file_url = instance.media_file.url
+            f = getattr(instance.media_file, "file", None)
+            ctype = getattr(f, "content_type", None)
+            if ctype:
+                instance.media_type = "IMAGE" if ctype.startswith("image/") else ("VIDEO" if ctype.startswith("video/") else instance.media_type)
+        instance.save()
+        
+class MediaCreateView(generics.CreateAPIView):
+    queryset = Media.objects.all()
+    serializer_class = MediaSerializer
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [permissions.IsAuthenticated]

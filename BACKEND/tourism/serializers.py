@@ -88,12 +88,12 @@ class ContactInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GalleryItemSerializer(serializers.ModelSerializer):
+    media_file_url = serializers.SerializerMethodField()
+
     class Meta:
         model = GalleryItem
-        fields = ("id", "title", "media_type", "media_file", "order", "is_active")
+        fields = ("id", "title", "media_type", "media_file", "media_file_url", "order", "is_active", "uploaded_at")
+        read_only_fields = ("uploaded_at", "media_file_url")
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        if instance.media_file:
-            rep['media_file'] = instance.media_file.url
-        return rep
+    def get_media_file_url(self, obj):
+        return obj.media_file.url if obj.media_file else None

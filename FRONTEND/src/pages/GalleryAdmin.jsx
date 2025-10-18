@@ -6,7 +6,7 @@ export default function GalleryAdmin() {
   const [items, setItems] = useState([]);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
-  const [mediaType, setMediaType] = useState("IMAGE");
+  const [mediaType, setMediaType] = useState("IMAGE"); // opcional (backend auto-detecta)
   const [order, setOrder] = useState(0);
   const [isActive, setIsActive] = useState(true);
 
@@ -17,8 +17,8 @@ export default function GalleryAdmin() {
   const fetchItems = () => {
     setLoading(true);
     api
-      .get("gallery/")
-      .then(({ data }) => setItems(data.results || data))
+      .get("gallery/") // sin slash inicial
+      .then(({ data }) => setItems(data?.results || data || []))
       .catch(() => setError("No se pudieron cargar los ítems de la galería."))
       .finally(() => setLoading(false));
   };
@@ -35,29 +35,33 @@ export default function GalleryAdmin() {
     setError(null);
 
     const fd = new FormData();
-    fd.append("title", title);
+    fd.append("title", title.trim());
+    // Puedes omitirlo porque ahora auto-detecta, lo dejo por compatibilidad:
     fd.append("media_type", mediaType);
-    
-    // REVERTIDO
-    fd.append("media_file", file); 
-    
-    fd.append("order", String(order));
-    fd.append("is_active", isActive);
+    fd.append("media_file", file);
+    fd.append("order", String(order ?? 0));
+    // ¡OJO! Como string:
+    fd.append("is_active", isActive ? "true" : "false");
 
     try {
-      await api.post("gallery/", fd);
-      // Limpiar formulario
+      await api.post("gallery/", fd); // axios setea boundary, no pongas Content-Type manual
+      // Limpiar
       setTitle("");
       setFile(null);
       setOrder(0);
       setIsActive(true);
-      const input = document.getElementById("media_file_input"); // Asegúrate que el id del input coincida
+      const input = document.getElementById("media_file_input");
       if (input) input.value = "";
       fetchItems();
     } catch (err) {
       const errorData = err.response?.data;
-      const errorMessage = errorData ? JSON.stringify(errorData) : "Error al subir el archivo.";
-      setError(errorMessage);
+      const msg =
+        typeof errorData === "string"
+          ? errorData
+          : errorData
+          ? JSON.stringify(errorData)
+          : "Error al subir el archivo.";
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -68,7 +72,7 @@ export default function GalleryAdmin() {
     try {
       await api.delete(`gallery/${id}/`);
       fetchItems();
-    } catch (err) {
+    } catch {
       alert("No se pudo eliminar el ítem.");
     }
   };
@@ -76,13 +80,13 @@ export default function GalleryAdmin() {
   const handleToggleActive = async (item) => {
     try {
       await api.patch(`gallery/${item.id}/`, { is_active: !item.is_active });
-      fetchItems();
-    } catch (err) {
+    } catch {
       alert("No se pudo cambiar el estado.");
+    } finally {
+      fetchItems();
     }
   };
-  
-  // El JSX del return no necesita cambios, solo asegúrate de que el input de archivo tenga `name="media_file"`
+
   return (
     <div className="gallery-admin-page">
       <div className="gallery-admin-container">
@@ -93,26 +97,47 @@ export default function GalleryAdmin() {
           {error && <p className="form-error">{error}</p>}
 
           <div className="form-row">
-            <input name="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título" required />
-            <select name="media_type" value={mediaType} onChange={(e) => setMediaType(e.target.value)}>
+            <input
+              name="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Título"
+              required
+            />
+            <select
+              name="media_type"
+              value={mediaType}
+              onChange={(e) => setMediaType(e.target.value)}
+            >
               <option value="IMAGE">Imagen</option>
               <option value="VIDEO">Video (MP4)</option>
             </select>
-            <input name="order" type="number" value={order} onChange={(e) => setOrder(Number(e.target.value))} placeholder="Orden" />
+            <input
+              name="order"
+              type="number"
+              value={order}
+              onChange={(e) => setOrder(Number(e.target.value))}
+              placeholder="Orden"
+            />
           </div>
 
           <input
             id="media_file_input"
-            name="media_file" // <-- Nombre original
+            name="media_file"
             type="file"
-            onChange={(e) => setFile(e.target.files[0])}
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
             accept="image/*,video/mp4"
             required
           />
 
           <div className="form-group-checkbox">
             <label>
-              <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+              />
               Activo y visible en la página principal
             </label>
           </div>
@@ -129,8 +154,10 @@ export default function GalleryAdmin() {
           ) : (
             items.map((item) => (
               <div key={item.id} className="gallery-item-row">
-                {/* ... tu lógica para mostrar los items ... */}
                 <span>{item.title}</span>
+                <button onClick={() => handleToggleActive(item)}>
+                  {item.is_active ? "Ocultar" : "Mostrar"}
+                </button>
                 <button onClick={() => handleDelete(item.id)}>Eliminar</button>
               </div>
             ))

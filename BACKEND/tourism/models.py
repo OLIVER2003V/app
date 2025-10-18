@@ -97,16 +97,14 @@ class GalleryItem(models.Model):
         ('IMAGE', 'Image'),
         ('VIDEO', 'Video'),
     ]
-    title = models.CharField(max_length=150, help_text="Título o descripción corta.")
+    title = models.CharField(max_length=150)
     media_type = models.CharField(max_length=5, choices=MEDIA_TYPE_CHOICES, default='IMAGE')
-    # Use FileField to allow both images and videos
     media_file = models.FileField(upload_to='gallery/')
-    order = models.PositiveIntegerField(default=0, help_text="Número para ordenar (menor a mayor).")
+    order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    media_file_url = models.URLField(max_length=512)
+    # HAZ QUE NO SEA OBLIGATORIO, y lo autollenamos:
+    media_file_url = models.URLField(max_length=512, blank=True)
+
     class Meta:
         ordering = ['order']
-
-    def __str__(self):
-        return self.title

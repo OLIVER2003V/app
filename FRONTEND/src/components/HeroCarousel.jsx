@@ -10,10 +10,12 @@ const HeroCarousel = () => {
 
   useEffect(() => {
     api
-      .get("gallery/")
+      .get("gallery/") // sin slash inicial
       .then(({ data }) => {
-        const galleryItems = (Array.isArray(data) ? data : data?.results || []).filter(item => item.is_active);
-        setItems(galleryItems);
+        const list = (Array.isArray(data) ? data : data?.results || []).filter(
+          (it) => it.is_active
+        );
+        setItems(list);
       })
       .catch((err) => {
         console.error("Error al cargar la galería:", err);
@@ -21,9 +23,7 @@ const HeroCarousel = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return <div className="hero-placeholder">Cargando Galería...</div>;
-  }
+  if (loading) return <div className="hero-placeholder">Cargando Galería...</div>;
 
   if (items.length === 0) {
     return (
@@ -38,19 +38,13 @@ const HeroCarousel = () => {
 
   return (
     <section className="hero-carousel-section">
-      <Carousel
-        autoPlay
-        infiniteLoop
-        showThumbs={false}
-        showStatus={false}
-        interval={5000}
-        transitionTime={700}
-      >
+      <Carousel autoPlay infiniteLoop showThumbs={false} showStatus={false} interval={5000} transitionTime={700}>
         {items.map((item) => {
-          // REVERTIDO
-          const src = item.media_file; 
-          const isVideo = (item.media_type || "").toUpperCase() === "VIDEO";
-          
+          // 💡 Usa media_file_url si viene, si no media_file
+          const src = item.media_file_url || item.media_file;
+          const mt = (item.media_type || "").toUpperCase();
+          const isVideo = mt === "VIDEO" || /\.mp4(\?|$)/i.test(String(src || ""));
+
           return (
             <div key={item.id} className="carousel-slide">
               {isVideo ? (

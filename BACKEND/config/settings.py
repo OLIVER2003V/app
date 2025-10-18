@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
+    
 
     # Terceros
     "rest_framework",
@@ -71,8 +71,10 @@ INSTALLED_APPS = [
     "corsheaders",
 
     # Media en Cloudinary
-    "cloudinary",
+    
     "cloudinary_storage",
+    "django.contrib.staticfiles",
+    "cloudinary",
 
     # Tus apps
     "users",
@@ -163,7 +165,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-
 
 
 # Si usas FileField/ImageField, obj.campo.url devolverá una URL https pública.
