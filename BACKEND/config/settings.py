@@ -159,6 +159,13 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 # MEDIA_URL no se usa realmente con Cloudinary, pero no estorba.
 MEDIA_URL = "/media/"
 
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
+    "SECURE": True,
+    "RESOURCE_TYPE": "auto",  # 👈 esto es lo crucial para aceptar video/mp4
+}
 # (Opcional) Config explícita si NO quieres usar CLOUDINARY_URL:
 # CLOUDINARY_STORAGE = {
 #     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
