@@ -4,7 +4,7 @@ import api from "@/lib/api";
 import "./Home.css";
 
 // Componentes importados
-import { HeroCarousel } from "../components/HeroCarousel";
+import HeroCarousel from "../components/HeroCarousel";
 import InteractiveTrailMap from "../components/InteractiveTrailMap";
 
 // Componente pequeño para las estrellas de calificación
