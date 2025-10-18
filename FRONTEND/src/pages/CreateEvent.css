@@ -1,34 +1,41 @@
 /* ==============================================
-   ====== ESTILOS BASE DEL FORMULARIO ======
+   ESTILOS PARA LA PÁGINA DE GESTIÓN DE EVENTOS
    ============================================== */
-.create-event-page {
-  background-color: #0f2027;
-  min-height: calc(100vh - 80px); /* Resta la altura del navbar */
+.manage-event-page, .manage-event-page-loading {
+  background-color: #f4f7f6;
+  min-height: calc(100vh - 70px); /* Ajustar según altura del navbar */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1rem;
 }
 
-.create-event-container {
-  background-color: #1a2c3a;
-  padding: 2rem 3rem;
+.manage-event-page-loading {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.manage-event-container {
+  background-color: #ffffff;
+  padding: 2.5rem;
   border-radius: 12px;
   width: 100%;
   max-width: 800px;
-  color: #ecf0f1;
-  border: 1px solid #2c3e50;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
 }
 
-.create-event-container h1 {
+.manage-event-container h1 {
   text-align: center;
   margin-top: 0;
+  font-family: 'Merriweather', serif;
+  color: #343a40;
 }
 
-.create-event-container p {
+.manage-event-container p {
   text-align: center;
-  color: #95a5a6;
-  margin-bottom: 2rem;
+  color: #6c757d;
+  margin-bottom: 2.5rem;
 }
 
 .event-form .form-group {
@@ -38,33 +45,31 @@
 .event-form label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #bdc3c7;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
 }
 
 .event-form input,
 .event-form select,
 .event-form textarea {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background-color: #2c3e50;
-  border: 1px solid #34495e;
+  padding: 0.8rem 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
   border-radius: 6px;
-  color: #ecf0f1;
+  color: #495057;
   font-size: 1rem;
-  transition: border-color 0.2s ease-in-out; /* Added for smooth focus */
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .event-form input:focus,
 .event-form select:focus,
 .event-form textarea:focus {
   outline: none;
-  border-color: #3498db;
-}
-
-/* Estilo para los campos de fecha */
-.event-form input[type="datetime-local"] {
-  -webkit-appearance: none;
+  border-color: #0077b6;
+  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
 }
 
 .form-row {
@@ -74,9 +79,10 @@
 }
 
 .form-error {
-  background-color: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
+  background-color: #f8d7da;
+  color: #721c24;
   padding: 1rem;
+  border: 1px solid #f5c6cb;
   border-radius: 6px;
   text-align: center;
   margin-bottom: 1.5rem;
@@ -85,43 +91,60 @@
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
+  border-top: 1px solid #e9ecef;
+  padding-top: 1.5rem;
+}
+
+/* Estilos de botones (asumiendo que ya tienes una clase .btn global) */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn--primary { background-color: #0077b6; color: white; }
+.btn--primary:hover:not(:disabled) { background-color: #023e8a; }
+.btn--secondary { background-color: #6c757d; color: white; }
+.btn--secondary:hover:not(:disabled) { background-color: #495057; }
+.btn--danger { background-color: #d90429; color: white; }
+.btn--danger:hover:not(:disabled) { background-color: #b2001f; }
+/* Empuja el botón de eliminar a la izquierda */
+.form-actions .btn--danger {
+  margin-right: auto;
 }
 
 /* ================================================================
-   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   AJUSTES PARA DISPOSITIVOS MÓVILES
    ================================================================ */
 @media (max-width: 768px) {
-  .create-event-page {
-    /* Reduce padding and align container to the top */
+  .manage-event-page {
     padding: 1rem;
     align-items: flex-start;
   }
-
-  .create-event-container {
-    /* Reduce padding for smaller screens */
-    padding: 2rem 1.5rem;
+  .manage-event-container {
+    padding: 1.5rem;
   }
-
-  .create-event-container h1 {
-    font-size: 1.75rem; /* Slightly smaller title */
-  }
-
-  /* Stack two-column rows into a single column */
   .form-row {
     grid-template-columns: 1fr;
-    gap: 1.5rem; /* Keep vertical gap */
   }
-
-  /* Stack form action buttons and make them full width */
   .form-actions {
-    flex-direction: column;
+    flex-direction: column-reverse; /* El botón principal queda abajo */
     gap: 0.75rem;
   }
-
   .form-actions .btn {
-    width: 100%; /* Requires a .btn class on the button elements */
-    justify-content: center;
+    width: 100%;
+  }
+  .form-actions .btn--danger {
+    margin-right: 0; /* Resetea el margen en móvil */
   }
 }
