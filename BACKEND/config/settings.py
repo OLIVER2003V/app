@@ -156,7 +156,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Aun así, dejamos DEFAULT_FILE_STORAGE para obligar a usar Cloudinary.
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
-# MEDIA_URL no se usa realmente con Cloudinary, pero no estorba.
 MEDIA_URL = "/media/"
 
 CLOUDINARY_STORAGE = {
@@ -164,7 +163,8 @@ CLOUDINARY_STORAGE = {
     "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
     "SECURE": True,
-    "RESOURCE_TYPE": "auto",  # 👈 esto es lo crucial para aceptar video/mp4
+    "RESOURCE_TYPE": "auto",   # 👈 clave para video/mp4
+    # "OVERWRITE": True,       # opcional
 }
 # (Opcional) Config explícita si NO quieres usar CLOUDINARY_URL:
 # CLOUDINARY_STORAGE = {

@@ -78,8 +78,9 @@
    ============================ */
 .featured-posts-grid {
   display: grid;
-  /* Esto ya es responsivo: crea columnas de mínimo 250px */
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  /* ▼▼▼ AQUÍ ESTÁ EL CAMBIO ▼▼▼ */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Cambiado a auto-fill */
+  justify-content: center; /* Añadido para centrar las tarjetas */
   gap: 20px;
 }
 
@@ -96,7 +97,7 @@
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
-  flex-direction: column; /* Clave para ordenar imagen y texto */
+  flex-direction: column;
 }
 .postCard:hover {
   transform: translateY(-4px);
@@ -110,7 +111,7 @@
 .postCard__media img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Evita que la imagen se deforme */
+  object-fit: cover;
 }
 .postCard__ph {
   width: 100%;
@@ -122,7 +123,7 @@
 }
 .postCard__body {
   padding: 16px;
-  flex-grow: 1; /* Hace que el cuerpo ocupe el espacio restante */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
@@ -137,7 +138,7 @@
   color: var(--muted);
   font-size: 12px;
   display: block;
-  margin-top: auto; /* Empuja este elemento hacia abajo */
+  margin-top: auto;
   padding-top: 8px;
 }
 .postCard__read-more {
@@ -152,7 +153,6 @@
    ============================ */
 .quick__grid {
   display: grid;
-  /* También es responsivo por defecto */
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
 }
@@ -196,16 +196,16 @@
 }
 .testimonials-grid {
   display: grid;
-  grid-auto-flow: column; /* Permite el scroll horizontal */
+  grid-auto-flow: column;
   grid-auto-columns: 320px;
   gap: 20px;
   overflow-x: auto;
   padding: 24px;
-  scroll-snap-type: x mandatory; /* Efecto de "imán" al hacer scroll */
-  scrollbar-width: none; /* Oculta la barra de scroll en Firefox */
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
 .testimonials-grid::-webkit-scrollbar {
-  display: none; /* Oculta la barra de scroll en Chrome/Safari */
+  display: none;
 }
 .testimonial-card {
   background: var(--surface);
@@ -311,25 +311,18 @@
    ====== AJUSTES PARA DISPOSITIVOS MÓVILES Y TABLETS ======
    ================================================================ */
 @media (max-width: 768px) {
-  /* Reduce el espaciado en las secciones para pantallas más pequeñas */
   .home-section {
     padding: 48px 16px;
   }
-
-  /* Reduce el tamaño de los títulos principales */
   .section-header h2,
   .testimonials__title {
     font-size: 24px;
   }
-
-  /* Ajusta el tamaño de las tarjetas de testimonios para que quepan mejor */
   .testimonials-grid {
-    grid-auto-columns: 85%; /* Cada tarjeta ocupa el 85% del ancho */
+    grid-auto-columns: 85%;
     padding-left: 16px;
     padding-right: 16px;
   }
-
-  /* Reduce la altura del mapa en móviles */
   .home-map-container {
     height: 350px;
   }
