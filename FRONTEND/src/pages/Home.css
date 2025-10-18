@@ -379,8 +379,29 @@
   .carousel-caption { bottom: 10%; }
 }
 
-/* ============ Swiper en el HERO ============ */
-/* Asegura que el wrapper del Swiper llene la caja 16:9 */
+/* ===========================
+   HERO 16:9 — CONTENEDOR
+   =========================== */
+.hero-16x9 .hero-frame {
+  position: relative;
+  width: 100%;
+}
+.hero-16x9 .hero-frame::before {
+  content: "";
+  display: block;
+  padding-top: 56.25%; /* 16:9 */
+}
+.hero-16x9 .hero-inner {
+  position: absolute;
+  inset: 0;
+  background: #0f2027;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ===========================
+   HERO — SWIPER sizing
+   =========================== */
 .hero-carousel .swiper,
 .hero-carousel .swiper-wrapper,
 .hero-carousel .swiper-slide {
@@ -388,7 +409,61 @@
   height: 100%;
 }
 
-/* Botones de navegación (flechas) dentro del hero */
+/* IMPORTANTE: el slide NO debe ser absolute */
+.carousel-slide {
+  position: relative;   /* <--- antes estaba absolute */
+  width: 100%;
+  height: 100%;
+}
+
+/* La media (img/video) sí ocupa todo el slide */
+.carousel-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Overlay y caption encima de la media */
+.carousel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.20) 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+  z-index: 2; /* por encima del video/imagen */
+}
+
+.carousel-caption {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90%, 960px);
+  text-align: center;
+  color: #fff;
+  padding: 0 1rem;
+  z-index: 3; /* encima del overlay */
+}
+
+.carousel-caption h1 {
+  font-size: clamp(1.8rem, 4.8vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* ===========================
+   SWIPER — botones y puntos
+   =========================== */
 .hero-carousel .swiper-button-prev,
 .hero-carousel .swiper-button-next {
   color: #fff;
@@ -397,6 +472,7 @@
   background: rgba(0, 0, 0, 0.28);
   border-radius: 999px;
   backdrop-filter: blur(2px);
+  z-index: 5; /* por encima de todo */
 }
 
 .hero-carousel .swiper-button-prev:hover,
@@ -406,12 +482,12 @@
 
 .hero-carousel .swiper-button-prev:after,
 .hero-carousel .swiper-button-next:after {
-  font-size: 18px; /* un poco más pequeño que el default */
+  font-size: 18px;
 }
 
-/* Paginación (puntos) */
 .hero-carousel .swiper-pagination {
   bottom: 14px !important;
+  z-index: 5;
 }
 
 .hero-carousel .swiper-pagination-bullet {
