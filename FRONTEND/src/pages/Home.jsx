@@ -1,63 +1,184 @@
-import React, { useEffect, useState, useMemo, Suspense } from "react";
+import React, { useEffect, useState, useMemo, useLayoutEffect, Suspense, lazy } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "@/lib/api";
 import "./Home.css";
 
-// Componentes importados
-import { HeroCarousel } from "@/components/HeroCarousel"; // export nombrado
-import InteractiveTrailMap from "@/components/InteractiveTrailMap"; // default
+// --- Componentes ---
+import { HeroCarousel } from "@/components/HeroCarousel";
+const InteractiveTrailMap = lazy(() => import("@/components/InteractiveTrailMap"));
 
-// Componente pequeño para las estrellas de calificación
+// --- Componentes de UI Internos ---
 const Star = () => <span className="testimonial-rating-star">⭐</span>;
 
-/** ---------- Utilidades de normalización para la galería ---------- **/
+const LoadingSpinner = () => (
+  <div className="loading-container" role="status" aria-label="Cargando contenido">
+    <div className="spinner"></div>
+  </div>
+);
 
+// --- Lógica del Tour Interactivo (Versión Final Definitiva) ---
+
+const tourSteps = [
+  {
+    selector: '#novedades',
+    title: 'Novedades y Guías',
+    content: 'Aquí encontrarás las últimas noticias, consejos y guías para inspirar tu próxima aventura en nuestra comunidad.',
+  },
+  {
+    selector: '#planifica',
+    title: 'Planifica tu Visita',
+    content: 'Todo lo práctico está aquí: cómo llegar, horarios, tarifas y un acceso directo a WhatsApp para tus consultas.',
+  },
+  {
+    selector: '#opiniones',
+    title: 'La Voz de los Visitantes',
+    content: 'Lee las experiencias de otros viajeros como tú para conocer sus lugares favoritos y recomendaciones.',
+  },
+  {
+    selector: '#mapa',
+    title: 'Explora el Mapa',
+    content: 'Usa nuestro mapa interactivo para visualizar la ruta principal y ubicar los puntos de interés más importantes.',
+  }
+];
+
+const smoothScrollTo = (element, onScrollEnd) => {
+  const elementRect = element.getBoundingClientRect();
+  const absoluteElementTop = elementRect.top + window.scrollY;
+  const newScrollPosition = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+  window.scrollTo({
+    top: Math.min(newScrollPosition, maxScroll),
+    behavior: "smooth"
+  });
+
+  // Una forma robusta de detectar el final del scroll
+  let scrollTimeout;
+  const scrollListener = () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      window.removeEventListener('scroll', scrollListener);
+      onScrollEnd();
+    }, 150);
+  };
+  window.addEventListener('scroll', scrollListener);
+  // Fallback por si el scroll no se dispara (p.ej. ya está en posición)
+  setTimeout(() => {
+    window.removeEventListener('scroll', scrollListener);
+    onScrollEnd();
+  }, 500);
+};
+
+const GuidedTour = ({ onComplete }) => {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [styles, setStyles] = useState({ highlight: {}, tooltip: {} });
+  const [isExiting, setIsExiting] = useState(false);
+  const currentStep = tourSteps[stepIndex];
+
+  useEffect(() => {
+    document.body.classList.add('tour-active');
+    return () => {
+      document.body.classList.remove('tour-active');
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const element = document.querySelector(currentStep?.selector);
+    if (element) {
+      const updatePosition = () => {
+        const rect = element.getBoundingClientRect();
+        const tooltipHeight = 210; // Altura MÁXIMA estimada del tooltip
+        const margin = 20;
+
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const placeAbove = (spaceBelow < (tooltipHeight + margin)) && (rect.top > (tooltipHeight + margin));
+        
+        let top;
+        if (placeAbove) {
+          top = rect.top - tooltipHeight - margin;
+        } else {
+          top = rect.top + rect.height + margin;
+        }
+
+        // Si aún así se sale, lo anclamos abajo
+        if ((top + tooltipHeight) > window.innerHeight) {
+          top = window.innerHeight - tooltipHeight - margin;
+        }
+
+        setStyles({
+          highlight: {
+            width: `${rect.width + 20}px`,
+            height: `${rect.height + 20}px`,
+            top: `${rect.top - 10}px`,
+            left: `${rect.left - 10}px`,
+            opacity: 1,
+          },
+          tooltip: {
+            top: `${top}px`,
+            left: `${rect.left + rect.width / 2}px`,
+            transform: 'translateX(-50%) scale(1)',
+            opacity: 1,
+          }
+        });
+      };
+
+      smoothScrollTo(element, updatePosition);
+    }
+  }, [stepIndex, currentStep]);
+
+  const goToStep = (index) => {
+    setStyles(prev => ({
+      highlight: { ...prev.highlight, opacity: 0},
+      tooltip: { ...prev.tooltip, transform: 'translateX(-50%) scale(0.95)', opacity: 0 }
+    }));
+    setTimeout(() => {
+      if (index >= tourSteps.length) {
+        handleComplete();
+      } else {
+        setStepIndex(index);
+      }
+    }, 300);
+  };
+
+  const handleComplete = () => {
+    setIsExiting(true);
+    setTimeout(onComplete, 300);
+  };
+
+  return (
+    <div className={`tour-overlay ${isExiting ? 'exiting' : ''}`} onClick={handleComplete}>
+      <div className="tour-highlight" style={styles.highlight} onClick={e => e.stopPropagation()}></div>
+      <div className="tour-tooltip" style={styles.tooltip} onClick={e => e.stopPropagation()}>
+        <h4>{currentStep.title}</h4>
+        <p>{currentStep.content}</p>
+        <div className="tour-footer">
+          <span className="tour-step-indicator">{stepIndex + 1} / {tourSteps.length}</span>
+          <button onClick={handleComplete} className="tour-btn-skip">Saltar</button>
+          <button onClick={() => goToStep(stepIndex + 1)} className="tour-btn-next">
+            {stepIndex === tourSteps.length - 1 ? 'Finalizar' : 'Siguiente'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Utilidades de Normalización (sin cambios) ---
 function normalizeGalleryItem(raw, idx) {
   const id = raw?.id ?? raw?.pk ?? idx;
-
-  const title =
-    raw?.title ??
-    raw?.name ??
-    raw?.titulo ??
-    raw?.nombre ??
-    raw?.caption ??
-    raw?.descripcion ??
-    "Slide";
-
-  // todas las posibles rutas que podrían venir
-  const candidates = [
-    raw?.media_file_url,
-    raw?.media_url,
-    raw?.file_url,
-    raw?.url,
-    raw?.image_url,
-    raw?.image,
-    raw?.file,
-    raw?.path,
-    raw?.src,
-    raw?.cover,
-    raw?.video_url,
-  ];
+  const title = raw?.title ?? raw?.name ?? raw?.titulo ?? "Slide";
+  const candidates = [raw?.media_file_url, raw?.media_url, raw?.file_url, raw?.url, raw?.image_url, raw?.image, raw?.src, raw?.cover, raw?.video_url];
   const src = candidates.find(Boolean) ?? "";
-
-  const mt =
-    raw?.media_type ??
-    raw?.type ??
-    raw?.kind ??
-    (src?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? "VIDEO" : "IMAGE");
-
+  const mt = raw?.media_type ?? (src?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? "VIDEO" : "IMAGE");
   const media_type = String(mt).toUpperCase();
-
   return { id, title, media_type, src };
 }
-
 function unwrapResults(data) {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.results)) return data.results;
   if (Array.isArray(data?.items)) return data.items;
   return [];
 }
-
 async function fetchFirstGalleryFound() {
   const CANDIDATES = ["gallery/", "banners/", "home-slides/", "media/", "carousel/"];
   for (const endpoint of CANDIDATES) {
@@ -65,166 +186,145 @@ async function fetchFirstGalleryFound() {
       const { data } = await api.get(endpoint);
       const arr = unwrapResults(data);
       if (arr.length) {
-        const normalized = arr
-          .map((it, i) => normalizeGalleryItem(it, i))
-          .filter((x) => !!x.src); // ✅ ahora filtramos por src válido
-        if (normalized.length) {
-          return { items: normalized, usedEndpoint: endpoint };
-        }
+        const normalized = arr.map(normalizeGalleryItem).filter((x) => !!x.src);
+        if (normalized.length) return { items: normalized, usedEndpoint: endpoint };
       }
-    } catch (_) {
-      continue;
-    }
+    } catch (_) { continue; }
   }
   return { items: [], usedEndpoint: null };
 }
 
-/** ------------------------ Componente ------------------------ **/
-
+// --- Componente Principal ---
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [trail, setTrail] = useState([]);
-  const [galleryItems, setGalleryItems] = useState([]);
-  const [galleryEndpoint, setGalleryEndpoint] = useState(null);
-  const [mapError, setMapError] = useState(null);
+  const [gallery, setGallery] = useState({ items: [], endpoint: null });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isTourActive, setIsTourActive] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadInitialData = async () => {
+      setLoading(true);
       setError(null);
       try {
-        await Promise.all([
-          api.get("posts/", { params: { limit: 4 } }).then(({ data }) => {
-            const arr = Array.isArray(data) ? data : data?.results || [];
-            setPosts(arr);
-          }),
-          api.get("reviews/").then(({ data }) => {
-            const arr = Array.isArray(data) ? data : data?.results || [];
-            setReviews(arr.slice(0, 5));
-          }),
-          (async () => {
-            const { items, usedEndpoint } = await fetchFirstGalleryFound();
-            setGalleryItems(items);
-            setGalleryEndpoint(usedEndpoint);
-          })(),
-          fetch("/ruta.json")
-            .then((res) => {
-              if (!res.ok) throw new Error("No se pudo cargar la ruta del mapa.");
-              return res.json();
-            })
-            .then((geo) => {
-              const coords = geo?.features?.[0]?.geometry?.coordinates || [];
-              const normalized = coords.map(([lng, lat]) => [lat, lng]);
-              setTrail(normalized);
-            })
-            .catch((e) => setMapError(e.message || "Error cargando el mapa.")),
+        const results = await Promise.allSettled([
+          api.get("posts/", { params: { limit: 4 } }),
+          api.get("reviews/"),
+          fetchFirstGalleryFound(),
+          fetch("/ruta.json"),
         ]);
+        if (results[0].status === "fulfilled") { setPosts(unwrapResults(results[0].value.data)); }
+        if (results[1].status === "fulfilled") { setReviews(unwrapResults(results[1].value.data).slice(0, 5));}
+        if (results[2].status === "fulfilled") { setGallery({ items: results[2].value.items, endpoint: results[2].value.usedEndpoint }); }
+        if (results[3].status === "fulfilled") {
+          const res = results[3].value;
+          if (!res.ok) throw new Error("GeoJSON no encontrado.");
+          const geo = await res.json();
+          const coords = geo?.features?.[0]?.geometry?.coordinates || [];
+          setTrail(coords.map(([lng, lat]) => [lat, lng]));
+        }
+        results.forEach(result => {
+          if (result.status === 'rejected') { console.error("Error en petición:", result.reason); }
+        });
       } catch (e) {
-        console.error("Error al cargar la página de inicio:", e);
+        console.error("Error al cargar la página:", e);
         setError("Ocurrió un problema al cargar el contenido. Intenta nuevamente.");
       } finally {
         setLoading(false);
+        const hasSeenTour = localStorage.getItem('tourCompletado');
+        if (!hasSeenTour) {
+          setTimeout(() => setIsTourActive(true), 500);
+        }
       }
     };
-    fetchData();
+    loadInitialData();
   }, []);
 
-  const openPost = (post) => {
-    const url = post?.cta_url;
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
-      return;
-    }
-    if (post?.id) navigate(`/posts/${post.id}`);
+  const handleTourComplete = () => {
+    setIsTourActive(false);
+    localStorage.setItem('tourCompletado', 'true');
   };
 
-  const hasCarousel = useMemo(
-    () => Array.isArray(galleryItems) && galleryItems.length > 0,
-    [galleryItems]
-  );
+  const openPost = (post) => {
+    if (post?.cta_url) {
+      window.open(post.cta_url, "_blank", "noopener", "noreferrer");
+    } else if (post?.id) {
+      navigate(`/posts/${post.id}`);
+    }
+  };
+
+  const hasCarousel = useMemo(() => Array.isArray(gallery.items) && gallery.items.length > 0, [gallery.items]);
 
   if (loading) {
-    return (
-      <div className="loading-container" role="status" aria-live="polite">
-        Cargando…
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="home-page">
+      {isTourActive && <GuidedTour onComplete={handleTourComplete} />}
+      
       {error && (
         <div className="alert alert-error" role="alert">
-          {error}
+          <span className="alert-icon">⚠️</span> {error}
         </div>
       )}
 
-      {/* HERO 16:9 */}
       {hasCarousel && (
         <section className="home-section hero-section hero-16x9">
           <div className="hero-frame">
             <div className="hero-inner">
-              <HeroCarousel items={galleryItems} />
-              {galleryEndpoint }
+              <HeroCarousel items={gallery.items} />
             </div>
           </div>
         </section>
       )}
 
-      {/* Últimas Novedades */}
-      {posts.length > 0 && (
-        <section className="home-section">
-          <div className="home-container">
-            <header className="section-header">
-              <h2>Últimas Novedades</h2>
-              <p>Guías, noticias y consejos para tu próxima aventura.</p>
-            </header>
-
+      <section id="novedades" className="home-section">
+        <div className="home-container">
+          <header className="section-header">
+            <h2>Últimas Novedades</h2>
+            <p>Guías, noticias y consejos para tu próxima aventura.</p>
+          </header>
+          {posts.length > 0 ? (
             <div className="featured-posts-grid">
               {posts.map((post) => (
                 <article
                   key={post.id}
                   className="post-card"
                   onClick={() => openPost(post)}
-                  title={post.title}
+                  title={`Leer más sobre ${post.title}`}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPost(post)}
                 >
                   <div className="post-card__media">
-                    {post.cover ? (
-                      <img src={post.cover} alt={post.title} loading="lazy" />
-                    ) : (
-                      <div className="post-card__placeholder" aria-label="Sin imagen">
-                        Sin imagen
-                      </div>
+                    {post.cover ? ( <img src={post.cover} alt="" loading="lazy" /> ) : (
+                      <div className="post-card__placeholder" aria-label="Sin imagen disponible">🏞️</div>
                     )}
                   </div>
                   <div className="post-card__body">
                     <h3 className="post-card__title">{post.title}</h3>
-                    {post.place?.name && (
-                      <span className="post-card__place">📍 {post.place.name}</span>
-                    )}
+                    {post.place?.name && ( <span className="post-card__place">📍 {post.place.name}</span> )}
                     <span className="post-card__read-more">Leer más →</span>
                   </div>
                 </article>
               ))}
             </div>
+          ) : (
+            <div className="empty-state">
+              <p>No hay novedades por el momento. ¡Vuelve pronto!</p>
+            </div>
+          )}
+          <footer className="section-footer">
+            <Link to="/posts" className="btn btn--ghost">Ver todas las publicaciones →</Link>
+          </footer>
+        </div>
+      </section>
 
-            <footer className="section-footer">
-              <Link to="/posts" className="btn btn--ghost">
-                Ver todas las publicaciones →
-              </Link>
-            </footer>
-          </div>
-        </section>
-      )}
-
-      {/* Planifica tu Visita */}
-      <section className="home-section alt-bg">
+      <section id="planifica" className="home-section alt-bg">
         <div className="home-container">
           <header className="section-header">
             <h2>Planifica tu Visita</h2>
@@ -238,12 +338,12 @@ export default function Home() {
             </Link>
             <Link className="planning-card" to="/informacion">
               <span className="planning-card__icon">ℹ️</span>
-              <h3>Información</h3>
+              <h3>Información Útil</h3>
               <p>Horarios, tarifas y contacto.</p>
             </Link>
             <a
               className="planning-card"
-              href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx"
+              href="https://wa.me/59172672767"
               target="_blank"
               rel="noreferrer noopener"
             >
@@ -255,48 +355,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Opiniones */}
       {reviews.length > 0 && (
-        <section className="home-section">
+        <section id="opiniones" className="home-section">
           <div className="home-container">
             <header className="section-header">
               <h2>Lo que dicen nuestros visitantes</h2>
             </header>
             <div className="testimonials-grid">
               {reviews.map((review) => (
-                <div key={review.id} className="testimonial-card">
+                <blockquote key={review.id} className="testimonial-card">
                   {review.photo && (
                     <img
                       src={review.photo}
-                      alt={`Opinión de ${review.author_name}`}
+                      alt={`Foto de ${review.author_name}`}
                       className="testimonial-photo"
                       loading="lazy"
                     />
                   )}
                   <p className="testimonial-comment">"{review.comment}"</p>
-                  <div className="testimonial-footer">
-                    <div className="testimonial-author-info">
+                  <footer className="testimonial-footer">
+                    <cite className="testimonial-author-info">
                       <span className="testimonial-author">{review.author_name}</span>
                       <span className="testimonial-rating">
-                        {[...Array(review.rating)].map((_, i) => (
-                          <Star key={i} />
-                        ))}
+                        {[...Array(review.rating)].map((_, i) => <Star key={i} />)}
                       </span>
-                    </div>
+                    </cite>
                     {review.place_name && review.place_slug && (
                       <Link to={`/places/${review.place_slug}`} className="testimonial-place">
                         en {review.place_name}
                       </Link>
                     )}
-                  </div>
-                </div>
+                  </footer>
+                </blockquote>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Mapa */}
       <section id="mapa" className="home-section alt-bg">
         <div className="home-container">
           <header className="section-header">
@@ -304,13 +400,13 @@ export default function Home() {
             <p>Explora la ruta de ingreso a nuestra comunidad.</p>
           </header>
           <div className="home-map-container">
-            {mapError ? (
-              <div className="map-error-message">{mapError}</div>
-            ) : (
-              <Suspense fallback={<div className="map-loading">Cargando mapa…</div>}>
+            <Suspense fallback={<div className="map-loading">Cargando mapa interactivo…</div>}>
+              {trail.length > 0 ? (
                 <InteractiveTrailMap trailData={trail} />
-              </Suspense>
-            )}
+              ) : (
+                 <div className="map-error-message">No se pudo cargar la ruta del mapa.</div>
+              )}
+            </Suspense>
           </div>
           <footer className="section-footer">
             <Link to="/como-llegar" className="btn btn--link">
@@ -320,7 +416,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="dev-footer">
         <p>
           Desarrollado por{" "}
