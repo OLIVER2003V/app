@@ -40,6 +40,7 @@ export default function App() {
             <Route path="/posts/:id" element={<PostDetail />} />
             <Route path="/como-llegar" element={<ComoLlegar />} />
             <Route path="/informacion" element={<Informacion />} />
+            <Route path="/login" element={<Login />} />
             {/* privadas (anidar con ProtectedRoute como “gate”) */}
             <Route
               path="/admin/posts/new"
@@ -88,7 +89,7 @@ export default function App() {
           
 
           {/* login puede ir fuera del layout si no quieres mostrar el Navbar */}
-          <Route path="/login" element={<Login />} />
+          
 
           {/* 404 opcional */}
           <Route path="*" element={<div style={{ padding: 20 }}>Página no encontrada</div>} />
