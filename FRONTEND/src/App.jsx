@@ -4,6 +4,9 @@ import { AuthProvider } from "@context/AuthContext";
 import ProtectedRoute from "@components/ProtectedRoute";
 import Layout from "@components/Layout";
 
+import ReactGA from 'react-ga4';
+import usePageTracking from './hooks/usePageTracking';
+
 import Login from "@pages/Login";
 import Places from "@pages/Places";
 import PlaceDetail from "@pages/PlaceDetail";
@@ -20,6 +23,9 @@ import ComoLlegar from "./pages/ComoLlegar";
 import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import GalleryAdmin from "./pages/GalleryAdmin";
+
+const TRACKING_ID = "G-23892RNY2C"; // ⬅️ Usa tu ID de Medición aquí
+ReactGA.initialize(TRACKING_ID);
 
 // 👇 CRUD unificado de contactos
 import { ListContacts, CreateContact, EditContact } from "./pages/ContactManager";
