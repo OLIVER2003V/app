@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../lib/api';
+import api from '@/lib/api';
 import './CreateEvent.css';
 
 export default function ManageEvent() {
