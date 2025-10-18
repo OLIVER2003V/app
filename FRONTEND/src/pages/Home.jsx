@@ -14,6 +14,7 @@ const Star = () => <span className="testimonial-rating-star">⭐</span>;
 
 function normalizeGalleryItem(raw, idx) {
   const id = raw?.id ?? raw?.pk ?? idx;
+
   const title =
     raw?.title ??
     raw?.name ??
@@ -23,6 +24,7 @@ function normalizeGalleryItem(raw, idx) {
     raw?.descripcion ??
     "Slide";
 
+  // todas las posibles rutas que podrían venir
   const candidates = [
     raw?.media_file_url,
     raw?.media_url,
@@ -36,16 +38,17 @@ function normalizeGalleryItem(raw, idx) {
     raw?.cover,
     raw?.video_url,
   ];
-  const media_file_url = candidates.find(Boolean) ?? "";
+  const src = candidates.find(Boolean) ?? "";
 
   const mt =
     raw?.media_type ??
     raw?.type ??
     raw?.kind ??
-    (media_file_url?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? "VIDEO" : "IMAGE");
+    (src?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? "VIDEO" : "IMAGE");
 
-  const media_type = String(mt).toUpperCase(); // "VIDEO" | "IMAGE"
-  return { id, title, media_type, media_file_url };
+  const media_type = String(mt).toUpperCase();
+
+  return { id, title, media_type, src };
 }
 
 function unwrapResults(data) {
@@ -64,7 +67,7 @@ async function fetchFirstGalleryFound() {
       if (arr.length) {
         const normalized = arr
           .map((it, i) => normalizeGalleryItem(it, i))
-          .filter((x) => x.media_file_url);
+          .filter((x) => !!x.src); // ✅ ahora filtramos por src válido
         if (normalized.length) {
           return { items: normalized, usedEndpoint: endpoint };
         }
@@ -159,11 +162,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* HERO 16:9 — NO SE SOLAPA CON OTRAS SECCIONES */}
+      {/* HERO 16:9 */}
       {hasCarousel && (
         <section className="home-section hero-section hero-16x9">
           <div className="hero-frame">
-            {/* Esta caja crea la altura (16:9). El contenido va absoluto dentro. */}
             <div className="hero-inner">
               <HeroCarousel items={galleryItems} />
               {galleryEndpoint && (
