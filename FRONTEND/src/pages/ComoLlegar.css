@@ -28,6 +28,7 @@
   flex-direction: column;
   gap: 2.5rem;
   margin-top: 3rem;
+  padding: 0 1rem; /* Añadido para espaciado en móviles */
 }
 
 .step-card {
@@ -89,6 +90,7 @@
   display: flex;
   gap: 1.5rem;
   margin-top: 1rem;
+  flex-wrap: wrap; /* Añadido para que se ajuste en pantallas pequeñas */
 }
 
 .transport-item {
@@ -127,12 +129,13 @@
 .video-section {
   margin-top: 4rem;
   text-align: center;
+  padding: 0 1rem; /* Añadido para espaciado en móviles */
 }
 
 .video-section h2 {
   font-size: 2.5rem;
   margin-bottom: 2rem;
-  color: #ffffff; /* Texto blanco para el título de la sección */
+  color: #ffffff;
 }
 
 .video-container {
@@ -151,4 +154,43 @@
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* ================================================================
+   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
+   ================================================================ */
+@media (max-width: 768px) {
+  .como-llegar-header {
+    padding: 2.5rem 1rem;
+  }
+  .como-llegar-header h1 {
+    font-size: 2rem;
+  }
+  .como-llegar-header p {
+    font-size: 1rem;
+  }
+
+  .steps-section {
+    margin-top: 2rem;
+    gap: 1.5rem;
+  }
+
+  .step-card {
+    flex-direction: column; /* Apila el número y el contenido */
+    align-items: flex-start; /* Alinea los elementos a la izquierda */
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .step-content h3 {
+    font-size: 1.5rem;
+  }
+
+  .video-section {
+    margin-top: 3rem;
+  }
+  .video-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
 }
