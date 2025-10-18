@@ -5,7 +5,7 @@ import "./navbar.css";
 
 export default function Navbar() {
   const { token, me, logout } = useAuth();
-  const [open, setOpen] = useState(false);      // mobile
+  const [open, setOpen] = useState(false);       // mobile
   const [scrolled, setScrolled] = useState(false);
   const [query, setQuery] = useState("");
   const location = useLocation();
@@ -29,7 +29,8 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`nav ${scrolled ? "nav--scrolled" : "nav--top"}`}>
+    // ▼▼▼ AQUÍ ESTÁ EL CAMBIO PRINCIPAL ▼▼▼
+    <header className={`nav ${scrolled ? "nav--scrolled" : "nav--top"} ${open ? "is-open" : ""}`}>
       <div className="nav__inner">
         {/* LOGO */}
         <Link to="/" className="nav__brand">
@@ -91,42 +92,40 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* MOBILE PANEL */}
-      {open && (
-        <div className="nav__mobile">
-          <form className="nav__mSearch" onSubmit={onSearch}>
-            <input
-              type="search"
-              placeholder="Buscar lugares..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Buscar"
-            />
-            <button className="btn btn--full" type="submit">Buscar</button>
-          </form>
+      {/* MOBILE PANEL - Se quita la condición {open && ...} */}
+      <div className="nav__mobile">
+        <form className="nav__mSearch" onSubmit={onSearch}>
+          <input
+            type="search"
+            placeholder="Buscar lugares..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Buscar"
+          />
+          <button className="btn btn--full" type="submit">Buscar</button>
+        </form>
 
-          <NavLink to="/places" className="nav__mItem">Lugares</NavLink>
-          <NavLink to="/events" className="nav__mItem">Eventos</NavLink>
-          <NavLink to="/contact" className="nav__mItem">Contactos</NavLink>
+        <NavLink to="/places" className="nav__mItem">Lugares</NavLink>
+        <NavLink to="/events" className="nav__mItem">Eventos</NavLink>
+        <NavLink to="/contact" className="nav__mItem">Contactos</NavLink>
 
-          <a
-            className="btn btn--full btn--whatsapp"
-            href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx"
-            target="_blank"
-            rel="noreferrer"
-          >
-            WhatsApp
-          </a>
-          {token ? (
-            <>
-              <Link to="/dashboard" className="btn btn--full btn--ghost">Mi panel</Link>
-              <button className="btn btn--full btn--ghost" onClick={logout}>Salir</button>
-            </>
-          ) : (
-            <Link to="/login" className="btn btn--full btn--ghost">Ingresar</Link>
-          )}
-        </div>
-      )}
+        <a
+          className="btn btn--full btn--whatsapp"
+          href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx"
+          target="_blank"
+          rel="noreferrer"
+        >
+          WhatsApp
+        </a>
+        {token ? (
+          <>
+            <Link to="/dashboard" className="btn btn--full btn--ghost">Mi panel</Link>
+            <button className="btn btn--full btn--ghost" onClick={logout}>Salir</button>
+          </>
+        ) : (
+          <Link to="/login" className="btn btn--full btn--ghost">Ingresar</Link>
+        )}
+      </div>
     </header>
   );
 }
