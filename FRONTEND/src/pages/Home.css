@@ -1,18 +1,53 @@
+/* =========================================================
+   THEME "Eco Travel"
+   - Paleta fresca (verdes) + acentos cálidos para turismo
+   - Mejor contraste y legibilidad
+   - Mantiene 16:9 del hero y Swiper visible
+   ========================================================= */
+
 /* === VARIABLES GLOBALES === */
 :root {
-  --primary-color: #2c5282;
-  --secondary-color: #e53e3e;
-  --background-color: #ffffff;
-  --alt-background-color: #f7fafc;
-  --text-color: #2d3748;
-  --text-light-color: #718096;
-  --border-color: #e2e8f0;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --border-radius: 8px;
+  /* Colores principales */
+  --primary-color: #2e7d32;          /* verde bosque */
+  --primary-600: #1b5e20;            /* verde profundo */
+  --primary-200: #a5d6a7;
+
+  --accent-color: #ff8a00;           /* naranja cálido */
+  --accent-600: #ef6c00;
+
+  /* Fondos */
+  --background-color: #f7fbf8;       /* blanco verdoso muy suave */
+  --alt-background-color: #e8f5e9;   /* verde claro para bloques alternos */
+
+  /* Texto */
+  --text-color: #1f2937;             /* gris oscuro legible */
+  --text-light-color: #4b5563;       /* gris medio */
+  --text-muted: #6b7280;
+
+  /* Bordes/sombras */
+  --border-color: #e5e7eb;
+  --card-shadow: 0 10px 20px rgba(16, 24, 40, 0.06),
+                 0 2px 6px rgba(16, 24, 40, 0.04);
+  --hover-shadow: 0 16px 32px rgba(16, 24, 40, 0.10),
+                  0 3px 8px rgba(16, 24, 40, 0.08);
+
+  /* UI */
+  --border-radius: 14px;
+  --radius-sm: 10px;
+  --container-width: 1140px;
+
+  /* Tipografía */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
                  Helvetica, Arial, sans-serif;
-  --container-width: 1100px;
+
+  /* Transiciones */
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --focus-ring: 0 0 0 3px rgba(46,125,50,.2), 0 0 0 6px rgba(46,125,50,.1);
+}
+
+/* === PREFERENCIAS DE MOVIMIENTO === */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
 }
 
 /* === ESTILOS BASE === */
@@ -20,30 +55,32 @@
   font-family: var(--font-family);
   color: var(--text-color);
   background-color: var(--background-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  font-size: 1.5rem;
-  color: var(--primary-color);
+  height: 60vh;
+  font-size: 1.25rem;
+  color: var(--primary-600);
 }
 
 /* === CONTENEDORES Y SECCIONES === */
 .home-section {
-  padding: 4rem 1.5rem;
+  padding: clamp(2.5rem, 4vw, 4rem) 1.25rem;
 }
 
 .home-section.hero-section {
-  padding: 0; /* el hero va pegado arriba */
+  padding: 0;
   position: relative;
-  z-index: 0; /* asegura stacking context neutro */
+  z-index: 0;
 }
 
 .home-section.alt-bg {
-  background-color: var(--alt-background-color);
+  background: linear-gradient(180deg, var(--alt-background-color), #f3faf4);
 }
 
 .home-container {
@@ -53,87 +90,97 @@
 
 .section-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
 }
 
 .section-header h2 {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--primary-color);
+  font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: .5rem;
+  color: var(--primary-600);
 }
 
 .section-header p {
-  font-size: 1.125rem;
-  color: var(--text-light-color);
-  max-width: 600px;
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  color: var(--text-muted);
+  max-width: 680px;
   margin: 0 auto;
 }
 
 .section-footer {
   text-align: center;
-  margin-top: 3rem;
+  margin-top: 2rem;
 }
 
 /* === BOTONES Y ENLACES === */
 .btn {
   display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--border-radius);
-  font-weight: 600;
+  padding: .85rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  letter-spacing: .01em;
   text-decoration: none;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  border: 2px solid transparent;
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), background-color .18s var(--ease), color .18s var(--ease);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 .btn:hover { transform: translateY(-2px); }
 
 .btn--ghost {
-  background-color: transparent;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
+  background-color: #fff;
+  border-color: var(--primary-200);
+  color: var(--primary-600);
 }
-
-.btn--ghost:hover { background-color: var(--primary-color); color: white; }
+.btn--ghost:hover {
+  background-color: var(--primary-600);
+  color: #fff;
+  box-shadow: var(--hover-shadow);
+}
 
 .btn--link {
-  color: var(--primary-color);
-  font-weight: 600;
+  color: var(--primary-600);
+  font-weight: 700;
+  text-decoration: none;
+  padding: .25rem .5rem;
+  border-radius: 6px;
+}
+.btn--link:hover {
+  background: rgba(46,125,50,.08);
   text-decoration: none;
 }
-
-.btn--link:hover { text-decoration: underline; }
 
 /* === TARJETAS DE NOVEDADES (POSTS) === */
 .featured-posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2rem);
 }
 
 .post-card {
-  background-color: white;
+  background-color: #fff;
   border-radius: var(--border-radius);
   box-shadow: var(--card-shadow);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+  border: 1px solid var(--border-color);
 }
-
 .post-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-6px);
+  box-shadow: var(--hover-shadow);
 }
 
 .post-card__media {
-  height: 200px;
-  background-color: var(--border-color);
+  height: 210px;
+  background: linear-gradient(180deg, #e8f5e9, #dcedc8);
 }
-
 .post-card__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .post-card__placeholder {
@@ -141,91 +188,100 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  color: var(--text-light-color);
+  color: var(--text-muted);
 }
 
-.post-card__body { padding: 1.5rem; }
-
+.post-card__body {
+  padding: 1.25rem 1.25rem 1.3rem;
+}
 .post-card__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 .4rem;
   color: var(--text-color);
 }
-
 .post-card__place {
   display: block;
-  font-size: 0.875rem;
+  font-size: .9rem;
   color: var(--text-light-color);
-  margin-bottom: 1rem;
+  margin-bottom: .85rem;
 }
-
-.post-card__read-more { font-weight: 600; color: var(--primary-color); }
+.post-card__read-more {
+  font-weight: 800;
+  color: var(--accent-color);
+}
 
 /* === TARJETAS DE PLANIFICACIÓN === */
 .planning-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2rem);
   text-align: center;
 }
 
 .planning-card {
-  background-color: white;
-  padding: 2rem;
+  background-color: #fff;
+  padding: 1.75rem 1.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--card-shadow);
   text-decoration: none;
   color: var(--text-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), color .25s var(--ease);
+  border: 1px solid var(--border-color);
 }
-
 .planning-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-              0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  color: var(--primary-color);
+  transform: translateY(-6px);
+  box-shadow: var(--hover-shadow);
+  color: var(--primary-600);
 }
 
 .planning-card__icon {
-  font-size: 2.5rem;
+  font-size: 2.4rem;
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: .6rem;
 }
 
-.planning-card h3 { font-size: 1.5rem; margin: 0 0 0.5rem; }
-
-.planning-card p { color: var(--text-light-color); margin: 0; line-height: 1.6; }
+.planning-card h3 {
+  font-size: 1.35rem;
+  margin: 0 0 .4rem;
+  font-weight: 800;
+}
+.planning-card p {
+  color: var(--text-light-color);
+  margin: 0;
+  line-height: 1.6;
+}
 
 /* === TARJETAS DE OPINIONES (TESTIMONIALS) === */
 .testimonials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2rem);
 }
 
 .testimonial-card {
-  background-color: var(--alt-background-color);
-  padding: 2rem;
+  background-color: #fff;
+  padding: 1.5rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  box-shadow: var(--card-shadow);
 }
 
 .testimonial-photo {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  margin: 0 auto 1rem;
+  margin: 0 auto .9rem;
 }
 
 .testimonial-comment {
   font-style: italic;
   color: var(--text-color);
   flex-grow: 1;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
   text-align: center;
 }
 
@@ -234,17 +290,18 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: .5rem;
 }
 
 .testimonial-author-info { display: flex; flex-direction: column; }
 
-.testimonial-author { font-weight: 700; }
+.testimonial-author { font-weight: 800; color: var(--primary-600); }
 
 .testimonial-place {
-  font-size: 0.875rem;
-  color: var(--primary-color);
+  font-size: .9rem;
+  color: var(--accent-color);
   text-decoration: none;
+  font-weight: 700;
 }
 .testimonial-place:hover { text-decoration: underline; }
 
@@ -255,6 +312,8 @@
   overflow: hidden;
   border: 1px solid var(--border-color);
   margin-bottom: 1.5rem;
+  box-shadow: var(--card-shadow);
+  background: #fff;
 }
 
 .map-error-message {
@@ -262,126 +321,24 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: var(--alt-background-color);
-  color: var(--secondary-color);
-  font-weight: 500;
+  background-color: #fff7ed;
+  color: #b45309;
+  font-weight: 600;
 }
 
 .dev-footer {
-  background-color: #2d3748;
-  color: #a0aec0;
+  background: linear-gradient(180deg, var(--primary-600), #0e3b16);
+  color: #eaf7ec;
   text-align: center;
   padding: 1.5rem;
-  font-size: 0.875rem;
+  font-size: .9rem;
 }
-
-.dev-footer a { color: white; font-weight: 600; text-decoration: none; }
+.dev-footer a { color: #fff; font-weight: 800; text-decoration: none; }
 .dev-footer a:hover { text-decoration: underline; }
 
-/* ===========================
-   HERO 16:9 — CONTENEDOR
-   =========================== */
-.hero-16x9 .hero-frame {
-  position: relative;
-  width: 100%;
-  /* Truco de altura 16:9 que SIEMPRE cuenta en el flujo (evita solape) */
-}
-.hero-16x9 .hero-frame::before {
-  content: "";
-  display: block;
-  padding-top: 56.25%; /* 9/16 = 0.5625 */
-  /* Esta pseudo-capa define la altura del bloque en el flujo */
-}
-
-/* El contenido real del hero ocupa esa caja */
-.hero-16x9 .hero-inner {
-  position: absolute;
-  inset: 0;
-  background: #0f2027;
-  overflow: hidden;
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* ===========================
-   HERO — SLIDES Y MEDIA
-   =========================== */
-.hero-carousel,
-.hero-carousel * { box-sizing: border-box; }
-
-.hero-carousel {
-  position: relative;   /* relativo al .hero-inner */
-  width: 100%;
-  height: 100%;
-}
-
-.carousel-slide {
-  position: absolute;
-  inset: 0;
-}
-
-.carousel-media {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;   /* recorta manteniendo proporción */
-  object-position: center;
-  display: block;
-}
-
-/* Overlay para legibilidad del título */
-.carousel-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.55) 0%,
-    rgba(0, 0, 0, 0.20) 45%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
-  pointer-events: none;
-}
-
-/* Título centrado y responsivo */
-.carousel-caption {
-  position: absolute;
-  bottom: 12%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(90%, 960px);
-  text-align: center;
-  color: #fff;
-  padding: 0 1rem;
-}
-
-.carousel-caption h1 {
-  font-size: clamp(1.8rem, 4.8vw, 3.2rem);
-  font-weight: 800;
-  line-height: 1.2;
-  margin: 0;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
-}
-
-/* (Opcional) pista del endpoint usada */
-.endpoint-hint {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(0, 0, 0, 0.35);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-}
-
-/* Ajustes responsive */
-@media (max-width: 768px) {
-  .carousel-caption { bottom: 10%; }
-}
-
-/* ===========================
-   HERO 16:9 — CONTENEDOR
-   =========================== */
+/* =========================================================
+   HERO 16:9 — CONTENEDOR (NO SOLAPA SIGUIENTES SECCIONES)
+   ========================================================= */
 .hero-16x9 .hero-frame {
   position: relative;
   width: 100%;
@@ -394,107 +351,124 @@
 .hero-16x9 .hero-inner {
   position: absolute;
   inset: 0;
-  background: #0f2027;
+  background: #0f2027; /* fallback mientras carga */
   overflow: hidden;
   border-bottom: 1px solid var(--border-color);
 }
 
-/* ===========================
-   HERO — SWIPER sizing
-   =========================== */
-.hero-carousel .swiper,
-.hero-carousel .swiper-wrapper,
-.hero-carousel .swiper-slide {
-  width: 100%;
-  height: 100%;
-}
+/* =========================================================
+   HERO — SLIDES & MEDIA
+   ========================================================= */
+.hero-carousel,
+.hero-carousel * { box-sizing: border-box; }
 
-/* IMPORTANTE: el slide NO debe ser absolute */
-.carousel-slide {
-  position: relative;   /* <--- antes estaba absolute */
-  width: 100%;
-  height: 100%;
-}
+.hero-carousel { position: relative; width: 100%; height: 100%; }
 
-/* La media (img/video) sí ocupa todo el slide */
+/* Cada slide ocupa todo el área (Swiper gestiona el stacking) */
+.carousel-slide { position: relative; width: 100%; height: 100%; }
+
 .carousel-media {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
   display: block;
 }
 
-/* Overlay y caption encima de la media */
+/* Overlay para texto más legible sobre foto/video */
 .carousel-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.55) 0%,
-    rgba(0, 0, 0, 0.20) 45%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
+  background: radial-gradient(70% 60% at 50% 80%, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 45%, rgba(0,0,0,.6) 100%);
   pointer-events: none;
-  z-index: 2; /* por encima del video/imagen */
+  z-index: 2;
 }
 
+/* Título y subtítulos del hero */
 .carousel-caption {
   position: absolute;
   bottom: 12%;
   left: 50%;
   transform: translateX(-50%);
-  width: min(90%, 960px);
+  width: min(92%, 960px);
   text-align: center;
   color: #fff;
   padding: 0 1rem;
-  z-index: 3; /* encima del overlay */
+  z-index: 3;
 }
-
 .carousel-caption h1 {
-  font-size: clamp(1.8rem, 4.8vw, 3.2rem);
-  font-weight: 800;
-  line-height: 1.2;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  line-height: 1.15;
   margin: 0;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+  letter-spacing: -0.02em;
+  text-shadow: 0 10px 30px rgba(0,0,0,.45);
 }
 
-/* ===========================
-   SWIPER — botones y puntos
-   =========================== */
+/* Pista del endpoint (debug opcional) */
+.endpoint-hint {
+  position: absolute;
+  right: 12px; bottom: 12px;
+  color: rgba(255,255,255,.9);
+  background: rgba(0,0,0,.35);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 4;
+}
+
+/* =========================================================
+   SWIPER — Botones y Paginación dentro del hero
+   ========================================================= */
+.hero-carousel .swiper,
+.hero-carousel .swiper-wrapper,
+.hero-carousel .swiper-slide { width: 100%; height: 100%; }
+
+/* Flechas */
 .hero-carousel .swiper-button-prev,
 .hero-carousel .swiper-button-next {
   color: #fff;
-  width: 44px;
-  height: 44px;
-  background: rgba(0, 0, 0, 0.28);
+  width: 46px; height: 46px;
+  background: rgba(0,0,0,.28);
   border-radius: 999px;
   backdrop-filter: blur(2px);
-  z-index: 5; /* por encima de todo */
+  z-index: 5;
+  transition: background .18s var(--ease), transform .18s var(--ease);
 }
-
 .hero-carousel .swiper-button-prev:hover,
 .hero-carousel .swiper-button-next:hover {
-  background: rgba(0, 0, 0, 0.42);
+  background: rgba(0,0,0,.42);
+  transform: translateY(-1px);
 }
-
 .hero-carousel .swiper-button-prev:after,
-.hero-carousel .swiper-button-next:after {
-  font-size: 18px;
-}
+.hero-carousel .swiper-button-next:after { font-size: 18px; }
 
+/* Puntos */
 .hero-carousel .swiper-pagination {
   bottom: 14px !important;
   z-index: 5;
 }
-
 .hero-carousel .swiper-pagination-bullet {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255,255,255,.75);
   opacity: 1;
 }
-
 .hero-carousel .swiper-pagination-bullet-active {
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.28);
+}
+
+/* ===== Responsive pequeños ajustes ===== */
+@media (max-width: 768px) {
+  .carousel-caption { bottom: 10%; }
+  .post-card__media { height: 190px; }
+}
+
+/* ===== Estados de foco accesibles ===== */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.planning-card:focus-visible,
+.post-card:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
