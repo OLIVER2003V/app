@@ -5,20 +5,15 @@ import "./Home.css";
 
 // Componentes importados
 import { HeroCarousel } from "@/components/HeroCarousel"; // export nombrado
-import InteractiveTrailMap from "@/components/InteractiveTrailMap";
-
+import InteractiveTrailMap from "@/components/InteractiveTrailMap"; // default
 
 // Componente pequeño para las estrellas de calificación
 const Star = () => <span className="testimonial-rating-star">⭐</span>;
 
 /** ---------- Utilidades de normalización para la galería ---------- **/
 
-// Mapea un item arbitrario a la forma que espera <HeroCarousel />
 function normalizeGalleryItem(raw, idx) {
-  // posibles ids
   const id = raw?.id ?? raw?.pk ?? idx;
-
-  // posibles títulos / nombres
   const title =
     raw?.title ??
     raw?.name ??
@@ -28,7 +23,6 @@ function normalizeGalleryItem(raw, idx) {
     raw?.descripcion ??
     "Slide";
 
-  // media: probamos varias claves comunes
   const candidates = [
     raw?.media_file_url,
     raw?.media_url,
@@ -39,12 +33,11 @@ function normalizeGalleryItem(raw, idx) {
     raw?.file,
     raw?.path,
     raw?.src,
-    raw?.cover, // por si reusas portadas
+    raw?.cover,
     raw?.video_url,
   ];
   const media_file_url = candidates.find(Boolean) ?? "";
 
-  // tipo (por si viene como 'image', 'video', etc.)
   const mt =
     raw?.media_type ??
     raw?.type ??
@@ -52,11 +45,9 @@ function normalizeGalleryItem(raw, idx) {
     (media_file_url?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? "VIDEO" : "IMAGE");
 
   const media_type = String(mt).toUpperCase(); // "VIDEO" | "IMAGE"
-
   return { id, title, media_type, media_file_url };
 }
 
-// Extrae array de resultados sin importar si viene como {results: []} o []
 function unwrapResults(data) {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.results)) return data.results;
@@ -64,27 +55,24 @@ function unwrapResults(data) {
   return [];
 }
 
-// Intenta varios endpoints hasta encontrar uno válido con data
 async function fetchFirstGalleryFound() {
   const CANDIDATES = ["gallery/", "banners/", "home-slides/", "media/", "carousel/"];
-
   for (const endpoint of CANDIDATES) {
     try {
       const { data } = await api.get(endpoint);
       const arr = unwrapResults(data);
       if (arr.length) {
-        const normalized = arr.map((it, i) => normalizeGalleryItem(it, i)).filter(x => x.media_file_url);
+        const normalized = arr
+          .map((it, i) => normalizeGalleryItem(it, i))
+          .filter((x) => x.media_file_url);
         if (normalized.length) {
           return { items: normalized, usedEndpoint: endpoint };
         }
       }
-    } catch (err) {
-      // Ignoramos 404/405/etc. y seguimos probando
+    } catch (_) {
       continue;
     }
   }
-
-  // Si ninguno funcionó, devolvemos vacío
   return { items: [], usedEndpoint: null };
 }
 
@@ -106,26 +94,19 @@ export default function Home() {
       setError(null);
       try {
         await Promise.all([
-          // 1) Últimas novedades
           api.get("posts/", { params: { limit: 4 } }).then(({ data }) => {
-            const arr = Array.isArray(data) ? data : (data?.results || []);
+            const arr = Array.isArray(data) ? data : data?.results || [];
             setPosts(arr);
           }),
-
-          // 2) Opiniones
           api.get("reviews/").then(({ data }) => {
-            const arr = Array.isArray(data) ? data : (data?.results || []);
+            const arr = Array.isArray(data) ? data : data?.results || [];
             setReviews(arr.slice(0, 5));
           }),
-
-          // 3) Ítems del carrusel (descubrimiento de endpoint + normalización)
           (async () => {
             const { items, usedEndpoint } = await fetchFirstGalleryFound();
             setGalleryItems(items);
             setGalleryEndpoint(usedEndpoint);
           })(),
-
-          // 4) Datos del mapa (archivo estático en /public)
           fetch("/ruta.json")
             .then((res) => {
               if (!res.ok) throw new Error("No se pudo cargar la ruta del mapa.");
@@ -136,9 +117,7 @@ export default function Home() {
               const normalized = coords.map(([lng, lat]) => [lat, lng]);
               setTrail(normalized);
             })
-            .catch((e) => {
-              setMapError(e.message || "Error cargando el mapa.");
-            }),
+            .catch((e) => setMapError(e.message || "Error cargando el mapa.")),
         ]);
       } catch (e) {
         console.error("Error al cargar la página de inicio:", e);
@@ -147,7 +126,6 @@ export default function Home() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -181,20 +159,24 @@ export default function Home() {
         </div>
       )}
 
-      {/* Sección del Carrusel Principal */}
+      {/* HERO 16:9 — NO SE SOLAPA CON OTRAS SECCIONES */}
       {hasCarousel && (
-        <section className="home-section hero-section">
-          <HeroCarousel items={galleryItems} />
-          {/* Pista de depuración opcional (quítalo en prod) */}
-          {galleryEndpoint && (
-            <small className="endpoint-hint">
-              Usando endpoint: <code>{galleryEndpoint}</code>
-            </small>
-          )}
+        <section className="home-section hero-section hero-16x9">
+          <div className="hero-frame">
+            {/* Esta caja crea la altura (16:9). El contenido va absoluto dentro. */}
+            <div className="hero-inner">
+              <HeroCarousel items={galleryItems} />
+              {galleryEndpoint && (
+                <small className="endpoint-hint">
+                  Usando endpoint: <code>{galleryEndpoint}</code>
+                </small>
+              )}
+            </div>
+          </div>
         </section>
       )}
 
-      {/* Sección de Últimas Novedades */}
+      {/* Últimas Novedades */}
       {posts.length > 0 && (
         <section className="home-section">
           <div className="home-container">
@@ -243,7 +225,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Sección de Planificación */}
+      {/* Planifica tu Visita */}
       <section className="home-section alt-bg">
         <div className="home-container">
           <header className="section-header">
@@ -275,7 +257,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sección de Opiniones */}
+      {/* Opiniones */}
       {reviews.length > 0 && (
         <section className="home-section">
           <div className="home-container">
@@ -316,14 +298,14 @@ export default function Home() {
         </section>
       )}
 
-      {/* Sección del Mapa */}
+      {/* Mapa */}
       <section id="mapa" className="home-section alt-bg">
         <div className="home-container">
           <header className="section-header">
             <h2>Nuestra Ubicación</h2>
             <p>Explora la ruta de ingreso a nuestra comunidad.</p>
           </header>
-        <div className="home-map-container">
+          <div className="home-map-container">
             {mapError ? (
               <div className="map-error-message">{mapError}</div>
             ) : (
@@ -340,7 +322,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pie de página de desarrollo */}
+      {/* Footer */}
       <footer className="dev-footer">
         <p>
           Desarrollado por{" "}

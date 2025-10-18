@@ -38,6 +38,8 @@
 
 .home-section.hero-section {
   padding: 0; /* el hero va pegado arriba */
+  position: relative;
+  z-index: 0; /* asegura stacking context neutro */
 }
 
 .home-section.alt-bg {
@@ -83,9 +85,7 @@
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-}
+.btn:hover { transform: translateY(-2px); }
 
 .btn--ghost {
   background-color: transparent;
@@ -93,10 +93,7 @@
   color: var(--primary-color);
 }
 
-.btn--ghost:hover {
-  background-color: var(--primary-color);
-  color: white;
-}
+.btn--ghost:hover { background-color: var(--primary-color); color: white; }
 
 .btn--link {
   color: var(--primary-color);
@@ -104,9 +101,7 @@
   text-decoration: none;
 }
 
-.btn--link:hover {
-  text-decoration: underline;
-}
+.btn--link:hover { text-decoration: underline; }
 
 /* === TARJETAS DE NOVEDADES (POSTS) === */
 .featured-posts-grid {
@@ -149,9 +144,7 @@
   color: var(--text-light-color);
 }
 
-.post-card__body {
-  padding: 1.5rem;
-}
+.post-card__body { padding: 1.5rem; }
 
 .post-card__title {
   font-size: 1.25rem;
@@ -167,10 +160,7 @@
   margin-bottom: 1rem;
 }
 
-.post-card__read-more {
-  font-weight: 600;
-  color: var(--primary-color);
-}
+.post-card__read-more { font-weight: 600; color: var(--primary-color); }
 
 /* === TARJETAS DE PLANIFICACIÓN === */
 .planning-grid {
@@ -203,16 +193,9 @@
   margin-bottom: 1rem;
 }
 
-.planning-card h3 {
-  font-size: 1.5rem;
-  margin: 0 0 0.5rem;
-}
+.planning-card h3 { font-size: 1.5rem; margin: 0 0 0.5rem; }
 
-.planning-card p {
-  color: var(--text-light-color);
-  margin: 0;
-  line-height: 1.6;
-}
+.planning-card p { color: var(--text-light-color); margin: 0; line-height: 1.6; }
 
 /* === TARJETAS DE OPINIONES (TESTIMONIALS) === */
 .testimonials-grid {
@@ -254,23 +237,16 @@
   gap: 0.5rem;
 }
 
-.testimonial-author-info {
-  display: flex;
-  flex-direction: column;
-}
+.testimonial-author-info { display: flex; flex-direction: column; }
 
-.testimonial-author {
-  font-weight: 700;
-}
+.testimonial-author { font-weight: 700; }
 
 .testimonial-place {
   font-size: 0.875rem;
   color: var(--primary-color);
   text-decoration: none;
 }
-.testimonial-place:hover {
-  text-decoration: underline;
-}
+.testimonial-place:hover { text-decoration: underline; }
 
 /* === MAPA Y FOOTER === */
 .home-map-container {
@@ -299,15 +275,8 @@
   font-size: 0.875rem;
 }
 
-.dev-footer a {
-  color: white;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.dev-footer a:hover {
-  text-decoration: underline;
-}
+.dev-footer a { color: white; font-weight: 600; text-decoration: none; }
+.dev-footer a:hover { text-decoration: underline; }
 
 /* ===========================
    HERO 16:9 — CONTENEDOR
@@ -315,34 +284,34 @@
 .hero-16x9 .hero-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;   /* clave del 16:9 */
-  max-height: 720px;
-  min-height: 320px;
-  background: #0f2027;    /* fondo mientras carga */
-  overflow: hidden;
-  border-bottom: 1px solid var(--border-color);
+  /* Truco de altura 16:9 que SIEMPRE cuenta en el flujo (evita solape) */
 }
-
-/* Si necesitas compatibilidad sin aspect-ratio, descomenta:
 .hero-16x9 .hero-frame::before {
   content: "";
   display: block;
-  padding-top: 56.25%;
+  padding-top: 56.25%; /* 9/16 = 0.5625 */
+  /* Esta pseudo-capa define la altura del bloque en el flujo */
 }
-.hero-16x9 .hero-frame { position: relative; }
-*/
+
+/* El contenido real del hero ocupa esa caja */
+.hero-16x9 .hero-inner {
+  position: absolute;
+  inset: 0;
+  background: #0f2027;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+}
 
 /* ===========================
    HERO — SLIDES Y MEDIA
    =========================== */
 .hero-carousel,
-.hero-carousel * {
-  box-sizing: border-box;
-}
+.hero-carousel * { box-sizing: border-box; }
 
 .hero-carousel {
-  position: absolute;
-  inset: 0;
+  position: relative;   /* relativo al .hero-inner */
+  width: 100%;
+  height: 100%;
 }
 
 .carousel-slide {
@@ -355,7 +324,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;       /* recorta manteniendo proporción */
+  object-fit: cover;   /* recorta manteniendo proporción */
   object-position: center;
   display: block;
 }
@@ -407,14 +376,5 @@
 
 /* Ajustes responsive */
 @media (max-width: 768px) {
-  .hero-16x9 .hero-frame {
-    max-height: 520px;
-    min-height: 240px;
-  }
   .carousel-caption { bottom: 10%; }
 }
-
-/* ===== LIMPIEZA DE ESTILOS ANTIGUOS (si los tenías) =====
-   Ya no uses: .hero-carousel-section, .carousel-video, .carousel-image
-   con alturas fijas. Todo depende de .hero-frame (16:9).
-*/
