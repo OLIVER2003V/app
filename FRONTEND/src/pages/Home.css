@@ -15,24 +15,28 @@
 /* --- Base de la página --- */
 html, body {
   background-color: var(--bg);
+  margin: 0; /* Asegura que no haya márgenes externos */
+  padding: 0;
 }
 
 .home {
   background-color: var(--bg);
   color: var(--text);
+  overflow-x: hidden; /* Evita scroll horizontal indeseado */
 }
 
 
 /* ==============================================
-   ====== HERO CAROUSEL (ESTILO CONTENIDO) ======
+   ====== HERO CAROUSEL (FULL-WIDTH, ALTURA CONTROLADA) ======
    ============================================== */
 .hero-carousel-section {
   position: relative;
-  aspect-ratio: 16 / 9; /* Mantiene la proporción 16:9 */
-  border-radius: var(--radius);
-  overflow: hidden; /* Oculta lo que se salga de los bordes redondeados */
-  background-color: var(--surface);
+  width: 100%; /* Ocupa el ancho completo */
+  height: 60vh; /* Ajusta esta altura base (60% del viewport height) */
+  max-height: 600px; /* Altura máxima en pantallas grandes para que no sea descomunal */
+  min-height: 400px; /* Altura mínima para asegurar visibilidad en pantallas pequeñas */
   color: white;
+  background-color: var(--bg); /* Asegura que el fondo sea el mismo que el global */
 }
 
 /* Contenedores de carga y estado estático */
@@ -60,21 +64,25 @@ html, body {
 .carousel-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
 }
 
 .carousel-caption {
   position: absolute;
-  bottom: 8%;
+  bottom: 15%; /* Posiciona un poco más arriba */
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
   width: 90%;
+  max-width: 800px; /* Limita el ancho del texto */
 }
 
 .carousel-caption h1 {
-  font-size: clamp(1.5rem, 5vw, 2.5rem); /* Tamaño ajustado para contenedor */
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  font-size: clamp(2rem, 8vw, 3.5rem); /* Título responsivo */
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  margin: 0;
+  line-height: 1.2;
 }
 
 
@@ -82,7 +90,7 @@ html, body {
    ====== ESTRUCTURA GENERAL DE SECCIONES ======
    ============================================== */
 .home-section {
-  padding: 24px;
+  padding: 64px 24px; /* Relleno superior e inferior para secciones */
 }
 
 .home-section.alt-bg {
@@ -210,13 +218,17 @@ html, body {
 .dev-footer{text-align:center;padding:2rem 1rem;margin-top:2rem;border-top:1px solid var(--stroke)}.dev-footer p{margin:0;color:var(--muted);font-size:.9rem}.dev-footer a{color:var(--text);font-weight:600;text-decoration:none;transition:color .2s}.dev-footer a:hover{color:var(--primary)}
 .btn{display:inline-block;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:600;border:1px solid transparent;transition:background-color .2s ease}.btn--ghost{background:var(--ghost);color:var(--text);border-color:#ffffff33}.btn--ghost:hover{background:#ffffff33}
 
+
 /* ==============================================
    ====== AJUSTES PARA MÓVILES (RESPONSIVE) ======
    ============================================== */
 @media (max-width: 768px){
+  .hero-carousel-section {
+    height: 50vh; /* Un poco menos de altura en móviles */
+    min-height: 300px;
+  }
   .home-section{padding:16px}
-  .section-header h2,
-  .testimonials__title{font-size:24px}
+  .section-header h2,.testimonials__title{font-size:24px}
   .testimonials-grid{grid-auto-columns:85%;padding:16px}
   .home-map-container{height:350px}
 }

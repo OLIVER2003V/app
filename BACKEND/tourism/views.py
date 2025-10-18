@@ -125,90 +125,45 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_permissions(self):
-        # GET público; escritura solo admin (ajusta si usas otro permiso)
         if self.request.method in permissions.SAFE_METHODS:
             return [permissions.AllowAny()]
         from .permissions import IsAdmin
         return [IsAdmin()]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if self.request.method in permissions.SAFE_METHODS:
-            return qs.filter(is_active=True)
-        return qs
-
-    def get_serializer_context(self):
-        ctx = super().get_serializer_context()
-        ctx["request"] = self.request
-        return ctx
-
-    def _detect_media_type(self, instance):
-        # 1) Intenta leer content_type del archivo subido
-        f = getattr(instance.media_file, "file", None)
-        ctype = getattr(f, "content_type", None)
-        # 2) Si no hay, intenta por extensión
-        if not ctype:
-            guess, _ = mimetypes.guess_type(getattr(instance.media_file, "name", ""))
-            ctype = guess
-        if ctype:
-            if ctype.startswith("video/"):
-                instance.media_type = "VIDEO"
-            elif ctype.startswith("image/"):
-                instance.media_type = "IMAGE"
-
-    def perform_create(self, serializer):
-        try:
-            instance = serializer.save()  # ⬅️ aquí se sube a Cloudinary por el storage
-            if instance.media_file and not instance.media_file_url:
-                # URL https pública (Cloudinary)
-                instance.media_file_url = instance.media_file.url
-            self._detect_media_type(instance)
-            instance.save()
-        except Exception as e:
-            log.exception("Error subiendo a Cloudinary")
-            # Devuelve detalle al cliente (en Network → Response verás el mensaje)
-            raise  # Si prefieres 400 legible, comenta la línea anterior y descomenta la de abajo:
-            # return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    def perform_update(self, serializer):
-        try:
-            instance = serializer.save()
-            if instance.media_file:
-                instance.media_file_url = instance.media_file.url
-            self._detect_media_type(instance)
-            instance.save()
-        except Exception as e:
-            log.exception("Error actualizando media")
-            raise
-            # return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
     def create(self, request, *args, **kwargs):
         file_obj = request.FILES.get("media_file")
-        media_type = (request.data.get("media_type") or "").upper()
+        title = request.data.get("title", "")
+        is_active = request.data.get("is_active", "true") == "true"
+        order = int(request.data.get("order", 0))
 
-        # Si viene video, subirlo con SDK y guardar solo la URL
-        if file_obj and (media_type == "VIDEO" or str(file_obj.content_type).startswith("video/")):
-            try:
-                res = cloudinary.uploader.upload(
-                    file_obj,
-                    resource_type="video",
-                    folder="gallery",
-                )
-                data = request.data.copy()
-                data["media_type"] = "VIDEO"
-                data["media_file"] = None  # no lo guardamos en FileField
-                data["media_file_url"] = res["secure_url"]
+        if not file_obj:
+            return Response({"detail": "No se envió ningún archivo."}, status=400)
 
-                serializer = self.get_serializer(data=data)
-                serializer.is_valid(raise_exception=True)
-                instance = serializer.save()
-                headers = self.get_success_headers(serializer.data)
-                return Response(self.get_serializer(instance).data, status=201, headers=headers)
-            except Exception as e:
-                return Response({"detail": str(e)}, status=400)
+        # Detectar tipo MIME
+        mime, _ = mimetypes.guess_type(file_obj.name)
+        media_type = "VIDEO" if mime and mime.startswith("video/") else "IMAGE"
 
-        # Si no es video, usa el flujo normal (imagenes via FileField/Storage)
-        return super().create(request, *args, **kwargs)
+        try:
+            # 🚀 Subida directa a Cloudinary (acepta imagen o video)
+            upload_result = cloudinary.uploader.upload(
+                file_obj,
+                folder="gallery",
+                resource_type="auto",  # esto detecta automáticamente si es video o imagen
+            )
+
+            # Crear instancia manualmente
+            item = GalleryItem.objects.create(
+                title=title,
+                media_type=media_type,
+                media_file_url=upload_result.get("secure_url", ""),
+                is_active=is_active,
+                order=order,
+            )
+            serializer = self.get_serializer(item)
+            return Response(serializer.data, status=201)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=400)
 class MediaCreateView(generics.CreateAPIView):
     queryset = Media.objects.all()
     serializer_class = MediaSerializer

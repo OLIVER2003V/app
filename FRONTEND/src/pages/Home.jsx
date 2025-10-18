@@ -51,12 +51,8 @@ export default function Home() {
 
   return (
     <div className="home">
-      {/* El carrusel ahora está dentro de un contenedor para limitar su ancho */}
-      <section className="home-section">
-        <div className="home-container">
-          <HeroCarousel />
-        </div>
-      </section>
+      {/* ▼▼▼ CARRUSEL A ANCHO COMPLETO DE NUEVO ▼▼▼ */}
+      <HeroCarousel /> 
 
       {posts.length > 0 && (
         <section className="home-section">
