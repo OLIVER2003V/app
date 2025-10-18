@@ -132,35 +132,36 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file_obj = request.FILES.get("media_file")
-        title = request.data.get("title", "")
-        is_active = request.data.get("is_active", "true") == "true"
-        order = int(request.data.get("order", 0))
-
         if not file_obj:
             return Response({"detail": "No se envió ningún archivo."}, status=400)
 
-        # Detectar tipo MIME
+        # datos base
+        title = (request.data.get("title") or "").strip()
+        order = int(request.data.get("order") or 0)
+        is_active = str(request.data.get("is_active")).lower() in ("true", "1", "yes")
+
+        # detectar mime
         mime, _ = mimetypes.guess_type(file_obj.name)
-        media_type = "VIDEO" if mime and mime.startswith("video/") else "IMAGE"
+        is_video = bool(mime and mime.startswith("video/"))
 
         try:
-            # 🚀 Subida directa a Cloudinary (acepta imagen o video)
-            upload_result = cloudinary.uploader.upload(
+            # ⬇️ Subida directa a Cloudinary; acepta imagen o video
+            up = cloudinary.uploader.upload(
                 file_obj,
                 folder="gallery",
-                resource_type="auto",  # esto detecta automáticamente si es video o imagen
+                resource_type="auto",
             )
 
-            # Crear instancia manualmente
             item = GalleryItem.objects.create(
                 title=title,
-                media_type=media_type,
-                media_file_url=upload_result.get("secure_url", ""),
+                media_type="VIDEO" if is_video else "IMAGE",
+                media_file_url=up.get("secure_url", ""),
+                # para imágenes puedes seguir usando FileField si quieres,
+                # pero con este flujo ya no es necesario.
                 is_active=is_active,
                 order=order,
             )
-            serializer = self.get_serializer(item)
-            return Response(serializer.data, status=201)
+            return Response(GalleryItemSerializer(item, context={"request": request}).data, status=201)
 
         except Exception as e:
             return Response({"detail": str(e)}, status=400)

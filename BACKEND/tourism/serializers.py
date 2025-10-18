@@ -102,26 +102,15 @@ class ContactInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GalleryItemSerializer(serializers.ModelSerializer):
-    media_file_url = serializers.SerializerMethodField()
-
     class Meta:
         model = GalleryItem
-        fields = ("id", "title", "media_type", "media_file", "media_file_url", "order", "is_active", "uploaded_at")
-        read_only_fields = ("uploaded_at", "media_file_url")
-
-    def get_media_file_url(self, obj):
-        request = self.context.get("request")
-        raw = obj.media_file.url if obj.media_file else None
-        return abs_url_or_none(request, raw) if request else raw
+        fields = ("id", "title", "media_type", "media_file", "media_file_url", "order", "is_active")
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        # por compatibilidad, asegura que media_file también sea absoluto
-        request = self.context.get("request")
-        if instance.media_file:
-            rep["media_file"] = abs_url_or_none(request, instance.media_file.url) if request else instance.media_file.url
+        # preferir URL directa si existe; si no, .url del FileField
+        rep["media_file"] = instance.media_file_url or (instance.media_file.url if instance.media_file else None)
         return rep
-
     
 def abs_url_or_none(request, url_value):
     if not url_value:

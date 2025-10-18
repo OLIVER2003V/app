@@ -42,6 +42,7 @@ const HeroCarousel = () => {
         {items.map((item) => {
           // 💡 Usa media_file_url si viene, si no media_file
           const src = item.media_file_url || item.media_file;
+          
           const mt = (item.media_type || "").toUpperCase();
           const isVideo = mt === "VIDEO" || /\.mp4(\?|$)/i.test(String(src || ""));
 
