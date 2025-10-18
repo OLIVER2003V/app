@@ -3,11 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "@/lib/api";
 import "./Home.css";
 
-// --- Componentes ---
 import { HeroCarousel } from "@/components/HeroCarousel";
 const InteractiveTrailMap = lazy(() => import("@/components/InteractiveTrailMap"));
 
-// --- Componentes de UI Internos ---
 const Star = () => <span className="testimonial-rating-star">⭐</span>;
 
 const LoadingSpinner = () => (
@@ -16,128 +14,118 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// --- Lógica del Tour Interactivo (Versión Final Definitiva) ---
-
+/* ---------------- TOUR: pasos ---------------- */
 const tourSteps = [
-  {
-    selector: '#novedades',
-    title: 'Novedades y Guías',
-    content: 'Aquí encontrarás las últimas noticias, consejos y guías para inspirar tu próxima aventura en nuestra comunidad.',
-  },
-  {
-    selector: '#planifica',
-    title: 'Planifica tu Visita',
-    content: 'Todo lo práctico está aquí: cómo llegar, horarios, tarifas y un acceso directo a WhatsApp para tus consultas.',
-  },
-  {
-    selector: '#opiniones',
-    title: 'La Voz de los Visitantes',
-    content: 'Lee las experiencias de otros viajeros como tú para conocer sus lugares favoritos y recomendaciones.',
-  },
-  {
-    selector: '#mapa',
-    title: 'Explora el Mapa',
-    content: 'Usa nuestro mapa interactivo para visualizar la ruta principal y ubicar los puntos de interés más importantes.',
-  }
+  { selector: '#novedades', title: 'Novedades y Guías', content: 'Aquí encontrarás las últimas noticias, consejos y guías para inspirar tu próxima aventura en nuestra comunidad.' },
+  { selector: '#planifica', title: 'Planifica tu Visita', content: 'Todo lo práctico está aquí: cómo llegar, horarios, tarifas y un acceso directo a WhatsApp para tus consultas.' },
+  { selector: '#opiniones', title: 'La Voz de los Visitantes', content: 'Lee las experiencias de otros viajeros como tú para conocer sus lugares favoritos y recomendaciones.' },
+  { selector: '#mapa', title: 'Explora el Mapa', content: 'Usa nuestro mapa interactivo para visualizar la ruta principal y ubicar los puntos de interés más importantes.' }
 ];
 
+/* ---------------- TOUR: scroll robusto ---------------- */
 const smoothScrollTo = (element, onScrollEnd) => {
-  const elementRect = element.getBoundingClientRect();
-  const absoluteElementTop = elementRect.top + window.scrollY;
-  const newScrollPosition = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
-  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  if (!element) { onScrollEnd(); return; }
 
-  window.scrollTo({
-    top: Math.min(newScrollPosition, maxScroll),
-    behavior: "smooth"
-  });
+  const rect = element.getBoundingClientRect();
+  const target = rect.top + window.scrollY - (window.innerHeight / 2) + (rect.height / 2);
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const dest = Math.max(0, Math.min(target, max));
 
-  // Una forma robusta de detectar el final del scroll
-  let scrollTimeout;
-  const scrollListener = () => {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      window.removeEventListener('scroll', scrollListener);
+  // Habilitar temporalmente el scroll aunque body esté con clase tour-active
+  const prevOverflowY = document.body.style.overflowY;
+  document.body.style.overflowY = "auto";
+
+  window.scrollTo({ top: dest, behavior: "smooth" });
+
+  let start = performance.now();
+  const tick = () => {
+    const curr = window.scrollY;
+    const elapsed = performance.now() - start;
+    if (Math.abs(curr - dest) < 2 || elapsed > 2000) {
+      // Restaurar estado y notificar fin
+      document.body.style.overflowY = prevOverflowY || "";
       onScrollEnd();
-    }, 100); // Un delay corto es suficiente
+      return;
+    }
+    requestAnimationFrame(tick);
   };
-
-  // Verificamos si realmente necesitamos escuchar el scroll
-  if (Math.abs(window.scrollY - newScrollPosition) < 1) {
-    // Si ya estamos en la posición, ejecutamos el callback directamente
-    onScrollEnd();
-  } else {
-    window.addEventListener('scroll', scrollListener, { passive: true });
-     // Fallback por si el evento de scroll no se dispara por alguna razón
-    setTimeout(() => {
-        window.removeEventListener('scroll', scrollListener);
-        onScrollEnd();
-    }, 400); // Tiempo máximo de espera para el scroll
-  }
+  requestAnimationFrame(tick);
 };
 
+/* ---------------- TOUR: componente ---------------- */
 const GuidedTour = ({ onComplete }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [styles, setStyles] = useState({ highlight: {}, tooltip: {} });
   const [isExiting, setIsExiting] = useState(false);
+
   const currentStep = tourSteps[stepIndex];
 
   useEffect(() => {
     document.body.classList.add('tour-active');
-    return () => {
-      document.body.classList.remove('tour-active');
-    };
+    return () => { document.body.classList.remove('tour-active'); };
   }, []);
 
   useLayoutEffect(() => {
     const element = document.querySelector(currentStep?.selector);
-    if (element) {
-      const updatePosition = () => {
-        const rect = element.getBoundingClientRect();
-        const tooltipHeight = 210;
-        const margin = 20;
-
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const placeAbove = (spaceBelow < (tooltipHeight + margin)) && (rect.top > (tooltipHeight + margin));
-        
-        let top;
-        if (placeAbove) {
-          top = rect.top - tooltipHeight - margin;
-        } else {
-          top = rect.top + rect.height + margin;
-        }
-
-        if ((top + tooltipHeight) > window.innerHeight) {
-          top = window.innerHeight - tooltipHeight - margin;
-        }
-        if (top < margin) {
-            top = margin;
-        }
-
-        setStyles({
-          highlight: {
-            width: `${rect.width + 20}px`,
-            height: `${rect.height + 20}px`,
-            top: `${rect.top - 10}px`,
-            left: `${rect.left - 10}px`,
-            opacity: 1,
-          },
-          tooltip: {
-            top: `${top}px`,
-            left: `${rect.left + rect.width / 2}px`,
-            transform: 'translateX(-50%) scale(1)',
-            opacity: 1,
-          }
-        });
-      };
-
-      smoothScrollTo(element, updatePosition);
+    if (!element) {
+      // Si el objetivo no existe, pasa al siguiente
+      setTimeout(() => setStepIndex(i => Math.min(i + 1, tourSteps.length)), 0);
+      return;
     }
+
+    const updatePosition = () => {
+      const rect = element.getBoundingClientRect();
+      const tooltipHeight = 210;
+      const margin = 20;
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const placeAbove = (spaceBelow < (tooltipHeight + margin)) && (rect.top > (tooltipHeight + margin));
+
+      let top = placeAbove ? (rect.top - tooltipHeight - margin) : (rect.top + rect.height + margin);
+      if ((top + tooltipHeight) > window.innerHeight) top = window.innerHeight - tooltipHeight - margin;
+      if (top < margin) top = margin;
+
+      setStyles({
+        highlight: {
+          width: `${rect.width + 20}px`,
+          height: `${rect.height + 20}px`,
+          top: `${rect.top - 10}px`,
+          left: `${rect.left - 10}px`,
+          opacity: 1,
+        },
+        tooltip: {
+          top: `${top}px`,
+          left: `${rect.left + rect.width / 2}px`,
+          transform: 'translateX(-50%) scale(1)',
+          opacity: 1,
+        }
+      });
+    };
+
+    // Desplaza y luego posiciona
+    smoothScrollTo(element, updatePosition);
+
+    // Reposiciona al cambiar tamaño o al hacer scroll manual (por si el usuario mueve con rueda/trackpad)
+    const onResize = () => updatePosition();
+    const onScroll = () => updatePosition();
+    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, [stepIndex, currentStep]);
 
+  const handleComplete = () => {
+    setIsExiting(true);
+    setTimeout(onComplete, 300);
+  };
+
   const goToStep = (index) => {
+    // salida suave del tooltip actual
     setStyles(prev => ({
-      highlight: { ...prev.highlight, opacity: 0},
+      highlight: { ...prev.highlight, opacity: 0 },
       tooltip: { ...prev.tooltip, transform: 'translateX(-50%) scale(0.95)', opacity: 0 }
     }));
     setTimeout(() => {
@@ -149,15 +137,12 @@ const GuidedTour = ({ onComplete }) => {
     }, 300);
   };
 
-  const handleComplete = () => {
-    setIsExiting(true);
-    setTimeout(onComplete, 300);
-  };
+  if (!currentStep) return null;
 
   return (
     <div className={`tour-overlay ${isExiting ? 'exiting' : ''}`} onClick={handleComplete}>
-      <div className="tour-highlight" style={styles.highlight} onClick={e => e.stopPropagation()}></div>
-      <div className="tour-tooltip" style={styles.tooltip} onClick={e => e.stopPropagation()}>
+      <div className="tour-highlight" style={styles.highlight} onClick={(e) => e.stopPropagation()} />
+      <div className="tour-tooltip" style={styles.tooltip} onClick={(e) => e.stopPropagation()}>
         <h4>{currentStep.title}</h4>
         <p>{currentStep.content}</p>
         <div className="tour-footer">
@@ -172,8 +157,7 @@ const GuidedTour = ({ onComplete }) => {
   );
 };
 
-
-// --- Utilidades de Normalización (sin cambios) ---
+/* ---------------- Utilidades (igual que tenías) ---------------- */
 function normalizeGalleryItem(raw, idx) {
   const id = raw?.id ?? raw?.pk ?? idx;
   const title = raw?.title ?? raw?.name ?? raw?.titulo ?? "Slide";
@@ -204,7 +188,7 @@ async function fetchFirstGalleryFound() {
   return { items: [], usedEndpoint: null };
 }
 
-// --- Componente Principal ---
+/* ---------------- Home ---------------- */
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -226,9 +210,9 @@ export default function Home() {
           fetchFirstGalleryFound(),
           fetch("/ruta.json"),
         ]);
-        if (results[0].status === "fulfilled") { setPosts(unwrapResults(results[0].value.data)); }
-        if (results[1].status === "fulfilled") { setReviews(unwrapResults(results[1].value.data).slice(0, 5));}
-        if (results[2].status === "fulfilled") { setGallery({ items: results[2].value.items, endpoint: results[2].value.usedEndpoint }); }
+        if (results[0].status === "fulfilled") setPosts(unwrapResults(results[0].value.data));
+        if (results[1].status === "fulfilled") setReviews(unwrapResults(results[1].value.data).slice(0, 5));
+        if (results[2].status === "fulfilled") setGallery({ items: results[2].value.items, endpoint: results[2].value.usedEndpoint });
         if (results[3].status === "fulfilled") {
           const res = results[3].value;
           if (!res.ok) throw new Error("GeoJSON no encontrado.");
@@ -236,18 +220,14 @@ export default function Home() {
           const coords = geo?.features?.[0]?.geometry?.coordinates || [];
           setTrail(coords.map(([lng, lat]) => [lat, lng]));
         }
-        results.forEach(result => {
-          if (result.status === 'rejected') { console.error("Error en petición:", result.reason); }
-        });
+        results.forEach(r => { if (r.status === 'rejected') console.error("Error en petición:", r.reason); });
       } catch (e) {
         console.error("Error al cargar la página:", e);
         setError("Ocurrió un problema al cargar el contenido. Intenta nuevamente.");
       } finally {
         setLoading(false);
         const hasSeenTour = localStorage.getItem('tourCompletado');
-        if (!hasSeenTour) {
-          setTimeout(() => setIsTourActive(true), 500);
-        }
+        if (!hasSeenTour) setTimeout(() => setIsTourActive(true), 500);
       }
     };
     loadInitialData();
@@ -260,7 +240,7 @@ export default function Home() {
 
   const openPost = (post) => {
     if (post?.cta_url) {
-      window.open(post.cta_url, "_blank", "noopener", "noreferrer");
+      window.open(post.cta_url, "_blank", "noopener,noreferrer");
     } else if (post?.id) {
       navigate(`/posts/${post.id}`);
     }
@@ -268,14 +248,12 @@ export default function Home() {
 
   const hasCarousel = useMemo(() => Array.isArray(gallery.items) && gallery.items.length > 0, [gallery.items]);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="home-page">
       {isTourActive && <GuidedTour onComplete={handleTourComplete} />}
-      
+
       {error && (
         <div className="alert alert-error" role="alert">
           <span className="alert-icon">⚠️</span> {error}
@@ -298,6 +276,7 @@ export default function Home() {
             <h2>Últimas Novedades</h2>
             <p>Guías, noticias y consejos para tu próxima aventura.</p>
           </header>
+
           {posts.length > 0 ? (
             <div className="featured-posts-grid">
               {posts.map((post) => (
@@ -311,13 +290,13 @@ export default function Home() {
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPost(post)}
                 >
                   <div className="post-card__media">
-                    {post.cover ? ( <img src={post.cover} alt="" loading="lazy" /> ) : (
+                    {post.cover ? (<img src={post.cover} alt="" loading="lazy" />) : (
                       <div className="post-card__placeholder" aria-label="Sin imagen disponible">🏞️</div>
                     )}
                   </div>
                   <div className="post-card__body">
                     <h3 className="post-card__title">{post.title}</h3>
-                    {post.place?.name && ( <span className="post-card__place">📍 {post.place.name}</span> )}
+                    {post.place?.name && <span className="post-card__place">📍 {post.place.name}</span>}
                     <span className="post-card__read-more">Leer más →</span>
                   </div>
                 </article>
@@ -328,6 +307,7 @@ export default function Home() {
               <p>No hay novedades por el momento. ¡Vuelve pronto!</p>
             </div>
           )}
+
           <footer className="section-footer">
             <Link to="/posts" className="btn btn--ghost">Ver todas las publicaciones →</Link>
           </footer>
@@ -351,12 +331,7 @@ export default function Home() {
               <h3>Información Útil</h3>
               <p>Horarios, tarifas y contacto.</p>
             </Link>
-            <a
-              className="planning-card"
-              href="https://wa.me/59172672767"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
+            <a className="planning-card" href="https://wa.me/59172672767" target="_blank" rel="noreferrer noopener">
               <span className="planning-card__icon">💬</span>
               <h3>WhatsApp</h3>
               <p>Atención turística directa.</p>
@@ -375,12 +350,7 @@ export default function Home() {
               {reviews.map((review) => (
                 <blockquote key={review.id} className="testimonial-card">
                   {review.photo && (
-                    <img
-                      src={review.photo}
-                      alt={`Foto de ${review.author_name}`}
-                      className="testimonial-photo"
-                      loading="lazy"
-                    />
+                    <img src={review.photo} alt={`Foto de ${review.author_name}`} className="testimonial-photo" loading="lazy" />
                   )}
                   <p className="testimonial-comment">"{review.comment}"</p>
                   <footer className="testimonial-footer">
@@ -391,9 +361,7 @@ export default function Home() {
                       </span>
                     </cite>
                     {review.place_name && review.place_slug && (
-                      <Link to={`/places/${review.place_slug}`} className="testimonial-place">
-                        en {review.place_name}
-                      </Link>
+                      <Link to={`/places/${review.place_slug}`} className="testimonial-place">en {review.place_name}</Link>
                     )}
                   </footer>
                 </blockquote>
@@ -409,19 +377,19 @@ export default function Home() {
             <h2>Nuestra Ubicación</h2>
             <p>Explora la ruta de ingreso a nuestra comunidad.</p>
           </header>
+        </div>
+        <div className="home-container">
           <div className="home-map-container">
             <Suspense fallback={<div className="map-loading">Cargando mapa interactivo…</div>}>
               {trail.length > 0 ? (
                 <InteractiveTrailMap trailData={trail} />
               ) : (
-                 <div className="map-error-message">No se pudo cargar la ruta del mapa.</div>
+                <div className="map-error-message">No se pudo cargar la ruta del mapa.</div>
               )}
             </Suspense>
           </div>
           <footer className="section-footer">
-            <Link to="/como-llegar" className="btn btn--link">
-              Ver instrucciones detalladas para llegar
-            </Link>
+            <Link to="/como-llegar" className="btn btn--link">Ver instrucciones detalladas para llegar</Link>
           </footer>
         </div>
       </section>
@@ -429,10 +397,7 @@ export default function Home() {
       <footer className="dev-footer">
         <p>
           Desarrollado por{" "}
-          <a href="https://wa.me/59172672767" target="_blank" rel="noopener noreferrer">
-            Oliver Ventura
-          </a>{" "}
-          | 2025
+          <a href="https://wa.me/59172672767" target="_blank" rel="noopener noreferrer">Oliver Ventura</a> | 2025
         </p>
       </footer>
     </div>
