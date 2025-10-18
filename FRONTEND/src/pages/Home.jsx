@@ -51,7 +51,12 @@ export default function Home() {
 
   return (
     <div className="home">
-      <HeroCarousel />
+      {/* El carrusel ahora está dentro de un contenedor para limitar su ancho */}
+      <section className="home-section">
+        <div className="home-container">
+          <HeroCarousel />
+        </div>
+      </section>
 
       {posts.length > 0 && (
         <section className="home-section">
@@ -65,7 +70,6 @@ export default function Home() {
               {posts.map((p) => (
                 <div
                   key={p.id}
-                  // AQUÍ ESTABA EL ERROR: Cambiado de "postCard-home" a "postCard"
                   className="postCard"
                   onClick={() => openPost(p)}
                   title={p.title}
@@ -96,27 +100,24 @@ export default function Home() {
           </div>
         </section>
       )}
-
+      
       <section className="home-section alt-bg">
         <div className="home-container">
           <header className="section-header">
             <h2>Planifica tu Visita</h2>
             <p>Todo lo que necesitas para preparar tu viaje.</p>
           </header>
-
           <div className="quick__grid">
             <Link className="card" to="/como-llegar">
               <span className="card__icon">🧭</span>
               <h3>¿Cómo llegar?</h3>
               <p>Ruta interactiva y opciones de transporte.</p>
             </Link>
-
             <Link className="card" to="/informacion">
               <span className="card__icon">ℹ️</span>
               <h3>Información</h3>
               <p>Horarios, tarifas y contacto.</p>
             </Link>
-
             <a
               className="card"
               href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx"
@@ -135,20 +136,13 @@ export default function Home() {
         <section className="home-section alt-bg testimonials">
           <div className="home-container">
             <h2 className="testimonials__title">Lo que dicen nuestros visitantes</h2>
-
             <div className="testimonials-grid">
               {reviews.map((r) => (
                 <div key={r.id} className="testimonial-card">
                   {r.photo && (
-                    <img
-                      src={r.photo}
-                      alt={`Opinión de ${r.author_name}`}
-                      className="testimonial-photo"
-                    />
+                    <img src={r.photo} alt={`Opinión de ${r.author_name}`} className="testimonial-photo" />
                   )}
-
                   <p className="testimonial-comment">"{r.comment}"</p>
-
                   <div className="testimonial-footer">
                     <div className="testimonial-author-info">
                       <span className="testimonial-author">{r.author_name}</span>
@@ -158,7 +152,6 @@ export default function Home() {
                         ))}
                       </span>
                     </div>
-
                     {r.place_name && r.place_slug && (
                       <Link to={`/places/${r.place_slug}`} className="testimonial-place">
                         en {r.place_name}
@@ -178,7 +171,6 @@ export default function Home() {
             <h2>Nuestra Ubicación</h2>
             <p>Explora la ruta de ingreso a nuestra comunidad.</p>
           </header>
-
           <div className="home-map-container">
             {mapError ? (
               <div className="map-error-message">{mapError}</div>
@@ -186,7 +178,6 @@ export default function Home() {
               <InteractiveTrailMap trailData={trail} />
             )}
           </div>
-
           <div className="map__links">
             <Link to="/como-llegar">Ver instrucciones detalladas para llegar</Link>
           </div>
@@ -196,11 +187,7 @@ export default function Home() {
       <footer className="dev-footer">
         <p>
           Desarrollado por{" "}
-          <a
-            href="https://wa.me/59172672767"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://wa.me/59172672767" target="_blank" rel="noopener noreferrer">
             Oliver Ventura
           </a>{" "}
           | 2025

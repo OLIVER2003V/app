@@ -1,4 +1,5 @@
 from rest_framework import viewsets, mixins, permissions, generics
+from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import Place, Event, Post, Review, ContactInfo, GalleryItem, Media
 from .serializers import (
@@ -180,7 +181,34 @@ class GalleryItemViewSet(viewsets.ModelViewSet):
             log.exception("Error actualizando media")
             raise
             # return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+            
+    def create(self, request, *args, **kwargs):
+        file_obj = request.FILES.get("media_file")
+        media_type = (request.data.get("media_type") or "").upper()
+
+        # Si viene video, subirlo con SDK y guardar solo la URL
+        if file_obj and (media_type == "VIDEO" or str(file_obj.content_type).startswith("video/")):
+            try:
+                res = cloudinary.uploader.upload(
+                    file_obj,
+                    resource_type="video",
+                    folder="gallery",
+                )
+                data = request.data.copy()
+                data["media_type"] = "VIDEO"
+                data["media_file"] = None  # no lo guardamos en FileField
+                data["media_file_url"] = res["secure_url"]
+
+                serializer = self.get_serializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                instance = serializer.save()
+                headers = self.get_success_headers(serializer.data)
+                return Response(self.get_serializer(instance).data, status=201, headers=headers)
+            except Exception as e:
+                return Response({"detail": str(e)}, status=400)
+
+        # Si no es video, usa el flujo normal (imagenes via FileField/Storage)
+        return super().create(request, *args, **kwargs)
 class MediaCreateView(generics.CreateAPIView):
     queryset = Media.objects.all()
     serializer_class = MediaSerializer
