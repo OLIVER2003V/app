@@ -224,9 +224,25 @@ export default function InteractiveTrailMap({ trailData }) {
   }
 
   // --- 3. LÓGICA DE RENDER ---
-  // Estilos del Sendero (B -> C) - Verde Original Restaurado
-  const trailCasingOptions = { color: '#0d9488', weight: 9, opacity: 0.8 }; 
-  const trailFillOptions = { color: '#84cc16', weight: 5, opacity: 1 }; 
+  
+  // ¡ESTILOS ACTUALIZADOS!
+  // Verde oscuro para el casing, verde claro para el relleno
+  const darkGreen = '#1E8449'; // Un verde más oscuro y saturado
+  const lightGreen = '#7CFC00'; // Un verde césped brillante
+
+  // El "Casing" (exterior, grueso, oscuro)
+  const trailCasingOptions = { 
+    color: darkGreen, 
+    weight: 9,      // Más grueso
+    opacity: 0.8    // Semi-transparente para ver el mapa por debajo
+  }; 
+  
+  // El "Relleno" (interior, más delgado, claro)
+  const trailFillOptions = { 
+    color: lightGreen, 
+    weight: 5,      // Más delgado que el casing
+    opacity: 1      // Sólido y brillante
+  }; 
   
   // Formateadores de Distancia y Tiempo (Sin Cambios)
   const formatDistance = (meters) => (meters / 1000).toFixed(1) + ' km';
@@ -236,7 +252,7 @@ export default function InteractiveTrailMap({ trailData }) {
       }
       const hours = Math.floor(minutes / 60);
       const mins = Math.round(minutes % 60);
-      return `~ ${hours}h ${mins}m`;
+      return `~ ${hours}h ${mins}`;
   };
   
   // Componente interno para los botones de acción (Sin Cambios)
@@ -271,10 +287,10 @@ export default function InteractiveTrailMap({ trailData }) {
     );
   };
 
-  // Componente para la Leyenda (Sin Cambios)
+  // Componente para la Leyenda (ACTUALIZADO con el nuevo color)
   const MapLegend = () => {
     const routeToTrailColor = '#00D8FF';
-    const trailColor = '#84cc16';
+    const trailColor = lightGreen; // Usamos el verde claro para la leyenda
 
     return (
       <div className={`absolute top-4 left-4 z-[1000] p-4 bg-slate-900/90 rounded-lg shadow-xl border border-slate-700 text-slate-100 transition-opacity duration-300 ${showLegend ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -324,9 +340,6 @@ export default function InteractiveTrailMap({ trailData }) {
         className="h-full w-full"
         ref={setMap} 
         attributionControl={false}
-        // --- ¡CORRECCIÓN! ---
-        // Desactivamos el control de capas por defecto para
-        // eliminar el cuadro blanco fantasma.
         layersControl={false} 
       >
         
