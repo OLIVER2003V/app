@@ -1,2 +1,6 @@
 @import "tailwindcss";
 
+/* Oculta el contenedor de UI fantasma de leaflet-routing-machine */
+.leaflet-routing-container {
+  display: none !important;
+}
