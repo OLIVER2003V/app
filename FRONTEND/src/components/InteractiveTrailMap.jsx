@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, LayersControl, AttributionControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import RoutingControl from './RoutingControl';
 
-// --- Iconos y Estilos ---
+// --- Iconos y Estilos (Sin Cambios) ---
 const CenterIcon = ({ className }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9.75m-6.75 6.75a6.75 6.75 0 1 0 13.5 0a6.75 6.75 0 1 0-13.5 0Z" />
@@ -12,14 +12,11 @@ const CenterIcon = ({ className }) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v.01M12 15.75v.01" />
   </svg>
 );
-
-// NUEVO: Icono de Pantalla Completa
 const ExpandIcon = ({ className }) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15" />
     </svg>
 );
-
 const UserLocationIcon = L.divIcon({
   html: `<div class="relative flex h-6 w-6 items-center justify-center"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex h-4 w-4 rounded-full border-2 border-white bg-blue-500"></span></div>`,
   className: 'bg-transparent border-none',
@@ -33,9 +30,29 @@ const DestinationIcon = L.icon({
   popupAnchor: [1, -34],
 });
 
+// --- Función Auxiliar para la Distancia Haversine ---
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+    const R = 6371e3; 
+    const phi1 = lat1 * Math.PI / 180;
+    const phi2 = lat2 * Math.PI / 180;
+    const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+    const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+              Math.cos(phi1) * Math.cos(phi2) *
+              Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; 
+};
+
 
 export default function InteractiveTrailMap({ trailData }) {
-  const [userPosition, setUserPosition] = useState(null);
+  // Posición actual para el marcador y el centrado
+  const [userPosition, setUserPosition] = useState(null); 
+  // Posición usada para el ruteo (se actualiza menos frecuentemente)
+  const [routeStartPos, setRouteStartPos] = useState(null); 
+  
   const [error, setError] = useState(null);
   const [map, setMap] = useState(null);
   const [routeStats, setRouteStats] = useState(null);
@@ -43,7 +60,14 @@ export default function InteractiveTrailMap({ trailData }) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showStats, setShowStats] = useState(true); 
 
-  // --- ARQUITECTURA: Manejo de GPS y Estabilidad ---
+  // Referencia para guardar la última posición usada para el ruteo
+  const lastRoutePosition = useRef(null);
+  const MIN_DISTANCE_UPDATE_METERS = 50; 
+  const MIN_TIME_UPDATE_MS = 10000; // 10 segundos
+  const lastTimeUpdate = useRef(0);
+
+
+  // --- ARQUITECTURA: Manejo de GPS y Estabilidad (CON DEBOUNCING) ---
   useEffect(() => {
     if (!navigator.geolocation) {
       setError("Tu navegador no soporta geolocalización.");
@@ -55,8 +79,33 @@ export default function InteractiveTrailMap({ trailData }) {
     const watcher = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setUserPosition([latitude, longitude]); 
+        const currentPos = [latitude, longitude];
+        const currentTime = Date.now();
+        
+        setUserPosition(currentPos); 
         setError(null); 
+
+        // 1. Inicialización de la primera posición de ruteo
+        if (!routeStartPos) {
+             setRouteStartPos(currentPos);
+             lastRoutePosition.current = currentPos;
+             lastTimeUpdate.current = currentTime;
+             return;
+        }
+
+        // 2. Aplicar Debouncing: Revisar distancia O tiempo
+        const lastPos = lastRoutePosition.current;
+        const distance = calculateDistance(lastPos[0], lastPos[1], latitude, longitude);
+        
+        const shouldUpdate = distance >= MIN_DISTANCE_UPDATE_METERS || 
+                             (currentTime - lastTimeUpdate.current) >= MIN_TIME_UPDATE_MS;
+
+        if (shouldUpdate) {
+            // Si se movió lo suficiente O pasó el tiempo mínimo, actualizar la posición de la ruta
+            lastRoutePosition.current = currentPos;
+            lastTimeUpdate.current = currentTime;
+            setRouteStartPos(currentPos); // Esto provoca un nuevo cálculo de ruta A->B
+        }
       },
       (err) => {
         const errorMsg = err.code === 1 
@@ -67,6 +116,7 @@ export default function InteractiveTrailMap({ trailData }) {
       watchOptions
     );
 
+    // Manejo de Conexión
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
@@ -77,7 +127,7 @@ export default function InteractiveTrailMap({ trailData }) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [routeStartPos]); // Dependencia clave para la inicialización
 
   // Lógica de centrado inicial
   useEffect(() => {
@@ -96,20 +146,20 @@ export default function InteractiveTrailMap({ trailData }) {
     }
   }, [map, userPosition]);
 
-  // NUEVA FUNCIÓN: Manejar Pantalla Completa
-  const handleFullscreen = () => {
-    // Pedir el modo de pantalla completa para el contenedor principal
+  // Función para Pantalla Completa
+  const handleFullscreen = useCallback(() => {
+    if (!map) return;
     const container = map.getContainer();
     if (container.requestFullscreen) {
         container.requestFullscreen();
-    } else if (container.mozRequestFullScreen) { // Firefox
+    } else if (container.mozRequestFullScreen) {
         container.mozRequestFullScreen();
-    } else if (container.webkitRequestFullscreen) { // Chrome, Safari and Opera
+    } else if (container.webkitRequestFullscreen) {
         container.webkitRequestFullscreen();
-    } else if (container.msRequestFullscreen) { // IE/Edge
+    } else if (container.msRequestFullscreen) {
         container.msRequestFullscreen();
     }
-  };
+  }, [map]);
 
   if (!trailData || trailData.length === 0) {
     return (
@@ -127,14 +177,12 @@ export default function InteractiveTrailMap({ trailData }) {
 
   const formatDistance = (meters) => (meters / 1000).toFixed(1) + ' km';
   
-  // Componente para agrupar el botón de centrado y pantalla completa
   const ActionButtons = () => {
-    // El 'map' se obtiene desde useMap dentro de MapContainer
     const map = useMap(); 
+    if (!map) return null; // Previene errores si el mapa no se ha inicializado
+    
     return (
-        // Los botones se mueven a la esquina superior derecha para no interferir con el Centrado Móvil
         <div className="absolute top-[80px] right-4 z-[1000] flex flex-col gap-2">
-            {/* Botón de Pantalla Completa (Secundario, útil para escritorio) */}
             <button
                 onClick={handleFullscreen}
                 title="Ver en pantalla completa"
@@ -142,7 +190,6 @@ export default function InteractiveTrailMap({ trailData }) {
             >
                 <ExpandIcon className="h-6 w-6" />
             </button>
-            {/* Botón de Centrado (Mi Ubicación) - CRÍTICO */}
             <button
                 onClick={handleCenterUser}
                 title="Centrar en mi ubicación"
@@ -157,7 +204,6 @@ export default function InteractiveTrailMap({ trailData }) {
   return (
     <div className="relative h-full w-full bg-slate-800">
 
-      {/* --- UI: Barra de Estado (Manejo de Errores - No invasivo) --- */}
       {error && (
         <div className={`absolute top-0 w-full z-[1000] py-2 text-center text-sm font-medium text-red-100 shadow-lg ${isOnline ? 'bg-red-800/90' : 'bg-yellow-800/90'} backdrop-blur-sm`}>
           {error}
@@ -170,7 +216,6 @@ export default function InteractiveTrailMap({ trailData }) {
         </div>
       )}
 
-      {/* --- UI: Mapa Contenedor --- */}
       <MapContainer 
         center={startPoint} 
         zoom={15} 
@@ -182,7 +227,6 @@ export default function InteractiveTrailMap({ trailData }) {
         attributionControl={false}
       >
         
-        {/* Capas de Control */}
         <LayersControl position="topright">
           <LayersControl.BaseLayer checked name="Detallado (OSM)">
             <TileLayer
@@ -198,14 +242,13 @@ export default function InteractiveTrailMap({ trailData }) {
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        {/* Botones de Acción (Centrar y Fullscreen) */}
         <ActionButtons />
 
-        {/* Ruta A -> B (Usuario a Inicio del Sendero) - Se actualiza con userPosition */}
-        {userPosition && (
+        {/* Ruta A -> B: AHORA DEPENDE DE routeStartPos (la posición con Debouncing) */}
+        {routeStartPos && (
           <RoutingControl 
-            key={`route-${userPosition[0]}-${userPosition[1]}`}
-            start={userPosition} 
+            key={`route-${routeStartPos[0]}-${routeStartPos[1]}`} // Usa routeStartPos
+            start={routeStartPos} 
             end={startPoint} 
             onRouteFound={setRouteStats} 
           />
@@ -234,7 +277,6 @@ export default function InteractiveTrailMap({ trailData }) {
           <div 
             className="flex flex-col rounded-t-xl border border-sky-700/50 bg-slate-900/90 text-slate-100 shadow-2xl backdrop-blur-md"
           >
-            {/* Cabecera (Handle para retraer/expandir) */}
             <div 
                 className="flex justify-center p-2 border-b border-slate-700 cursor-pointer"
                 onClick={() => setShowStats(!showStats)}
@@ -242,21 +284,17 @@ export default function InteractiveTrailMap({ trailData }) {
                 <span className="w-10 h-1 bg-slate-600 rounded-full"></span>
             </div>
             
-            {/* Contenido de la Tarjeta (Visible al expandir) */}
             <div className={`p-4 ${!showStats && 'hidden'}`}>
                 <h3 className="text-lg font-bold text-sky-400 mb-2">Ruta Activa A &rarr; B</h3>
                 <div className="flex justify-around gap-4 text-center">
-                    {/* Dato Crucial #1: Tiempo Estimado */}
                     <div>
                         <h4 className="text-xs font-semibold uppercase text-slate-400">ETA</h4>
                         <span className="text-xl font-bold">~ {Math.round(routeStats.time / 60)} min</span>
                     </div>
-                    {/* Dato Crucial #2: Distancia Restante */}
                     <div>
                         <h4 className="text-xs font-semibold uppercase text-slate-400">Distancia</h4>
                         <span className="text-xl font-bold">{formatDistance(routeStats.distance)}</span>
                     </div>
-                    {/* Dato Crucial #3: Estado del Tráfico (Simulado) */}
                     <div>
                         <h4 className="text-xs font-semibold uppercase text-slate-400">Tráfico</h4>
                         <span className="text-xl font-bold text-lime-400">Fluido</span>
@@ -264,7 +302,6 @@ export default function InteractiveTrailMap({ trailData }) {
                 </div>
             </div>
             
-            {/* Versión retraída (solo muestra el ETA) */}
              {!showStats && (
                 <div className="p-2 text-center text-sm font-medium">
                     ETA: <span className="font-bold text-sky-400">~ {Math.round(routeStats.time / 60)} min</span>
