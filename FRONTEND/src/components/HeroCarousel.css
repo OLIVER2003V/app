@@ -1,79 +1,45 @@
-.hero-carousel-section {
-  position: relative;
-  /* ▼▼▼ AQUÍ ESTÁ EL CAMBIO PRINCIPAL ▼▼▼ */
-  height: 65vh; /* Reducimos la altura base */
-  max-height: 650px; /* Le ponemos un TOPE a la altura en pantallas grandes */
-  min-height: 450px;
+/* src/components/HeroCarousel.css */
+
+/*
+  Estilos para Swiper, para que coincida con el tema de Tailwind.
+  Tailwind no puede "ver" las clases de Swiper, así que las sobrescribimos aquí.
+*/
+
+/* Flechas de Navegación (Siguiente/Anterior)
+  Usamos 'white' para máxima visibilidad sobre imágenes/videos.
+*/
+.hero-carousel .swiper-button-next,
+.hero-carousel .swiper-button-prev {
   color: white;
-  background-color: #0f2027; /* Color de fondo mientras carga */
+  transition: opacity 0.2s ease-in-out;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
-/* El resto de las reglas se ajustan para heredar la altura */
-.hero-loader, .hero-static, .carousel-slide {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-static {
-  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
-  background-size: cover;
-  background-position: center;
-  text-align: center;
-}
-
-.carousel-slide {
-  position: relative;
-  overflow: hidden;
-}
-
-.carousel-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.carousel-overlay {
-  position: absolute;
-  inset: 0; /* Abarca todo el contenedor */
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.7) 100%);
-}
-
-.carousel-caption {
-  position: absolute;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  width: 90%;
-  max-width: 800px;
-}
-
-.carousel-caption h1 {
-  /* Usamos clamp para que el texto sea responsivo */
-  font-size: clamp(2rem, 8vw, 3.5rem);
-  font-weight: 700;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
-  margin: 0;
-  line-height: 1.2;
-}
-
-/* ================================================================
-   ====== AJUSTES PARA DISPOSITIVOS MÓVILES ======
-   ================================================================ */
-@media (max-width: 768px) {
-  .hero-carousel-section {
-    /* La altura en móviles puede ser un poco menor */
-    height: 60vh;
-    min-height: 400px;
+/* Ocultar en móvil para un look más limpio, mostrar en escritorio */
+@media (max-width: 767px) {
+  .hero-carousel .swiper-button-next,
+  .hero-carousel .swiper-button-prev {
+    display: none;
   }
 }
 
-.carousel-video, .carousel-image {
-  width: 100%;
-  height: 600px;
-  object-fit: cover;
-  border-radius: 12px;
+.hero-carousel .swiper-button-next:hover,
+.hero-carousel .swiper-button-prev:hover {
+  opacity: 0.7;
+}
+
+/* Paginación (Puntos)
+  Usamos el color 'accent' (naranja) de nuestro tema.
+*/
+.hero-carousel .swiper-pagination-bullet {
+  background-color: rgba(255, 255, 255, 0.7);
+  width: 10px;
+  height: 10px;
+  opacity: 1;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.hero-carousel .swiper-pagination-bullet-active {
+  /* Este es el color --accent-color: #ff8a00 */
+  background-color: #ff8a00;
 }

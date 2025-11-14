@@ -1,63 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./admin-dashboard.css";
 import api from "@/lib/api";
 
+// --- Importar Componentes de Admin ---
+import { DashboardButton } from "@/components/admin/DashboardButton";
+import { DashboardCard } from "@/components/admin/DashboardCard";
+import { DashboardStat } from "@/components/admin/DashboardStat";
+
+// --- Importar Iconos ---
+import {
+  Settings,
+  Image,
+  FileText,
+  MapPin,
+  CalendarDays,
+  ShieldCheck,
+  Phone,
+  Search,
+  BookCopy,
+} from "lucide-react";
+
+// URL base de la API (sin cambios)
 const ROOT = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
-
-function Stat({ label, value, hint }) {
-  return (
-    <div className="ad-stat">
-      <div className="ad-stat-value">{value}</div>
-      <div className="ad-stat-label">{label}</div>
-      {hint && <div className="ad-stat-hint">{hint}</div>}
-    </div>
-  );
-}
-
-function Card({ title, icon, desc, children }) {
-  return (
-    <section className="ad-card">
-      <header className="ad-card-header">
-        <div className="ad-card-icon" aria-hidden="true">{icon}</div>
-        <div>
-          <h3 className="ad-card-title">{title}</h3>
-          {desc && <p className="ad-card-desc">{desc}</p>}
-        </div>
-      </header>
-      <div className="ad-card-actions">{children}</div>
-    </section>
-  );
-}
-
-function Btn({ children, onClick, variant = "primary", href, target = "_self" }) {
-  const className =
-    variant === "secondary"
-      ? "ad-btn ad-btn-secondary"
-      : variant === "ghost"
-      ? "ad-btn ad-btn-ghost"
-      : "ad-btn ad-btn-primary";
-
-  if (href) {
-    return (
-      <a className={className} href={href} target={target} rel="noopener noreferrer">
-        {children}
-      </a>
-    );
-  }
-  return (
-    <button className={className} onClick={onClick} type="button">
-      {children}
-    </button>
-  );
-}
 
 export default function AdminDashboard() {
   const nav = useNavigate();
   const [me, setMe] = useState(null);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // Carga del perfil actual (con headers y URL normalizada)
+  // Lógica de carga de 'me' (sin cambios)
   useEffect(() => {
     let ignore = false;
     async function loadMe() {
@@ -84,6 +55,7 @@ export default function AdminDashboard() {
   const role = me?.profile?.role ?? "admin";
   const displayName = me?.username || "Administrador";
 
+  // Lógica de Saludo (sin cambios)
   const greet = useMemo(() => {
     const h = new Date().getHours();
     if (h < 12) return "Buenos días";
@@ -91,92 +63,116 @@ export default function AdminDashboard() {
     return "Buenas noches";
   }, []);
 
-  // Probador de endpoints: siempre relativo a /api y sin slash inicial
+  // Lógica del Probador de API (sin cambios)
   const openApi = async (path) => {
-    const clean = String(path).replace(/^\/+/, ""); // evita rutas absolutas que ignoran baseURL
+    const clean = String(path).replace(/^\/+/, "");
     try {
       const res = await api.get(clean);
-      const data = res.data;
-      console.log(`GET /api/${clean}`, data);
-      alert(`GET /api/${clean} → ${res.status} OK (${Array.isArray(data) ? data.length + " items" : "objeto"})`);
+      console.log(`[API Test] GET /api/${clean}`, res.data);
     } catch (err) {
       if (err.response) {
         console.error(`GET /api/${clean}`, err.response.status, err.response.data);
-        alert(`GET /api/${clean} → ${err.response.status}: ${err.response.statusText || "Error"}`);
       } else {
         console.error(err);
-        alert("Error de red");
       }
     }
   };
 
+  // --- Mapeo de Rol a Estilo (con clases estándar) ---
+  const roleStyle = {
+    admin: "text-blue-400",
+    editor: "text-violet-400",
+  };
+
   return (
-    <main className="ad-container">
-      <header className="ad-header">
-        <div className="ad-header-left">
-          <h1 className="ad-title">
-            {greet}, <span className="ad-title-strong">{displayName}</span>
+    // Aplicamos el fondo y los colores de texto estándar de Tailwind
+    <main className="mx-auto max-w-6xl p-4 py-6 md:py-8 lg:px-8 
+                    bg-slate-900 text-slate-200 min-h-screen">
+      
+      {/* --- Encabezado --- */}
+      <header className="mb-6 grid grid-cols-1 items-center gap-4 md:grid-cols-[1fr,auto]">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-100 md:text-3xl">
+            {greet}, <span className="text-white drop-shadow-[0_0_10px_rgba(96,165,250,0.25)]">{displayName}</span>
           </h1>
-          <span className={`ad-role-badge ad-role-${role}`} title={`Rol: ${role}`}>
+          <span
+            className={`rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold ${roleStyle[role] || roleStyle.admin}`}
+            title={`Rol: ${role}`}
+          >
             {role}
           </span>
         </div>
-        <div className="ad-header-right">
-          <Btn variant="ghost" href={`${ROOT}/admin/`} target="_blank">⚙️ Django Admin</Btn>
-          <div className="ad-quick-help">
-            <span className={`ad-dot ${token ? "ad-dot-on" : "ad-dot-off"}`} />
-            <span className="ad-dot-text">{token ? "Token activo" : "Sin token"}</span>
+        <div className="flex items-center gap-3">
+          <DashboardButton variant="ghost" href={`${ROOT}/admin/`} target="_blank">
+            <Settings className="h-4 w-4" /> Django Admin
+          </DashboardButton>
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <span className={`h-2 w-2 rounded-full shadow-[0_0_0_2px_rgba(255,255,250,0.05)] ${token ? "bg-green-500" : "bg-red-500"}`} />
+            {token ? "Token activo" : "Sin token"}
           </div>
         </div>
       </header>
 
-      <section className="ad-stats">
-        <Stat label="Publicaciones" value="—" hint="Total visibles" />
-        <Stat label="Lugares" value="—" hint="Activos" />
-        <Stat label="Eventos" value="—" hint="Próximos" />
-        <Stat label="Reviews pendientes" value="—" hint="Para moderar" />
+      {/* --- Estadísticas --- */}
+      <section className="my-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:my-6">
+        <DashboardStat label="Publicaciones" value="—" hint="Total visibles" />
+        <DashboardStat label="Lugares" value="—" hint="Activos" />
+        <DashboardStat label="Eventos" value="—" hint="Próximos" />
+        <DashboardStat label="Reviews pendientes" value="—" hint="Para moderar" />
       </section>
 
-      <section className="ad-grid">
-        <Card title="Galería Principal" icon="🖼️" desc="Gestiona el carrusel de la página de inicio.">
-          <Btn onClick={() => nav("/admin/gallery")}>Gestionar Galería</Btn>
-          <Btn variant="ghost" onClick={() => openApi("gallery/")}>🔎 GET /api/gallery/</Btn>
-        </Card>
+      {/* --- Grid de Acciones --- */}
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <DashboardCard title="Galería Principal" icon={<Image className="h-5 w-5" />} desc="Gestiona el carrusel de la página de inicio.">
+          <DashboardButton to="/admin/gallery">Gestionar Galería</DashboardButton>
+          <DashboardButton variant="ghost" onClick={() => openApi("gallery/")}>
+            <Search className="h-4 w-4" /> GET /api/gallery/
+          </DashboardButton>
+        </DashboardCard>
 
-        <Card title="Publicaciones" icon="📝" desc="Crea y administra el contenido del blog/guía.">
-          <Btn onClick={() => nav("/admin/posts")}>➕ Crear publicación</Btn>
-          <Btn variant="secondary" onClick={() => nav("/posts")}>📚 Ver listado</Btn>
-          <Btn variant="ghost" onClick={() => openApi("posts/")}>🔎 GET /api/posts/</Btn>
-        </Card>
+        <DashboardCard title="Publicaciones" icon={<FileText className="h-5 w-5" />} desc="Crea y administra el contenido del blog/guía.">
+          <DashboardButton to="/admin/posts/new">Crear publicación</DashboardButton>
+          <DashboardButton variant="secondary" to="/admin/posts">Gestionar</DashboardButton>
+          <DashboardButton variant="ghost" onClick={() => openApi("posts/")}>
+            <Search className="h-4 w-4" /> GET /api/posts/
+          </DashboardButton>
+        </DashboardCard>
 
-        <Card title="Lugares" icon="📍" desc="Gestiona lugares turísticos (rol editor/admin).">
-          <Btn onClick={() => nav("/admin/places")}>➕ Crear lugar</Btn>
-          <Btn variant="secondary" onClick={() => nav("/places")}>🗺️ Ver lugares</Btn>
-          <Btn variant="ghost" onClick={() => openApi("places/")}>🔎 GET /api/places/</Btn>
-        </Card>
+        <DashboardCard title="Lugares" icon={<MapPin className="h-5 w-5" />} desc="Gestiona lugares turísticos (rol editor/admin).">
+          <DashboardButton to="/admin/places">Gestionar Lugares</DashboardButton>
+          <DashboardButton variant="secondary" to="/places">Ver sitio</DashboardButton>
+          <DashboardButton variant="ghost" onClick={() => openApi("places/")}>
+            <Search className="h-4 w-4" /> GET /api/places/
+          </DashboardButton>
+        </DashboardCard>
 
-        <Card title="Eventos" icon="🎉" desc="Crea y administra eventos.">
-          <Btn onClick={() => nav("/admin/create-event")}>➕ Crear evento</Btn>
-          <Btn variant="secondary" onClick={() => nav("/events")}>📅 Ver calendario</Btn>
-          <Btn variant="ghost" onClick={() => openApi("events/")}>🔎 GET /api/events/</Btn>
-        </Card>
+        <DashboardCard title="Eventos" icon={<CalendarDays className="h-5 w-5" />} desc="Crea y administra eventos.">
+          <DashboardButton to="/admin/create-event">Crear evento</DashboardButton>
+          <DashboardButton variant="secondary" to="/events">Ver calendario</DashboardButton>
+          <DashboardButton variant="ghost" onClick={() => openApi("events/")}>
+            <Search className="h-4 w-4" /> GET /api/events/
+          </DashboardButton>
+        </DashboardCard>
 
-        <Card title="Moderación de Reviews" icon="🛡️" desc="Aprueba o elimina reseñas enviadas por usuarios.">
-          <Btn onClick={() => nav("/admin/reviews")}>🧹 Moderar reviews</Btn>
-          <Btn variant="ghost" onClick={() => openApi("moderation/reviews/")}>🔎 GET /api/moderation/reviews/</Btn>
-        </Card>
+        <DashboardCard title="Moderación de Reviews" icon={<ShieldCheck className="h-5 w-5" />} desc="Aprueba o elimina reseñas enviadas por usuarios.">
+          <DashboardButton to="/admin/reviews">Moderar reviews</DashboardButton>
+          <DashboardButton variant="ghost" onClick={() => openApi("moderation/reviews/")}>
+            <Search className="h-4 w-4" /> GET /api/moderation/reviews/
+          </DashboardButton>
+        </DashboardCard>
 
-        <Card title="Contactos" icon="📞" desc="Gestiona los contactos públicos del sitio (solo admin).">
-          <Btn onClick={() => nav("/admin/contactos/nuevo")}>➕ Añadir contacto</Btn>
-          <Btn variant="secondary" onClick={() => nav("/contacto")}>📋 Ver página</Btn>
-          <Btn variant="ghost" onClick={() => nav("/admin/contactos")}>🗂 Gestionar lista</Btn>
-          <Btn variant="ghost" onClick={() => openApi("contact/")}>🔎 GET /api/contact/</Btn>
-        </Card>
-
+        <DashboardCard title="Contactos" icon={<Phone className="h-5 w-5" />} desc="Gestiona los contactos públicos del sitio (solo admin).">
+          <DashboardButton to="/admin/contactos/nuevo">Añadir contacto</DashboardButton>
+          <DashboardButton variant="secondary" to="/admin/contactos">Gestionar lista</DashboardButton>
+          <DashboardButton variant="ghost" onClick={() => openApi("contact/")}>
+            <Search className="h-4 w-4" /> GET /api/contact/
+          </DashboardButton>
+        </DashboardCard>
       </section>
 
-      <section className="ad-note">
-        <strong>Nota:</strong> Abrir endpoints en el navegador no envía el header <code>Authorization</code>. Usa los formularios o un cliente HTTP.
+      {/* --- Nota al pie --- */}
+      <section className="mt-6 rounded-lg border border-dashed border-slate-700 bg-slate-800 p-4 text-sm text-slate-400">
+        <strong>Nota:</strong> Los botones <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-slate-200">GET /api/...</code> son para pruebas rápidas. Revisa la consola del navegador para ver la respuesta.
       </section>
     </main>
   );

@@ -1,20 +1,2 @@
-/* reset básico */
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body { margin: 0; }
+@import "tailwindcss";
 
-/* opcional: color de fondo global para evitar “bordes” en páginas sin fondo */
-:root { --bg: #0c4f6b; }
-body { background: var(--bg); }
-
-/* Estilo para las etiquetas del mapa */
-.map-label {
-  background-color: rgba(14, 15, 16, 0.8); /* Fondo oscuro semitransparente */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f5f7fa; /* Texto claro */
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 12px;
-  box-shadow: none;
-}

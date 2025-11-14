@@ -11,7 +11,7 @@ import Login from "@pages/Login";
 import Places from "@pages/Places";
 import PlaceDetail from "@pages/PlaceDetail";
 import Events from "@pages/Events";
-import Dashboard from "@pages/Dashboard";
+import Dashboard from "@/pages/Dashboard/Dashboard";
 import Home from "./pages/Home";
 import CreatePost from "./pages/CreatePost";
 import PostsAdmin from "./pages/PostsAdmin";
