@@ -4,7 +4,7 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import { useMap } from 'react-leaflet';
 
-// Arreglo para los iconos de Leaflet (sin cambios)
+// Arreglo para los iconos de Leaflet (Se mantiene)
 L.Marker.prototype.options.icon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -20,40 +20,42 @@ export default function RoutingControl({ start, end, onRouteFound }) {
     if (!map || !start || !end) return;
 
     const waypoints = [
-      L.latLng(start[0], start[1]), // Ubicación del usuario
-      L.latLng(end[0], end[1])      // Inicio del sendero
+      L.latLng(start[0], start[1]), // Ubicación del usuario (A)
+      L.latLng(end[0], end[1])      // Inicio del sendero (B)
     ];
 
+    // Crea el control de ruteo
     const routingControl = L.Routing.control({
       waypoints: waypoints,
       routeWhileDragging: false,
       addWaypoints: false,
       draggableWaypoints: false,
-      show: false,
-      createMarker: () => null, 
+      // Ocultar la interfaz para mantener la UI limpia
+      show: false, 
+      router: L.Routing.osrmv1({
+          serviceUrl: 'https://router.project-osrm.org/route/v1'
+      }),
+      createMarker: () => null, // No crear marcadores redundantes
       lineOptions: {
-        // --- 💎 [DISEÑO MEJORADO] ---
-        // Ahora usamos "casing": dos líneas para un efecto 3D.
         styles: [
           // 1. El "Casing" (Borde ancho, oscuro)
           { 
-            color: '#0369a1', // sky-700
+            color: '#0369a1', 
             opacity: 0.8, 
-            weight: 8 // Más ancho
+            weight: 8 
           },
-          // 2. La "Ruta" (Interior, brillante, punteada)
+          // 2. La "Ruta" (Interior, brillante, punteada para simular 'Activa')
           { 
-            color: '#38bdf8', // sky-400
+            color: '#38bdf8', 
             opacity: 1, 
-            weight: 5, // Más delgado
-            dashArray: '10, 10' // Mantenemos el punteado
+            weight: 5, 
+            dashArray: '10, 10' 
           }
         ]
-        // --- Fin de la Mejora ---
       }
     }).addTo(map);
 
-    // Evento 'routesfound' (sin cambios)
+    // Evento 'routesfound' para obtener Distancia y Tiempo
     routingControl.on('routesfound', (e) => {
       if (e.routes && e.routes[0] && e.routes[0].summary && onRouteFound) {
         const summary = e.routes[0].summary;
@@ -64,6 +66,7 @@ export default function RoutingControl({ start, end, onRouteFound }) {
       }
     });
 
+    // Cleanup: Eliminar el control de ruteo al desmontar/actualizar
     return () => {
       if (map && routingControl) {
         map.removeControl(routingControl);
