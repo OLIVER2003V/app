@@ -118,15 +118,16 @@ export default function ComoLlegar() {
                 Desde El Torno, el camino es rural. Utiliza nuestro mapa interactivo para seguir el sendero y ver tu ubicación en tiempo real.
               </p>
               
-              <div className="mt-6 w-full h-[70vh] rounded-xl overflow-hidden shadow-lg">
-    {error ? (
-        <div className="flex h-full items-center justify-center bg-red-100 p-6 text-center text-red-700">
-            {error}
-        </div>
-    ) : (
-        <InteractiveTrailMap trailData={trail} />
-    )}
-</div>
+              <div className="mt-6 h-96 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-200">
+                {error ? (
+                  <div className="flex h-full items-center justify-center rounded-md bg-red-100 p-6 text-center text-red-700">
+                    {error}
+                  </div>
+                ) : (
+                  <InteractiveTrailMap trailData={trail} />
+                )}
+              </div>
+              
               <p className="mt-8 font-semibold text-gray-800">
                 Si prefieres, puedes tomar transporte local desde la calle 26 de Enero en El Torno:
               </p>
