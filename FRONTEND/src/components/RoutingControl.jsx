@@ -4,7 +4,7 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import { useMap } from 'react-leaflet';
 
-// Arreglo para los iconos de Leaflet (evita el ícono roto)
+// Arreglo para los iconos de Leaflet
 L.Marker.prototype.options.icon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -13,15 +13,19 @@ L.Marker.prototype.options.icon = L.icon({
   iconAnchor: [12, 41],
 });
 
-export default function RoutingControl({ start, end, onRouteFound }) {
+// Aceptamos una nueva prop: 'stopover' (Punto B - Inicio del sendero)
+export default function RoutingControl({ start, stopover, end, onRouteFound }) {
   const map = useMap();
 
   useEffect(() => {
     if (!map || !start || !end) return;
 
+    // Configuramos los puntos de paso: A -> B -> C
     const waypoints = [
-      L.latLng(start[0], start[1]), // Ubicación del usuario (A)
-      L.latLng(end[0], end[1])      // Inicio del sendero (B)
+      L.latLng(start[0], start[1]), // A: Usuario
+      // Si existe stopover (Punto B), lo añadimos, si no, vamos directo a C
+      ...(stopover ? [L.latLng(stopover[0], stopover[1])] : []), 
+      L.latLng(end[0], end[1])      // C: Destino Final
     ];
 
     const routingControl = L.Routing.control({
@@ -29,22 +33,24 @@ export default function RoutingControl({ start, end, onRouteFound }) {
       routeWhileDragging: false,
       addWaypoints: false,
       draggableWaypoints: false,
-      show: false, 
+      show: false, // Ocultamos las instrucciones de texto por defecto
       router: L.Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1'
       }),
-      createMarker: () => null, 
+      createMarker: () => null, // No creamos marcadores extra (ya tenemos los nuestros)
       lineOptions: {
         styles: [
+          // Estilo Neón Azul (A -> C)
           { 
-            color: '#0D3B66', // Un azul oscuro profundo para el casing
+            color: '#0D3B66', 
             opacity: 0.8, 
             weight: 9 
           },
           { 
-            color: '#00D8FF', // Cian / Azul Eléctrico brillante para el relleno
+            color: '#00D8FF', 
             opacity: 1, 
             weight: 5,
+            // Sin dashArray para línea sólida continua
           }
         ]
       }
@@ -60,25 +66,17 @@ export default function RoutingControl({ start, end, onRouteFound }) {
       }
     });
 
-    // --- ¡CORRECCIÓN DEFINITIVA! ---
     return () => {
       try {
         if (map && routingControl) {
-          // 1. Primero, le decimos al control que borre sus waypoints.
-          // Esto fuerza a la librería a limpiar sus propias líneas y listeners
-          // de forma controlada, ANTES de que la petición de red vuelva.
-          routingControl.setWaypoints([]);
-          
-          // 2. Después, removemos el control del mapa.
+          routingControl.setWaypoints([]); // Limpieza para evitar error
           map.removeControl(routingControl);
         }
       } catch (e) {
-        // Dejamos el catch por si acaso, pero el paso 1 debería
-        // prevenir el error de 'removeLayer'
-        console.error("Error al limpiar el control de ruteo (ignorable):", e);
+        console.error("Error al limpiar el control de ruteo:", e);
       }
     };
-  }, [map, start, end, onRouteFound]); 
+  }, [map, start, stopover, end, onRouteFound]); 
 
   return null;
 }

@@ -1,42 +1,38 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, LayersControl, AttributionControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, LayersControl, AttributionControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import RoutingControl from './RoutingControl';
 import * as turf from '@turf/turf';
 
-// --- Iconos SVG (Sin Cambios) ---
-const CenterIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12 9v.01M12 15v.01" />
-  </svg>
-);
-const ExpandIcon = ({ className }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15" />
-    </svg>
-);
-const InfoIcon = ({ className }) => ( 
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-    </svg>
-);
+// --- 1. ESTILOS CSS EN JS ---
+const pulseAnimation = `
+  @keyframes pulse-ring {
+    0% { transform: scale(0.33); opacity: 1; }
+    80%, 100% { transform: scale(2.5); opacity: 0; }
+  }
+  @keyframes pulse-dot {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1); }
+    100% { transform: scale(0.8); }
+  }
+`;
 
-// --- Iconos de Leaflet (Sin Cambios) ---
-const UserLocationIcon = L.divIcon({
-  html: `<div class="relative flex h-6 w-6 items-center justify-center"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex h-4 w-4 rounded-full border-2 border-white bg-blue-500"></span></div>`,
+// --- 2. ICONOS ---
+const createUserIcon = () => L.divIcon({
   className: 'bg-transparent border-none',
+  html: `
+    <div style="position: relative; width: 24px; height: 24px;">
+      <style>${pulseAnimation}</style>
+      <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: rgba(66, 133, 244, 0.5); animation: pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;"></div>
+      <div style="position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background-color: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+      <div style="position: absolute; top: 5px; left: 5px; width: 14px; height: 14px; background-color: #4285F4; border-radius: 50%; animation: pulse-dot 2.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;"></div>
+    </div>
+  `,
   iconSize: [24, 24],
   iconAnchor: [12, 12],
 });
-const StartIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  html: `<img src="https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png" style="filter: hue-rotate(120deg) brightness(1.1);">`,
-  className: 'bg-transparent border-none',
-});
+
 const DestinationIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconSize: [25, 41],
@@ -44,7 +40,27 @@ const DestinationIcon = L.icon({
   popupAnchor: [1, -34],
 });
 
-// --- Función Auxiliar Haversine (Sin Cambios) ---
+// --- 3. COMPONENTES DE UI ---
+const ActionButton = ({ onClick, icon, className }) => (
+  <button
+    type="button"
+    onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+    }}
+    className={`flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg active:scale-95 transition-transform border border-slate-100 ${className}`}
+  >
+    {icon}
+  </button>
+);
+
+const Icons = {
+    Center: () => <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>,
+    Expand: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15" /></svg>,
+    Collapse: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" /></svg>
+};
+
+// --- 4. FUNCIONES AUXILIARES ---
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
     const R = 6371e3; 
@@ -59,60 +75,36 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return R * c; 
 };
 
-// --- Constante de Detección (Sin Cambios) ---
 const DISTANCE_TO_START_THRESHOLD_METERS = 30;
 
 export default function InteractiveTrailMap({ trailData }) {
-  // --- 1. LLAMADA A TODOS LOS HOOKS (INICIO) ---
   const [userPosition, setUserPosition] = useState(null); 
   const [routeStartPos, setRouteStartPos] = useState(null); 
   const [error, setError] = useState(null);
   const [map, setMap] = useState(null);
   const [didInitialZoom, setDidInitialZoom] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [showStats, setShowStats] = useState(true); 
+  const [showStats, setShowStats] = useState(true); // Panel stats abierto/cerrado
+  
   const [navMode, setNavMode] = useState('TO_TRAIL');
-  const [onTrailStats, setOnTrailStats] = useState(null); 
+  
   const [routeStats, setRouteStats] = useState(null);
   const lastRoutePosition = useRef(null);
   const MIN_DISTANCE_UPDATE_METERS = 50; 
   const MIN_TIME_UPDATE_MS = 10000;
   const lastTimeUpdate = useRef(0);
-  const [showLegend, setShowLegend] = useState(false);
-
-  // --- Derivar TODOS los datos dependientes con useMemo ---
-  const startPoint = useMemo(() => {
-    if (!trailData || trailData.length === 0) return null;
-    return trailData[0];
-  }, [trailData]);
-
-  const endPoint = useMemo(() => {
-    if (!trailData || trailData.length === 0) return null;
-    return trailData[trailData.length - 1];
-  }, [trailData]);
-
-  const trailLineString = useMemo(() => {
-    if (!trailData || trailData.length === 0) return null;
-    return turf.lineString(trailData.map(pos => [pos[1], pos[0]]));
-  }, [trailData]);
   
-  const trailEndPointTurf = useMemo(() => {
-    if (!endPoint) return null;
-    return turf.point([endPoint[1], endPoint[0]]);
-  }, [endPoint]);
+  // Referencia al contenedor del mapa para Fullscreen
+  const mapContainerRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // --- Mover TODOS los useEffect y useCallback aquí ---
-  
-  // useEffect (GPS)
+  const startPoint = useMemo(() => trailData?.[0], [trailData]);
+  const endPoint = useMemo(() => trailData?.[trailData.length - 1], [trailData]);
+
+  // --- GPS y Lógica de Ruteo ---
   useEffect(() => {
-    if (!startPoint || !trailLineString || !trailEndPointTurf) {
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      setError("Tu navegador no soporta geolocalización.");
-      return;
-    }
+    if (!startPoint) return;
+    if (!navigator.geolocation) { setError("GPS no soportado"); return; }
 
     const watchOptions = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
 
@@ -126,335 +118,180 @@ export default function InteractiveTrailMap({ trailData }) {
         setError(null); 
 
         const distanceToStart = calculateDistance(latitude, longitude, startPoint[0], startPoint[1]);
-
+        
         if (distanceToStart < DISTANCE_TO_START_THRESHOLD_METERS && navMode === 'TO_TRAIL') {
             setNavMode('ON_TRAIL');
-            setRouteStats(null); 
         }
 
-        if (navMode === 'ON_TRAIL') {
-            const userPointTurf = turf.point([longitude, latitude]);
-            const nearestPoint = turf.nearestPointOnLine(trailLineString, userPointTurf, { units: 'meters' });
-            const remainingLine = turf.lineSlice(nearestPoint, trailEndPointTurf, trailLineString);
-            const remainingDistance = turf.length(remainingLine, { units: 'meters' });
-
-            setOnTrailStats({
-                distance: remainingDistance,
-                time: (remainingDistance / 1000) / 5 * 60 
-            });
-
-        } else {
-            if (!routeStartPos) {
-                setRouteStartPos(currentPos);
-                lastRoutePosition.current = currentPos;
-                lastTimeUpdate.current = currentTime;
-                return;
-            }
-            const lastPos = lastRoutePosition.current;
-            const distance = calculateDistance(lastPos[0], lastPos[1], latitude, longitude);
-            const shouldUpdate = distance >= MIN_DISTANCE_UPDATE_METERS || 
-                                 (currentTime - lastTimeUpdate.current) >= MIN_TIME_UPDATE_MS;
-            if (shouldUpdate) {
-                lastRoutePosition.current = currentPos;
-                lastTimeUpdate.current = currentTime;
-                setRouteStartPos(currentPos); 
-            }
+        if (!routeStartPos) {
+            setRouteStartPos(currentPos);
+            lastRoutePosition.current = currentPos;
+            lastTimeUpdate.current = currentTime;
+            return;
+        }
+        const lastPos = lastRoutePosition.current;
+        const distance = calculateDistance(lastPos[0], lastPos[1], latitude, longitude);
+        const shouldUpdate = distance >= MIN_DISTANCE_UPDATE_METERS || 
+                                (currentTime - lastTimeUpdate.current) >= MIN_TIME_UPDATE_MS;
+        if (shouldUpdate) {
+            lastRoutePosition.current = currentPos;
+            lastTimeUpdate.current = currentTime;
+            setRouteStartPos(currentPos); 
         }
       },
-      (err) => {
-        const errorMsg = err.code === 1 
-            ? "Permiso de GPS denegado. Actívalo para navegación." 
-            : "Señal GPS débil o perdida. Mostrando última ubicación.";
-        setError(errorMsg);
-      },
+      (err) => setError("GPS Error"),
       watchOptions
     );
+    
+    return () => navigator.geolocation.clearWatch(watcher);
+  }, [routeStartPos, navMode, startPoint]); 
 
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      navigator.geolocation.clearWatch(watcher);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [routeStartPos, navMode, trailLineString, trailEndPointTurf, startPoint]); 
-
-  // useEffect (Initial Zoom)
+  // --- Zoom Inicial ---
   useEffect(() => {
     if (userPosition && map && !didInitialZoom) {
-      map.flyTo(userPosition, 16);
+      map.setView(userPosition, 16);
       setDidInitialZoom(true);
     }
   }, [userPosition, map, didInitialZoom]);
   
-  // useCallback (Center User)
-  const handleCenterUser = useCallback(() => {
-    if (map && userPosition) {
-      map.flyTo(userPosition, 18, { animate: true, duration: 0.5 });
-    } else if (!userPosition) {
-      setError("Aún no hemos encontrado tu ubicación. Intentando de nuevo...");
-    }
-  }, [map, userPosition]);
-
-  // useCallback (Fullscreen)
-  const handleFullscreen = useCallback(() => {
-    if (!map) return;
-    const container = map.getContainer();
-    if (container.requestFullscreen) {
-        container.requestFullscreen();
-    } else if (container.mozRequestFullScreen) {
-        container.mozRequestFullScreen();
-    } else if (container.webkitRequestFullscreen) {
-        container.webkitRequestFullscreen();
-    } else if (container.msRequestFullscreen) {
-        container.msRequestFullscreen();
-    }
+  // --- Fullscreen Handler ---
+  useEffect(() => {
+      const handleFsChange = () => {
+          const isFs = !!document.fullscreenElement;
+          setIsFullscreen(isFs);
+          // Forzar a Leaflet a recalcular tamaño al cambiar modo
+          setTimeout(() => { if(map) map.invalidateSize(); }, 100);
+      };
+      document.addEventListener('fullscreenchange', handleFsChange);
+      return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, [map]);
 
-  // --- 2. RETORNO TEMPRANO (AHORA ES SEGURO) ---
+  const toggleFullscreen = () => {
+    if (!mapContainerRef.current) return;
+    
+    if (!document.fullscreenElement) {
+        // Solicitamos fullscreen AL CONTENEDOR ESPECÍFICO DEL MAPA, no a todo el documento
+        mapContainerRef.current.requestFullscreen().catch(err => {
+            console.error(`Error al intentar activar pantalla completa: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+  };
+
+  const handleCenterMap = () => {
+      if(map && userPosition) {
+          map.flyTo(userPosition, 17, { animate: true, duration: 0.8 });
+      }
+  };
+
   if (!startPoint || !endPoint) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-slate-800 text-slate-400">
-        Cargando datos de la ruta...
-      </div>
-    );
+    return <div className="flex h-64 w-full items-center justify-center bg-slate-100 text-slate-400">Cargando mapa...</div>;
   }
 
-  // --- 3. LÓGICA DE RENDER ---
-  
-  // ¡ESTILOS ACTUALIZADOS!
-  // Verde oscuro para el casing, verde claro para el relleno
-  const darkGreen = '#1E8449'; // Un verde más oscuro y saturado
-  const lightGreen = '#7CFC00'; // Un verde césped brillante
-
-  // El "Casing" (exterior, grueso, oscuro)
-  const trailCasingOptions = { 
-    color: darkGreen, 
-    weight: 9,      // Más grueso
-    opacity: 0.8    // Semi-transparente para ver el mapa por debajo
-  }; 
-  
-  // El "Relleno" (interior, más delgado, claro)
-  const trailFillOptions = { 
-    color: lightGreen, 
-    weight: 5,      // Más delgado que el casing
-    opacity: 1      // Sólido y brillante
-  }; 
-  
-  // Formateadores de Distancia y Tiempo (Sin Cambios)
   const formatDistance = (meters) => (meters / 1000).toFixed(1) + ' km';
   const formatTime = (minutes) => {
-      if (minutes < 60) {
-          return `~ ${Math.round(minutes)} min`;
-      }
+      if (minutes < 60) return `~ ${Math.round(minutes)} min`;
       const hours = Math.floor(minutes / 60);
       const mins = Math.round(minutes % 60);
       return `~ ${hours}h ${mins}`;
   };
-  
-  // Componente interno para los botones de acción (Sin Cambios)
-  const ActionButtons = () => {
-    const mapInstance = useMap(); 
-    if (!mapInstance) return null; 
-    
-    return (
-        <div className="absolute top-[100px] right-4 z-[1000] flex flex-col gap-2"> 
-            <button
-                onClick={() => setShowLegend(!showLegend)}
-                title="Mostrar Leyenda del Mapa"
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 shadow-md transition-colors hover:bg-slate-700"
-            >
-                <InfoIcon className="h-6 w-6" />
-            </button>
-            <button
-                onClick={handleFullscreen}
-                title="Ver en pantalla completa"
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 shadow-md transition-colors hover:bg-slate-700"
-            >
-                <ExpandIcon className="h-6 w-6" />
-            </button>
-            <button
-                onClick={handleCenterUser}
-                title="Centrar en mi ubicación"
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 shadow-md transition-colors hover:bg-slate-700"
-            >
-                <CenterIcon className="h-6 w-6" />
-            </button>
-        </div>
-    );
-  };
 
-  // Componente para la Leyenda (ACTUALIZADO con el nuevo color)
-  const MapLegend = () => {
-    const routeToTrailColor = '#00D8FF';
-    const trailColor = lightGreen; // Usamos el verde claro para la leyenda
-
-    return (
-      <div className={`absolute top-4 left-4 z-[1000] p-4 bg-slate-900/90 rounded-lg shadow-xl border border-slate-700 text-slate-100 transition-opacity duration-300 ${showLegend ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <h4 className="font-bold text-lg mb-2 text-white">Leyenda del Mapa</h4>
-        <div className="flex items-center mb-2">
-          <span style={{ backgroundColor: routeToTrailColor, width: '20px', height: '10px', display: 'inline-block', marginRight: '8px', borderRadius: '2px' }}></span>
-          <span>Tu ubicación &rarr; Inicio del Sendero (SCZ &rarr; El Torno)</span>
-        </div>
-        <div className="flex items-center">
-          <span style={{ backgroundColor: trailColor, width: '20px', height: '10px', display: 'inline-block', marginRight: '8px', borderRadius: '2px' }}></span>
-          <span>Sendero Principal (El Torno &rarr; Jardín)</span>
-        </div>
-        <button 
-            onClick={() => setShowLegend(false)}
-            className="absolute top-2 right-2 text-slate-400 hover:text-slate-200 text-xl font-bold"
-            title="Cerrar Leyenda"
-        >
-            &times;
-        </button>
-      </div>
-    );
-  };
-  
-  // --- RENDERIZADO (Todo el JSX) ---
   return (
-    <div className="relative h-full w-full bg-slate-800">
-
-      {/* Alertas de Estado */}
+    // Usamos una ref aquí para decirle al navegador QUE ESTO ES LO QUE QUEREMOS EN FULLSCREEN
+    <div ref={mapContainerRef} className="relative h-full w-full bg-slate-800 overflow-hidden rounded-xl shadow-inner">
+      
       {error && (
-        <div className={`absolute top-0 w-full z-[1000] py-2 text-center text-sm font-medium text-red-100 shadow-lg ${isOnline ? 'bg-red-800/90' : 'bg-yellow-800/90'} backdrop-blur-sm`}>
+        <div className="absolute top-0 left-0 right-0 z-[2000] bg-red-500/90 text-white text-xs py-1 text-center backdrop-blur-sm">
           {error}
         </div>
       )}
-      {!isOnline && !error && (
-        <div className="absolute top-0 w-full z-[1000] bg-yellow-700/90 py-1 text-center text-xs font-medium text-yellow-100 backdrop-blur-sm">
-          Modo Sin Conexión. Datos estáticos.
-        </div>
-      )}
 
-      {/* Contenedor del Mapa */}
       <MapContainer 
         center={startPoint}
         zoom={15} 
         scrollWheelZoom={true}
         touchZoom={true}
-        doubleClickZoom={true}
-        className="h-full w-full"
+        className="h-full w-full z-0"
         ref={setMap} 
         attributionControl={false}
-        layersControl={false} 
+        zoomControl={false} // Quitamos el zoom por defecto
       >
-        
-        {/* Este es el ÚNICO control de capas que debe existir. */}
         <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="Detallado (OSM)">
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+          <LayersControl.BaseLayer checked name="Google Calles">
+            <TileLayer url="http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}" subdomains={['mt0','mt1','mt2','mt3']} maxZoom={20} attribution="Google Maps" />
           </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Satélite (Esri)">
-            <TileLayer
-              attribution='Tiles &copy; Esri'
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
+          <LayersControl.BaseLayer name="Google Híbrido">
+            <TileLayer url="http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}" subdomains={['mt0','mt1','mt2','mt3']} maxZoom={20} attribution="Google Maps" />
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        {/* Botones de acción (Info, Fullscreen y Centrar) */}
-        <ActionButtons />
-
-        {/* Ruta A -> B (Condicional) */}
-        {navMode === 'TO_TRAIL' && routeStartPos && (
+        {/* Ruta Azul A->B->C */}
+        {routeStartPos && (
           <RoutingControl 
             key={`route-${routeStartPos[0]}-${routeStartPos[1]}`} 
             start={routeStartPos} 
-            end={startPoint} 
+            stopover={startPoint} 
+            end={endPoint}        
             onRouteFound={setRouteStats}
           />
         )}
-
-        {/* Ruta B -> C (Sendero Fijo) */}
-        <Polyline pathOptions={trailCasingOptions} positions={trailData} />
-        <Polyline pathOptions={trailFillOptions} positions={trailData} />
         
-        {/* Marcadores */}
-        <Marker position={startPoint} icon={StartIcon}>
-          <Popup><b>Inicio del Sendero</b></Popup>
-        </Marker>
+        {/* Marcador Final */}
         <Marker position={endPoint} icon={DestinationIcon}>
-          <Popup><b>Punto Final</b></Popup>
+          <Popup>Punto Final</Popup>
         </Marker>
+        
+        {/* Usuario */}
         {userPosition && (
-          <Marker position={userPosition} icon={UserLocationIcon}>
-            <Popup><b>Mi Ubicación</b></Popup>
+          <Marker position={userPosition} icon={createUserIcon()}>
+            <Popup>Tú</Popup>
           </Marker>
         )}
         
-        <AttributionControl position="bottomleft" prefix={false} />
+        <AttributionControl position="bottomright" prefix={false} />
       </MapContainer>
 
-      {/* --- Leyenda del Mapa --- */}
-      <MapLegend />
+      {/* --- CONTROLES FLOTANTES --- */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-[1000]">
+          <ActionButton onClick={handleCenterMap} icon={<Icons.Center />} />
+          <ActionButton onClick={toggleFullscreen} icon={isFullscreen ? <Icons.Collapse /> : <Icons.Expand />} />
+      </div>
 
-      {/* UI: Caja de Estadísticas (Sin Cambios) */}
-      
-      {/* 1. Stats A->B */}
-      {navMode === 'TO_TRAIL' && routeStats && (
-        <div className={`absolute bottom-0 left-0 w-full z-[1000] p-4 transition-transform duration-300 ${showStats ? 'translate-y-0' : 'translate-y-[calc(100%-40px)]'}`}>
-          <div className="flex flex-col rounded-t-xl border border-sky-700/50 bg-slate-900/90 text-slate-100 shadow-2xl backdrop-blur-md">
-            <div className="flex justify-center p-2 border-b border-slate-700 cursor-pointer" onClick={() => setShowStats(!showStats)}>
-              <span className="w-10 h-1 bg-slate-600 rounded-full"></span>
+      {/* --- PANEL DESPLEGABLE (Bottom Sheet) --- */}
+      {routeStats && (
+        <div className={`absolute bottom-0 left-0 right-0 z-[1000] bg-white rounded-t-3xl shadow-[0_-5px_30px_rgba(0,0,0,0.15)] transition-all duration-300 ease-out ${showStats ? 'h-36' : 'h-12'}`}>
+            
+            {/* Barra de Agarre */}
+            <div 
+                className="w-full h-8 flex items-center justify-center cursor-pointer active:opacity-50"
+                onClick={() => setShowStats(!showStats)}
+            >
+                <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
             </div>
-            <div className={`p-4 ${!showStats && 'hidden'}`}>
-                <h3 className="text-lg font-bold text-sky-400 mb-2">Al Inicio del Sendero</h3>
-                <div className="flex justify-around gap-4 text-center">
-                    <div>
-                        <h4 className="text-xs font-semibold uppercase text-slate-400">ETA</h4>
-                        <span className="text-xl font-bold">{formatTime(routeStats.time / 60)}</span>
-                    </div>
-                    <div>
-                        <h4 className="text-xs font-semibold uppercase text-slate-400">Distancia</h4>
-                        <span className="text-xl font-bold">{formatDistance(routeStats.distance)}</span>
-                    </div>
+
+            {/* Contenido */}
+            <div className="px-6 flex flex-row justify-between items-start">
+                <div className="flex flex-col">
+                        <span className="text-xs text-gray-500 font-bold uppercase tracking-wide">Tiempo Estimado</span>
+                        <div className="text-3xl font-black text-slate-800 mt-1">
+                        {formatTime(routeStats.time / 60)}
+                        </div>
+                        <span className="text-sm text-green-600 font-medium mt-1 flex items-center gap-1">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Tráfico Fluido
+                        </span>
+                </div>
+
+                <div className="flex flex-col items-end">
+                        <span className="text-xs text-gray-500 font-bold uppercase tracking-wide">Distancia</span>
+                        <div className="text-3xl font-black text-blue-600 mt-1">
+                        {formatDistance(routeStats.distance)}
+                        </div>
                 </div>
             </div>
-             {!showStats && (
-                <div className="p-2 text-center text-sm font-medium">
-                    ETA: <span className="font-bold text-sky-400">{formatTime(routeStats.time / 60)}</span>
-                </div>
-            )}
-          </div>
         </div>
       )}
-      
-      {/* 2. Stats B->C */}
-      {navMode === 'ON_TRAIL' && onTrailStats && (
-        <div className={`absolute bottom-0 left-0 w-full z-[1000] p-4 transition-transform duration-300 ${showStats ? 'translate-y-0' : 'translate-y-[calc(100%-40px)]'}`}>
-          <div className="flex flex-col rounded-t-xl border border-lime-700/50 bg-slate-900/90 text-slate-100 shadow-2xl backdrop-blur-md">
-            <div className="flex justify-center p-2 border-b border-slate-700 cursor-pointer" onClick={() => setShowStats(!showStats)}>
-              <span className="w-10 h-1 bg-slate-600 rounded-full"></span>
-            </div>
-            <div className={`p-4 ${!showStats && 'hidden'}`}>
-                <h3 className="text-lg font-bold text-lime-400 mb-2">Hacia el Final</h3>
-                <div className="flex justify-around gap-4 text-center">
-                    <div>
-                        <h4 className="text-xs font-semibold uppercase text-slate-400">ETA (Caminando)</h4>
-                        <span className="text-xl font-bold">{formatTime(onTrailStats.time)}</span>
-                    </div>
-                    <div>
-                        <h4 className="text-xs font-semibold uppercase text-slate-400">Restante</h4>
-                        <span className="text-xl font-bold">{formatDistance(onTrailStats.distance)}</span>
-                    </div>
-                </div>
-            </div>
-             {!showStats && (
-                <div className="p-2 text-center text-sm font-medium">
-                    Restante: <span className="font-bold text-lime-400">{formatDistance(onTrailStats.distance)}</span>
-                </div>
-            )}
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
