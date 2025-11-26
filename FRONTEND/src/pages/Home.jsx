@@ -349,7 +349,7 @@ export default function Home() {
               <Link to="/contact" className="hover:text-white transition-colors">Contacto</Link>
             </div>
             <div className="pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p>&copy; {new Date().getFullYear()} Turismo El Torno.</p>
+                <p>&copy; {new Date().getFullYear()} Asociación Turística Jardín de las Delicias</p>
                 <p className="flex items-center gap-1">
                     Desarrollado por 
                     <a href="https://wa.me/59172672767" className="font-bold text-cyan-400 hover:text-white transition-colors ml-1">
