@@ -69,7 +69,7 @@ module.exports = {
         admin: '0 10px 30px rgba(3, 7, 18, 0.45)', // --ad-shadow
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        sans: ['Montserrat', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
       },
       transitionTimingFunction: {
         ease: 'cubic-bezier(.2,.8,.2,1)',
