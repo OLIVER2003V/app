@@ -124,8 +124,12 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* --- HERO SECTION --- */}
-        {/* AJUSTE 1: Reduje el padding superior de 'pt-20' a 'pt-12' para subir el contenido */}
-        <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-0 px-4 sm:px-6 lg:px-8 text-center">
+        {/* CORRECCIÓN VISUAL:
+            1. justify-start para móviles (sube el contenido) vs justify-center para PC.
+            2. pt-28 en móviles para dar espacio al menú pero no centrarlo en toda la pantalla.
+            3. min-h ajustado.
+        */}
+        <section className="relative min-h-[80vh] md:min-h-[90vh] flex flex-col items-center justify-start pt-5 md:justify-center md:pt-0 px-4 sm:px-6 lg:px-8 text-center">
           
           <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
             
@@ -140,7 +144,6 @@ export default function Home() {
               <span className="relative inline-block">
                 {/* Sombra de color detrás */}
                 <span className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 blur-xl opacity-30"></span>
-                {/* AJUSTE 3: Degradado con más contraste (from-emerald-700) y mejor sombra (drop-shadow) */}
                 <span className="relative text-transparent bg-clip-text bg-gradient-to-br from-emerald-700 via-teal-500 to-cyan-600 drop-shadow-[0_2px_2px_rgba(0,0,0,0.15)]">
                   Jardín de las Delicias
                 </span>
@@ -180,7 +183,6 @@ export default function Home() {
           </div>
 
           {/* Flecha Scroll */}
-          {/* AJUSTE 2: Cambié 'bottom-10' por 'bottom-4' para bajar la flecha */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce">
             <a href="#info-rapida" className="flex flex-col items-center text-emerald-600/70 hover:text-emerald-800 transition-colors gap-2">
               <ChevronDown className="h-8 w-8" />
