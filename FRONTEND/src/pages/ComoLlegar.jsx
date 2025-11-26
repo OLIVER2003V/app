@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import InteractiveTrailMap from '../components/InteractiveTrailMap';
 import api from '@/lib/api'; 
-import { ExternalLink, Copy, X } from 'lucide-react'; // Nuevas importaciones de íconos
+import { ExternalLink, Copy, X } from 'lucide-react'; // Iconos necesarios
 
-// --- Constantes ---
+// --- Constantes de Ruta ---
 const WAYPOINT_COORDS = { lat: -17.991109, lng: -63.389442 };
 const YOUTUBE_VIDEO_ID = "rMBSyYd7JJE";
 
-// --- Iconos SVG (sin cambios) ---
+// --- Iconos SVG (Reutilizados del código original) ---
 const GoogleMapsIcon = ({ className }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12.012 2.25c-3.42 0-6.398 2.053-7.854 5.031L4 7.39v.002c0 .012 0 .025-.002.037L4 7.55v3.435l2.493-1.246a5.006 5.006 0 0 1 5.514-4.52c2.753.007 4.99 2.25 4.99 5.006s-2.237 5-4.99 5.006a5.006 5.006 0 0 1-5.514-4.52L4 9.47V13.5l.002-.112c0 .01-.002.022-.002.031v.003L4.11 16.5c1.442 2.962 4.41 5 7.89 5 4.41 0 8.02-3.597 8.02-8.019S16.422 2.25 12.012 2.25Z" />
@@ -23,104 +23,114 @@ const WazeIcon = ({ className }) => (
 // --- Fin Iconos ---
 
 // --- COMPONENTE DE AVISO (FIX PARA TIKTOK) ---
-// --- COMPONENTE DE AVISO (FIX PARA TIKTOK) ---
 const TikTokFixOverlay = ({ onClose }) => {
-    const [copied, setCopied] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-    // FUNCIÓN PRINCIPAL: Intenta abrir en el navegador del sistema
-    const openExternal = () => {
-        // Esto le indica al WebView que intente cargar la URL de forma externa
-        window.location.href = window.location.href; 
-    };
+    // FUNCIÓN PRINCIPAL: Intenta abrir en el navegador del sistema
+    const openExternal = () => {
+        window.location.href = window.location.href; 
+    };
 
-    const copyLink = () => {
-        navigator.clipboard.writeText(window.location.href);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+    const copyLink = () => {
+        navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
-    return (
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center relative overflow-hidden">
-                
-                {/* Botón de cierre para 'Continuar sin GPS' */}
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <X className="w-5 h-5" />
-                </button>
-                
-                {/* Ícono y título */}
-                <div className="mb-4 flex justify-center">
-                    <div className="bg-cyan-100 p-4 rounded-full animate-bounce">
-                        <ExternalLink className="w-8 h-8 text-cyan-600" />
-                    </div>
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">
-                    ¡Atención! Permisos GPS bloqueados
-                </h3>
-                <p className="text-slate-600 mb-6 leading-relaxed text-sm">
-                    El navegador de TikTok bloquea tu ubicación. Presiona el botón para abrir esta página en Chrome o Safari.
-                </p>
+    return (
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center relative overflow-hidden">
+                
+                {/* Botón de cierre para 'Continuar sin GPS' */}
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                    <X className="w-5 h-5" />
+                </button>
+                
+                {/* Ícono y título */}
+                <div className="mb-4 flex justify-center">
+                    <div className="bg-cyan-100 p-4 rounded-full animate-bounce">
+                        <ExternalLink className="w-8 h-8 text-cyan-600" />
+                    </div>
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mb-2">
+                    ¡Atención! Permisos GPS bloqueados
+                </h3>
+                <p className="text-slate-600 mb-6 leading-relaxed text-sm">
+                    El navegador de TikTok bloquea tu ubicación. Presiona el botón para abrir esta página en Chrome o Safari.
+                </p>
 
-                {/* --- BOTÓN DE APERTURA FORZADA (ACCIÓN PRINCIPAL) --- */}
-                <button 
-                    onClick={openExternal}
-                    className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-cyan-600 text-white shadow-xl hover:bg-cyan-700 hover:scale-[1.02]"
-                >
-                    <ExternalLink className="w-5 h-5" /> Abrir en Navegador del Sistema
-                </button>
-                
-                <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-slate-400">Opción Manual</span>
-                    </div>
-                </div>
+                {/* --- BOTÓN DE APERTURA FORZADA (ACCIÓN PRINCIPAL) --- */}
+                <button 
+                    onClick={openExternal}
+                    className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-cyan-600 text-white shadow-xl hover:bg-cyan-700 hover:scale-[1.02]"
+                >
+                    <ExternalLink className="w-5 h-5" /> Abrir en Navegador del Sistema
+                </button>
+                
+                <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-slate-400">Opción Manual</span>
+                    </div>
+                </div>
 
-                {/* --- BOTÓN DE COPIAR ENLACE (PLAN B GARANTIZADO) --- */}
-                <button 
-                  onClick={copyLink}
-                  className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border ${
-                    copied 
-                    ? "bg-emerald-500 text-white border-emerald-500" 
-                    : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {copied ? (
-                    <><Copy className="w-4 h-4" /> ¡Enlace Copiado! ✅</>
-                  ) : (
-                    <><Copy className="w-4 h-4" /> Copiar Enlace</>
-                  )}
-                </button>
-                
-                <button 
-                    onClick={onClose}
-                    className="mt-3 text-xs text-slate-400 hover:text-slate-600 underline"
-                >
-                    Continuar sin GPS
-                </button>
-            </div>
-        </div>
-    );
+                {/* --- BOTÓN DE COPIAR ENLACE (PLAN B GARANTIZADO) --- */}
+                <button 
+                    onClick={copyLink}
+                    className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border ${
+                      copied 
+                      ? "bg-emerald-500 text-white border-emerald-500" 
+                      : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
+                    }`}
+                >
+                    {copied ? (
+                        <><Copy className="w-4 h-4" /> ¡Enlace Copiado! ✅</>
+                    ) : (
+                        <><Copy className="w-4 h-4" /> Copiar Enlace</>
+                    )}
+                </button>
+                
+                <button 
+                    onClick={onClose}
+                    className="mt-3 text-xs text-slate-400 hover:text-slate-600 underline"
+                >
+                    Continuar sin GPS
+                </button>
+            </div>
+        </div>
+    );
 };
 
 export default function ComoLlegar() {
   const [trail, setTrail] = useState([]);
   const [error, setError] = useState(null);
-  const [showTikTokOverlay, setShowTikTokOverlay] = useState(false); // Estado para el aviso
+  const [showTikTokOverlay, setShowTikTokOverlay] = useState(false); // Estado para el aviso
+  const [gpsErrorFromMap, setGpsErrorFromMap] = useState(null);
+
+    // Lógica para disparar el modal de forma robusta
+    useEffect(() => {
+        // Asumimos que si hay error de GPS reportado y estamos en un móvil, es un problema de bloqueo
+        const isMobileScreen = window.innerWidth < 768; 
+
+        if (gpsErrorFromMap && isMobileScreen) {
+            setShowTikTokOverlay(true);
+        }
+    }, [gpsErrorFromMap]);
+
 
   // Lógica de carga del JSON (sin cambios)
   useEffect(() => {
-    // Detección inicial del navegador interno al cargar la página
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    const isInternalApp = (ua.indexOf("TikTok") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("FBAN") > -1);
-    
-    if (isInternalApp) {
-        setShowTikTokOverlay(true);
-    }
-    
-    // Carga de la ruta (continúa igual)
+    // Detección inicial de app interna (redundante si falla el GPS, pero sirve de fallback)
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isInternalApp = (ua.indexOf("TikTok") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("FBAN") > -1);
+    
+    if (isInternalApp) {
+        setShowTikTokOverlay(true);
+    }
+    
+    // Carga de la ruta (continúa igual)
     fetch('/ruta.json')
       .then(response => {
         if (!response.ok) {
@@ -156,9 +166,9 @@ export default function ComoLlegar() {
     // --- Contenedor Principal ---
     <div className="min-h-screen bg-gray-100 pb-16 text-gray-900">
       
-      {/* RENDERIZADO DEL AVISO DE TIKTOK: Se superpone a todo si se detecta */}
-      {showTikTokOverlay && <TikTokFixOverlay onClose={() => setShowTikTokOverlay(false)} />}
-      
+      {/* RENDERIZADO DEL AVISO DE TIKTOK: Se superpone a todo si se detecta */}
+      {showTikTokOverlay && <TikTokFixOverlay onClose={() => setShowTikTokOverlay(false)} />}
+      
       {/* --- Encabezado --- */}
       <header className="bg-gradient-to-r from-cyan-600 to-emerald-700 py-16 px-4 text-center text-white shadow-lg">
         <div className="mx-auto max-w-6xl">
@@ -217,7 +227,11 @@ export default function ComoLlegar() {
                     {error}
                   </div>
                 ) : (
-                  <InteractiveTrailMap trailData={trail} />
+                  <InteractiveTrailMap 
+                        trailData={trail} 
+                        // CONEXIÓN CLAVE PARA EL ERROR DEL MAPA
+                        onGpsErrorChange={setGpsErrorFromMap} 
+                    />
                 )}
               </div>
               
