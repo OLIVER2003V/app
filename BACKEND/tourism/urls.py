@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PlaceViewSet, EventViewSet, PostViewSet, PublicReviewViewSet, ModerationReviewViewSet, ContactInfoViewSet, GalleryItemViewSet
+from .views import PlaceViewSet, EventViewSet, PostViewSet, PublicReviewViewSet, ModerationReviewViewSet, ContactInfoViewSet, GalleryItemViewSet, health_check
 
 router = DefaultRouter()
 router.register(r'places', PlaceViewSet, basename='place')
@@ -13,4 +13,5 @@ router.register(r'gallery', GalleryItemViewSet, basename='gallery')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('health/', health_check, name='health_check'),
 ]

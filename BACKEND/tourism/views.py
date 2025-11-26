@@ -11,6 +11,9 @@ from .permissions import IsEditorOrAdmin, IsAdmin
 import os
 import cloudinary
 import cloudinary.uploader
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 class PlaceViewSet(viewsets.ModelViewSet):
     serializer_class = PlaceSerializer
     lookup_field = "slug"
@@ -170,3 +173,11 @@ class MediaCreateView(generics.CreateAPIView):
     serializer_class = MediaSerializer
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [permissions.IsAuthenticated]
+    
+@api_view(['GET'])
+@permission_classes([AllowAny]) # Importante: Permite acceso sin token
+def health_check(request):
+    """
+    Ruta ligera para mantener el backend despierto (Ping).
+    """
+    return Response({"status": "OK", "message": "Backend activo"})
