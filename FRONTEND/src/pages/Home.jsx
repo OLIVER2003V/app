@@ -17,11 +17,11 @@ import {
   Star, 
   ChevronDown,
   ArrowRight,
-  ExternalLink,
-  MapPin
+  MapPin,
+  Camera,
+  Droplets
 } from "lucide-react";
 
-// Lazy load del Carrusel
 const HeroCarousel = lazy(() => 
   import("../components/HeroCarousel").then(module => ({ default: module.HeroCarousel }))
 );
@@ -94,29 +94,27 @@ export default function Home() {
   };
   
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-100 flex items-center justify-center">
-        <div className="text-emerald-600"><LoadingSpinner /></div>
+    <div className="min-h-screen bg-cyan-50 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-200 via-white to-emerald-200 animate-pulse"></div>
+        <div className="text-cyan-600 scale-150 relative z-10"><LoadingSpinner /></div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-cyan-200 selection:text-cyan-900 relative overflow-x-hidden">
       
       {isTourActive && <GuidedTour onComplete={handleTourComplete} />}
 
-      {/* --- FONDO AMBIENTAL VIBRANTE Y CLARO --- */}
+      {/* --- FONDO AMBIENTAL --- */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-emerald-100 to-cyan-100"></div>
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-overlay"
-           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1463695973559-943f5502758f?q=80&w=2070&auto=format&fit=crop')" }}
-        ></div>
-        <div className="absolute top-[-20%] left-[-10%] w-[70vh] h-[70vh] bg-emerald-400/30 rounded-full blur-[128px] animate-pulse mix-blend-multiply"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[70vh] h-[70vh] bg-cyan-400/30 rounded-full blur-[128px] mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500 via-white to-emerald-300"></div>
+        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-sky-200/40 rounded-full blur-[100px] mix-blend-multiply"></div>
+        <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] bg-emerald-200/40 rounded-full blur-[100px] mix-blend-multiply"></div>
+        <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/water.png')] mix-blend-overlay"></div>
       </div>
 
       {error && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-red-100 border border-red-400 text-red-700 px-6 py-3 rounded-full shadow-xl flex items-center gap-3 animate-bounce">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-white border-2 border-red-100 text-red-800 px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 animate-bounce">
           <span className="text-xl">⚠️</span> {error}
         </div>
       )}
@@ -124,118 +122,108 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* --- HERO SECTION --- */}
-        {/* CORRECCIÓN VISUAL:
-            1. justify-start para móviles (sube el contenido) vs justify-center para PC.
-            2. pt-28 en móviles para dar espacio al menú pero no centrarlo en toda la pantalla.
-            3. min-h ajustado.
-        */}
-        <section className="relative min-h-[80vh] md:min-h-[90vh] flex flex-col items-center justify-start pt-5 md:justify-center md:pt-0 px-4 sm:px-6 lg:px-8 text-center">
+<section className="relative min-h-[90vh] flex flex-col items-center justify-start px-4 sm:px-6 text-center pt-6 md:pt-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-800/80 via-white/90 to-transparent text-slate-900 overflow-hidden">
           
-          <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+          <div className="max-w-5xl mx-auto space-y-8 animate-fade-in-up relative z-10">
             
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-emerald-200 backdrop-blur-md text-emerald-700 text-xs font-extrabold uppercase tracking-widest shadow-sm">
-              <Trees className="h-4 w-4 text-emerald-600" /> 
-              <span>Paraíso Ecoturístico</span>
-            </div>
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/70 border border-cyan-300 text-cyan-800 text-xs font-bold uppercase tracking-widest shadow-sm backdrop-blur-md">
+  <Trees className="h-4 w-4" /> 
+  <span>Sitio Oficial</span>
+</div>
             
-            {/* Título Principal */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.1]">
-              Descubre el <br className="hidden md:block" />
-              <span className="relative inline-block">
-                {/* Sombra de color detrás */}
-                <span className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 blur-xl opacity-30"></span>
-                <span className="relative text-transparent bg-clip-text bg-gradient-to-br from-emerald-700 via-teal-500 to-cyan-600 drop-shadow-[0_2px_2px_rgba(0,0,0,0.15)]">
-                  Jardín de las Delicias
-                </span>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.05]">
+              Bienvenidos al  <br className="hidden md:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600 drop-shadow-sm">
+                Jardín de las Delicias
               </span>
             </h1>
             
-            <p className="text-lg md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed">
-              Un Paraíso Por Descubrir
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-6">
-              
-              {/* Botón Principal */}
+           <p className="text-xl md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed">
+   Un Paraíso por Descubrir ✨
+</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-10">
               <Link 
                 to="/como-llegar"
-                className="group relative w-full sm:w-auto overflow-hidden rounded-2xl transition-all hover:-translate-y-1 shadow-lg hover:shadow-emerald-500/30"
+                className="group relative w-full sm:w-auto overflow-hidden rounded-xl shadow-lg shadow-cyan-600/20 transition-all hover:-translate-y-1"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-sky-600 transition-transform group-hover:scale-105"></div>
                 <span className="relative flex h-full w-full items-center justify-center gap-3 px-8 py-4 text-lg font-bold text-white">
                   <Compass className="h-6 w-6" />
                   Cómo Llegar
-                  <ArrowRight className="h-5 w-5 opacity-80 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-5 w-5 opacity-70 group-hover:translate-x-2 transition-transform" />
                 </span>
               </Link>
 
-              {/* Botón Secundario */}
               <Link 
                 to="/posts"
-                className="group w-full sm:w-auto relative flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-white/70 border-2 border-white text-emerald-700 font-extrabold backdrop-blur-md shadow-md transition-all hover:-translate-y-1 hover:bg-white/90 hover:text-emerald-800 hover:border-emerald-200"
+                className="group w-full sm:w-auto relative flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-white/90 backdrop-blur-sm border-2 border-cyan-200 text-cyan-700 font-bold shadow-sm transition-all hover:-translate-y-1 hover:bg-white hover:border-cyan-400"
               >
-                <Newspaper className="h-5 w-5 text-emerald-600 group-hover:scale-110 transition-transform" />
-                Ver Guías y Tips
+                <Newspaper className="h-5 w-5 text-cyan-600" />
+                Guías y Tips
               </Link>
-
             </div>
           </div>
 
-          {/* Flecha Scroll */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce">
-            <a href="#info-rapida" className="flex flex-col items-center text-emerald-600/70 hover:text-emerald-800 transition-colors gap-2">
-              <ChevronDown className="h-8 w-8" />
+          {/* FLECHA ANIMADA CORREGIDA */}
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 animate-bounce">
+            <a href="#info-rapida" className="text-cyan-700/60 hover:text-cyan-900 transition-colors p-2">
+              <ChevronDown className="h-10 w-10" />
             </a>
           </div>
         </section>
 
         {/* --- INFO RÁPIDA --- */}
-        <section id="info-rapida" className="py-16 px-4 relative">
-          <div className="max-w-6xl mx-auto">
-             <div className="text-center mb-10">
-                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-cyan-600">
-                    Información Esencial
-                </h2>
+        <section id="info-rapida" className="py-24 px-4 relative">
+          <div className="max-w-6xl mx-auto relative z-10">
+            <div className="text-center mb-16">
+               <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+                  Información Esencial
+               </h2>
+               <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 to-emerald-500 mx-auto rounded-full"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               
               {/* Card Horario */}
-              <div className="bg-white/60 backdrop-blur-xl border border-white/80 p-8 rounded-3xl hover:border-emerald-400 transition-all group shadow-xl hover:shadow-2xl hover:shadow-emerald-100/50">
-                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
-                  <Clock className="h-8 w-8 text-emerald-600" />
+              <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-[0_5px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_35px_rgba(6,182,212,0.15)] transition-all group border border-slate-100">
+                <div className="w-14 h-14 bg-cyan-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Clock className="h-7 w-7 text-cyan-700" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Horario de Visita</h3>
-                <p className="text-slate-600 font-medium mb-4">Abierto todos los días.</p>
-                <div className="text-4xl font-black text-emerald-700">08:00 - 18:00</div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Horario de Visita</h3>
+                <p className="text-slate-500 font-medium mb-4">Abierto todos los días</p>
+                <div className="text-3xl font-black text-cyan-800">08:00 - 18:00</div>
               </div>
 
               {/* Card Precio */}
-              <div className="bg-gradient-to-br from-white/70 to-cyan-50/70 backdrop-blur-xl border-2 border-cyan-200 p-8 rounded-3xl transition-all group shadow-xl hover:shadow-2xl hover:shadow-cyan-100/50 relative overflow-hidden transform hover:-translate-y-1">
-                <div className="absolute top-0 right-0 p-4 opacity-10"><Ticket className="w-32 h-32 text-cyan-600 rotate-12"/></div>
-                <div className="w-16 h-16 bg-cyan-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm relative z-10">
-                   <Ticket className="h-8 w-8 text-cyan-600" />
+              <div className="bg-gradient-to-br from-cyan-600 to-sky-700 p-8 rounded-3xl shadow-2xl shadow-cyan-700/20 text-white relative overflow-hidden transform md:-translate-y-4 hover:-translate-y-6 transition-all">
+                <Ticket className="absolute -right-6 -top-6 h-36 w-36 text-cyan-400/30 rotate-12" />
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 relative z-10">
+                   <Ticket className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2 relative z-10">Ingreso General</h3>
+                <h3 className="text-xl font-bold mb-2 text-cyan-50 relative z-10">Ingreso General</h3>
                 <div className="flex items-baseline gap-2 relative z-10">
-                    <span className="text-5xl font-black text-cyan-700">15 Bs</span>
-                    <span className="text-slate-600 font-semibold">/ persona</span>
+                    <span className="text-5xl font-black text-white drop-shadow-sm">15 Bs</span>
+                    <span className="text-cyan-200 font-medium">/ persona</span>
                 </div>
+                <p className="mt-6 text-sm font-medium text-cyan-100 border-t border-cyan-500/50 pt-4">
+                   Pago en efectivo al ingresar.
+                </p>
               </div>
 
               {/* Card Parque */}
-              <div className="bg-white/60 backdrop-blur-xl border border-white/80 p-8 rounded-3xl hover:border-orange-400 transition-all group shadow-xl hover:shadow-2xl hover:shadow-orange-100/50">
-                 <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
-                  <Trees className="h-8 w-8 text-orange-500" />
+              <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-[0_5px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_35px_rgba(16,185,129,0.15)] transition-all group border border-slate-100">
+                 <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Trees className="h-7 w-7 text-emerald-700" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-6">Tasa Parque Amboró</h3>
-                <div className="space-y-3 text-slate-700 font-medium">
-                  <div className="flex justify-between items-center bg-white/50 p-3 rounded-xl">
-                    <span>Nacionales</span> <span className="text-orange-700 font-black text-lg">20 Bs</span>
+                <h3 className="text-xl font-bold text-slate-900 mb-6">Tasa Parque Amboró</h3>
+                <div className="space-y-4 font-medium">
+                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                    <span className="text-slate-600">Nacionales</span> 
+                    <span className="text-slate-900 font-black text-lg">20 Bs</span>
                   </div>
-                  <div className="flex justify-between items-center bg-white/50 p-3 rounded-xl">
-                    <span>Extranjeros</span> <span className="text-orange-700 font-black text-lg">100 Bs</span>
+                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                    <span className="text-slate-600">Extranjeros</span> 
+                    <span className="text-slate-900 font-black text-lg">100 Bs</span>
                   </div>
                 </div>
               </div>
@@ -246,115 +234,129 @@ export default function Home() {
 
         {/* --- CARRUSEL --- */}
         {galleryItems.length > 0 && (
-          <section className="py-16">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-emerald-100/50 border-4 border-white bg-slate-100 aspect-video md:aspect-[21/9]">
-                <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-emerald-600"><LoadingSpinner /></div>}>
-                  <HeroCarousel items={galleryItems} />
-                </Suspense>
-                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
-                <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 pointer-events-none">
-                  <h2 className="text-3xl md:text-5xl font-black text-white drop-shadow-lg mb-2">
-                    Galería Multimedia
-                  </h2>
-                  <p className="text-white text-lg font-medium drop-shadow-md">
-                    Explora la belleza natural antes de tu viaje.
-                  </p>
+          <section className="py-16 relative z-10">
+            <div className="max-w-[1400px] mx-auto px-4">
+              <div className="relative rounded-3xl p-3 bg-white shadow-[0_20px_50px_rgba(6,182,212,0.1)] border border-cyan-100">
+                <div className="relative rounded-2xl overflow-hidden bg-slate-100 aspect-video md:aspect-[21/9] group">
+                  <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-cyan-600"><LoadingSpinner /></div>}>
+                    <HeroCarousel items={galleryItems} />
+                  </Suspense>
+                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-900/60 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full pointer-events-none">
+                     <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm mb-2 uppercase tracking-wider">
+                        <Camera className="w-4 h-4" /> Galería
+                    </div>
+                    <h2 className="text-2xl md:text-4xl font-black text-white mb-2 leading-tight drop-shadow-md">
+                        Vistas que te dejarán sin aliento
+                    </h2>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
         )}
-
+        
         {/* --- OPINIONES --- */}
         {reviews.length > 0 && (
-          <section className="py-20 relative bg-white/40 backdrop-blur-lg my-10">
-             <div className="text-center mb-12">
-                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-cyan-700">
-                    Experiencias de Viajeros
-                </h2>
-                <p className="text-slate-600 mt-3 text-lg">Lo que dicen quienes ya vivieron la aventura.</p>
-              </div>
-
-            <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {reviews.map((review) => (
-                  <div key={review.id} className="bg-white border border-slate-100 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all flex flex-col">
-                     <div className="flex items-center gap-4 mb-6">
-                      {review.photo ? (
-                        <img src={review.photo} alt={review.author_name} className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200 shadow-sm" />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-xl shadow-sm">
-                          {review.author_name.charAt(0)}
+          <section className="py-24 relative">
+             <div className="max-w-6xl mx-auto px-4 relative z-10">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-black text-slate-900 mb-4">
+                        Lo que dicen los viajeros
+                    </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {reviews.map((review) => (
+                    <div key={review.id} className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-xl hover:shadow-cyan-100 transition-all hover:-translate-y-1 group">
+                        <div className="flex items-center gap-4 mb-6">
+                            {review.photo ? (
+                                <img src={review.photo} alt={review.author_name} className="w-12 h-12 rounded-full object-cover ring-2 ring-cyan-100" />
+                            ) : (
+                                <div className="w-12 h-12 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-lg">
+                                {review.author_name.charAt(0)}
+                                </div>
+                            )}
+                            <div>
+                                <div className="font-bold text-slate-900 text-lg">{review.author_name}</div>
+                                <div className="flex text-emerald-400 mt-1">
+                                    {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-current" : "text-slate-200 fill-slate-200"}`} />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                      )}
-                        <div>
-                           <div className="font-bold text-slate-900 text-lg">{review.author_name}</div>
-                           <div className="flex text-amber-400">
-                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-current" : "text-slate-200 fill-slate-200"}`} />
-                              ))}
-                           </div>
+                        <div className="relative flex-grow">
+                            <p className="text-slate-700 italic relative z-10 mb-6 text-base leading-relaxed">
+                                "{review.comment}"
+                            </p>
                         </div>
-                     </div>
-                     <p className="text-slate-700 italic flex-grow mb-6 leading-relaxed">"{review.comment}"</p>
-                     {review.place_name && (
-                      <div className="mt-auto pt-4 border-t border-slate-100 text-sm font-medium">
-                        <span className="text-slate-500">Visitó: </span>
-                        <Link to={`/places/${review.place_slug}`} className="text-emerald-600 hover:text-emerald-800 hover:underline inline-flex items-center gap-1">
-                          <MapPin className="h-3 w-3"/> {review.place_name}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                        {review.place_name && (
+                        <div className="mt-auto pt-4 border-t border-slate-100">
+                            <Link to={`/places/${review.place_slug}`} className="inline-flex items-center gap-2 text-sm font-bold text-cyan-600 uppercase tracking-wider group-hover:text-cyan-800 transition-colors">
+                                <MapPin className="h-4 w-4"/> 
+                                {review.place_name}
+                            </Link>
+                        </div>
+                        )}
+                    </div>
+                    ))}
+                </div>
             </div>
           </section>
         )}
 
-        {/* --- FOOTER CTA --- */}
-        <section className="py-24 text-center relative overflow-hidden">
-           <div className="absolute inset-0 bg-gradient-to-t from-emerald-200/30 to-transparent blur-3xl pointer-events-none"></div>
-          <div className="relative max-w-4xl mx-auto px-4">
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8 leading-tight">
-                ¿Tienes dudas sobre tu <br/> próxima aventura?
-            </h2>
-            <div className="flex flex-col sm:flex-row gap-5 justify-center">
-              <a 
-                href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx" 
-                target="_blank" 
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#1da851] text-white font-extrabold rounded-2xl transition-all shadow-lg shadow-green-500/30 hover:scale-105 hover:shadow-green-500/50"
-              >
-                <MessageCircle className="h-6 w-6" />
-                Unirme al Grupo de WhatsApp
-              </a>
-              <Link 
-                to="/informacion"
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 font-extrabold rounded-2xl transition-all shadow-sm hover:scale-105 hover:bg-slate-50 hover:border-emerald-300 hover:text-emerald-700"
-              >
-                <Info className="h-6 w-6" />
-                Ver Información Completa
-              </Link>
-            </div>
-          </div>
+        {/* --- FOOTER CTA (RECUPERADO) --- */}
+        {/* Aquí es donde están los botones de WhatsApp e Información */}
+        <section className="py-24 text-center relative overflow-hidden bg-gradient-to-r from-cyan-800 to-slate-900 text-white">
+           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/20 to-transparent opacity-40 pointer-events-none"></div>
+           <div className="relative max-w-3xl mx-auto px-4 z-10 space-y-8">
+             <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+                 ¿Listo para refrescar tus ideas?
+             </h2>
+             <p className="text-cyan-100 text-lg md:text-xl mx-auto font-medium leading-relaxed max-w-lg">
+                 Únete a nuestro grupo y planifica tu escapada perfecta.
+             </p>
+             <div className="flex flex-col sm:flex-row gap-5 justify-center pt-6">
+               <a 
+                 href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx" 
+                 target="_blank" 
+                 rel="noreferrer"
+                 className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#1ebc57] text-white font-bold text-lg rounded-xl transition-all shadow-lg shadow-green-900/20 hover:shadow-xl hover:-translate-y-1"
+               >
+                 <MessageCircle className="h-6 w-6 fill-current" />
+                 Grupo de WhatsApp
+               </a>
+               <Link 
+                 to="/informacion"
+                 className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white text-slate-900 font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 hover:bg-cyan-50"
+               >
+                 <Info className="h-6 w-6 text-cyan-600" />
+                 Más Información
+               </Link>
+             </div>
+           </div>
         </section>
 
-        {/* --- FOOTER FINAL --- */}
-        <footer className="bg-white/80 backdrop-blur-md py-12 text-center text-slate-600 text-sm border-t border-slate-200">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="mb-6 flex items-center justify-center gap-2">
-                <Trees className="h-6 w-6 text-emerald-500"/>
-                <span className="font-black text-xl text-slate-800">Jardín de las Delicias</span>
+        <footer className="bg-slate-950 py-10 text-center text-slate-400 text-sm relative z-20">
+             <div className="max-w-6xl mx-auto px-4">
+            <div className="mb-6 flex items-center justify-center gap-3">
+                <Droplets className="h-6 w-6 text-cyan-400"/>
+                <span className="font-bold text-xl text-white tracking-wider">Jardín de las Delicias</span>
             </div>
-            <div className="flex justify-center gap-8 mb-8 font-bold">
-              <Link to="/places" className="hover:text-emerald-600 transition-colors">Lugares</Link>
-              <Link to="/events" className="hover:text-emerald-600 transition-colors">Eventos</Link>
-              <Link to="/contact" className="hover:text-emerald-600 transition-colors">Contacto</Link>
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 font-medium text-slate-300">
+              <Link to="/places" className="hover:text-white transition-colors">Lugares</Link>
+              <Link to="/events" className="hover:text-white transition-colors">Eventos</Link>
+              <Link to="/contact" className="hover:text-white transition-colors">Contacto</Link>
             </div>
-            <p className="mb-4">&copy; {new Date().getFullYear()} Todos los derechos reservados.</p>
-            <p className="mt-8 text-xs text-slate-500">
-              Hecho por <a href="https://wa.me/59172672767" className="font-bold text-emerald-600 hover:underline">Oliver Ventura</a>
-            </p>
+            <div className="pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p>&copy; {new Date().getFullYear()} Turismo El Torno.</p>
+                <p className="flex items-center gap-1">
+                    Desarrollado por 
+                    <a href="https://wa.me/59172672767" className="font-bold text-cyan-400 hover:text-white transition-colors ml-1">
+                        Oliver Ventura
+                    </a>
+                </p>
+            </div>
           </div>
         </footer>
 
