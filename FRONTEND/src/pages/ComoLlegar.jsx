@@ -24,84 +24,98 @@ const WazeIcon = ({ className }) => (
 
 // --- COMPONENTE DE AVISO (FIX PARA TIKTOK) ---
 const TikTokFixOverlay = ({ onClose }) => {
-    const [copied, setCopied] = useState(false);
+    const [copied, setCopied] = useState(false);
+    
+    // URL ACTUAL DE LA PÁGINA
+    const currentUrl = window.location.href;
 
-    // FUNCIÓN PRINCIPAL: Intenta abrir en el navegador del sistema
-    const openExternal = () => {
-        window.location.href = window.location.href; 
-    };
+    // Generar el 'intent://' para Android. 
+    // Esto es un intento de Deep Link que Android podría interceptar para abrir Chrome.
+    const androidIntentUrl = `intent:${currentUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+    
+    // Función para el botón que intenta forzar la apertura
+    const handleOpenExternal = () => {
+        // Opción 1: Intentar Android Intent (más efectivo en Android para salir del WebView)
+        if (navigator.userAgent.includes("Android")) {
+            window.location.href = androidIntentUrl;
+        } else {
+            // Opción 2: Intentar la redirección simple como fallback para iOS/Safari
+            window.open(currentUrl, '_system');
+        }
+        // Nota: Si esto falla, el usuario debe usar la opción manual.
+    };
 
-    const copyLink = () => {
-        navigator.clipboard.writeText(window.location.href);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+    const copyLink = () => {
+        navigator.clipboard.writeText(currentUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
-    return (
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center relative overflow-hidden">
-                
-                {/* Botón de cierre para 'Continuar sin GPS' */}
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <X className="w-5 h-5" />
-                </button>
-                
-                {/* Ícono y título */}
-                <div className="mb-4 flex justify-center">
-                    <div className="bg-cyan-100 p-4 rounded-full animate-bounce">
-                        <ExternalLink className="w-8 h-8 text-cyan-600" />
-                    </div>
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">
-                    ¡Atención! Permisos GPS bloqueados
-                </h3>
-                <p className="text-slate-600 mb-6 leading-relaxed text-sm">
-                    El navegador de TikTok bloquea tu ubicación. Presiona el botón para abrir esta página en Chrome o Safari.
-                </p>
+    return (
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center relative overflow-hidden">
+                
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                    <X className="w-5 h-5" />
+                </button>
+                
+                <div className="mb-4 flex justify-center">
+                    <div className="bg-cyan-100 p-4 rounded-full">
+                        <ExternalLink className="w-8 h-8 text-cyan-600" />
+                    </div>
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mb-2">
+                    ¡Atención! Permisos GPS bloqueados
+                </h3>
+                
+                <p className="text-slate-600 mb-6 leading-relaxed text-sm">
+                    El navegador de TikTok bloquea tu ubicación. Necesitas salir para usar el mapa interactivo.
+                </p>
 
-                {/* --- BOTÓN DE APERTURA FORZADA (ACCIÓN PRINCIPAL) --- */}
-                <button 
-                    onClick={openExternal}
-                    className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-cyan-600 text-white shadow-xl hover:bg-cyan-700 hover:scale-[1.02]"
-                >
-                    <ExternalLink className="w-5 h-5" /> Abrir en Navegador del Sistema
-                </button>
-                
-                <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-slate-400">Opción Manual</span>
-                    </div>
-                </div>
+                {/* --- BOTÓN DE APERTURA FORZADA (NUEVO INTENTO CON INTENT://) --- */}
+                <button 
+                    onClick={handleOpenExternal} // Usamos la nueva función con Intent/Fallback
+                    className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-cyan-600 text-white shadow-xl hover:bg-cyan-700 hover:scale-[1.02]"
+                >
+                    <ExternalLink className="w-5 h-5" /> Abrir en Navegador del Sistema
+                </button>
+                
+                <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-slate-400">Opción Manual Garantizada</span>
+                    </div>
+                </div>
 
-                {/* --- BOTÓN DE COPIAR ENLACE (PLAN B GARANTIZADO) --- */}
-                <button 
-                    onClick={copyLink}
-                    className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border ${
-                      copied 
-                      ? "bg-emerald-500 text-white border-emerald-500" 
-                      : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
-                    }`}
-                >
-                    {copied ? (
-                        <><Copy className="w-4 h-4" /> ¡Enlace Copiado! ✅</>
-                    ) : (
-                        <><Copy className="w-4 h-4" /> Copiar Enlace</>
-                    )}
-                </button>
-                
-                <button 
-                    onClick={onClose}
-                    className="mt-3 text-xs text-slate-400 hover:text-slate-600 underline"
-                >
-                    Continuar sin GPS
-                </button>
-            </div>
-        </div>
-    );
+                {/* --- BOTÓN DE COPIAR ENLACE (PLAN B GARANTIZADO) --- */}
+                <button 
+                    onClick={copyLink}
+                    className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border ${
+                        copied 
+                        ? "bg-emerald-500 text-white border-emerald-500" 
+                        : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
+                    }`}
+                >
+                    {copied ? (
+                        <><Copy className="w-4 h-4" /> ¡Enlace Copiado! ✅</>
+                    ) : (
+                        <><Copy className="w-4 h-4" /> Copiar Enlace</>
+                    )}
+                </button>
+                
+                <button 
+                    onClick={onClose}
+                    className="mt-3 text-xs text-slate-400 hover:text-slate-600 underline"
+                >
+                    Continuar sin GPS
+                </button>
+            </div>
+        </div>
+    );
 };
+// --- FIN COMPONENTE DE AVISO ---
 
 export default function ComoLlegar() {
   const [trail, setTrail] = useState([]);
