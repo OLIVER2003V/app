@@ -48,11 +48,11 @@ const TikTokFixOverlay = ({ onClose }) => {
                     </div>
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-2">
-                    ¡La solución es el Menú Nativo!
+                    ¡El navegador de TikTok restringe tu GPS!
                 </h3>
                 
                 <p className="text-slate-600 mb-6 leading-relaxed text-sm">
-                    El botón "Abrir en Navegador" no funciona, pero el menú de la aplicación sí. Sigue estos dos pasos para activar el GPS:
+                    Sigue estos dos pasos para activar el GPS:
                 </p>
 
                 {/* --- INSTRUCCIONES CLARAS BASADAS EN EL MENÚ NATIVO (•••) --- */}
@@ -63,7 +63,7 @@ const TikTokFixOverlay = ({ onClose }) => {
                     </div>
                     <div className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-cyan-600 rounded-full flex items-center justify-center text-xs font-bold text-white">2</span>
-                        <p className="text-xs text-slate-700">Elige la opción <strong className="text-slate-900">"Abrir en Chrome/Safari"</strong>.</p>
+                        <p className="text-xs text-slate-700">Elige la opción <strong className="text-slate-900">"Abrir en el Navegador"</strong>.</p>
                     </div>
                 </div>
 
