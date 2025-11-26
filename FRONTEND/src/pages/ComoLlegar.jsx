@@ -23,8 +23,15 @@ const WazeIcon = ({ className }) => (
 // --- Fin Iconos ---
 
 // --- COMPONENTE DE AVISO (FIX PARA TIKTOK) ---
+// --- COMPONENTE DE AVISO (FIX PARA TIKTOK) ---
 const TikTokFixOverlay = ({ onClose }) => {
     const [copied, setCopied] = useState(false);
+
+    // FUNCIÓN PRINCIPAL: Intenta abrir en el navegador del sistema
+    const openExternal = () => {
+        // Esto le indica al WebView que intente cargar la URL de forma externa
+        window.location.href = window.location.href; 
+    };
 
     const copyLink = () => {
         navigator.clipboard.writeText(window.location.href);
@@ -33,57 +40,70 @@ const TikTokFixOverlay = ({ onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center relative overflow-hidden">
+                
+                {/* Botón de cierre para 'Continuar sin GPS' */}
                 <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                     <X className="w-5 h-5" />
                 </button>
                 
+                {/* Ícono y título */}
                 <div className="mb-4 flex justify-center">
                     <div className="bg-cyan-100 p-4 rounded-full animate-bounce">
                         <ExternalLink className="w-8 h-8 text-cyan-600" />
                     </div>
                 </div>
-
                 <h3 className="text-xl font-black text-slate-900 mb-2">
                     ¡Atención! Permisos GPS bloqueados
                 </h3>
-                
                 <p className="text-slate-600 mb-6 leading-relaxed text-sm">
-                    El navegador interno de TikTok/Instagram bloquea el GPS. Para que nuestro mapa exclusivo funcione (la ruta rural no sale en Google Maps), debes hacer esto:
+                    El navegador de TikTok bloquea tu ubicación. Presiona el botón para abrir esta página en Chrome o Safari.
                 </p>
 
-                <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 text-left space-y-3">
-                    <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-cyan-600 rounded-full flex items-center justify-center text-xs font-bold text-white">1</span>
-                        <p className="text-xs text-slate-700">Toca los <strong className="text-slate-900">3 puntos (•••)</strong> en la esquina superior derecha.</p>
+                {/* --- BOTÓN DE APERTURA FORZADA (ACCIÓN PRINCIPAL) --- */}
+                <button 
+                    onClick={openExternal}
+                    className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-cyan-600 text-white shadow-xl hover:bg-cyan-700 hover:scale-[1.02]"
+                >
+                    <ExternalLink className="w-5 h-5" /> Abrir en Navegador del Sistema
+                </button>
+                
+                <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200"></div>
                     </div>
-                    <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-cyan-600 rounded-full flex items-center justify-center text-xs font-bold text-white">2</span>
-                        <p className="text-xs text-slate-700">Elige la opción <strong className="text-slate-900">"Abrir en Chrome/Safari"</strong>.</p>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-slate-400">Opción Manual</span>
                     </div>
                 </div>
 
+                {/* --- BOTÓN DE COPIAR ENLACE (PLAN B GARANTIZADO) --- */}
                 <button 
                   onClick={copyLink}
-                  className={`mt-4 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                  className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border ${
                     copied 
-                    ? "bg-emerald-600 text-white shadow-emerald-500/30" 
-                    : "bg-cyan-700 text-white shadow-xl hover:bg-cyan-800"
+                    ? "bg-emerald-500 text-white border-emerald-500" 
+                    : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50"
                   }`}
                 >
                   {copied ? (
-                    <><Copy className="w-4 h-4" /> ¡Enlace Copiado!</>
+                    <><Copy className="w-4 h-4" /> ¡Enlace Copiado! ✅</>
                   ) : (
-                    <><Copy className="w-4 h-4" /> Copiar Enlace para pegar en Chrome</>
+                    <><Copy className="w-4 h-4" /> Copiar Enlace</>
                   )}
+                </button>
+                
+                <button 
+                    onClick={onClose}
+                    className="mt-3 text-xs text-slate-400 hover:text-slate-600 underline"
+                >
+                    Continuar sin GPS
                 </button>
             </div>
         </div>
     );
 };
-// --- FIN COMPONENTE DE AVISO ---
-
 
 export default function ComoLlegar() {
   const [trail, setTrail] = useState([]);
