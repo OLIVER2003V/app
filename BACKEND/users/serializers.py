@@ -8,7 +8,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["role", "display_name", "phone"]
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True)
+    # Agregamos allow_null=True por seguridad
+    profile = UserProfileSerializer(read_only=True, allow_null=True) 
+
     class Meta:
         model = User
         fields = ["id", "username", "email", "first_name", "last_name", "profile"]
