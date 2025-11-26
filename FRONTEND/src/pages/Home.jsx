@@ -210,21 +210,35 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Card Parque */}
-              <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-[0_5px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_35px_rgba(16,185,129,0.15)] transition-all group border border-slate-100">
-                 <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Trees className="h-7 w-7 text-emerald-700" />
+              {/* Card Parque (MEJORADA - Estilo Premium Verde) */}
+              <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 rounded-3xl shadow-2xl shadow-emerald-700/20 text-white relative overflow-hidden transform md:-translate-y-4 hover:-translate-y-6 transition-all">
+                 
+                 {/* Decoración de fondo */}
+                 <Trees className="absolute -right-6 -top-6 h-36 w-36 text-emerald-400/30 rotate-12" />
+                 
+                 {/* Icono Principal */}
+                 <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 relative z-10">
+                  <Trees className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Tasa Parque Amboró</h3>
-                <div className="space-y-4 font-medium">
-                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-                    <span className="text-slate-600">Nacionales</span> 
-                    <span className="text-slate-900 font-black text-lg">20 Bs</span>
+                
+                {/* Título */}
+                <h3 className="text-xl font-bold mb-6 text-emerald-50 relative z-10">Tasa Parque Nacional Amboró</h3>
+                
+                {/* Lista de Precios */}
+                <div className="space-y-3 relative z-10 font-medium">
+                  <div className="flex justify-between items-center border-b border-emerald-500/30 pb-2">
+                    <span className="text-emerald-100">Estudiantes</span> 
+                    <span className="text-white font-black text-lg">10 Bs</span>
                   </div>
-                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-                    <span className="text-slate-600">Extranjeros</span> 
-                    <span className="text-slate-900 font-black text-lg">100 Bs</span>
+                  <div className="flex justify-between items-center border-b border-emerald-500/30 pb-2">
+                    <span className="text-emerald-100">Nacionales</span> 
+                    <span className="text-white font-black text-lg">20 Bs</span>
                   </div>
+                  <div className="flex justify-between items-center border-b border-emerald-500/30 pb-2">
+                    <span className="text-emerald-100">Extranjeros</span> 
+                    <span className="text-white font-black text-lg">100 Bs</span>
+                  </div>
+                  
                 </div>
               </div>
 
