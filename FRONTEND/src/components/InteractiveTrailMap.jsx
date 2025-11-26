@@ -123,7 +123,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return R * c; 
 };
 
-export default function InteractiveTrailMap({ trailData }) {
+export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
   const [userPosition, setUserPosition] = useState(null); 
   const [routeStartPos, setRouteStartPos] = useState(null); 
   const [gpsError, setGpsError] = useState(null);
@@ -146,7 +146,12 @@ export default function InteractiveTrailMap({ trailData }) {
 
   const startPoint = useMemo(() => trailData?.[0], [trailData]);
   const endPoint = useMemo(() => trailData?.[trailData.length - 1], [trailData]);
-
+  useEffect(() => {
+    // Cuando el error de GPS cambie, notifica al componente padre (ComoLlegas.jsx)
+    if (onGpsErrorChange) {
+        onGpsErrorChange(gpsError); 
+    }
+}, [gpsError, onGpsErrorChange]);
   // ... Lógica GPS y Eventos ...
   useEffect(() => {
       const handleOnline = () => setIsOffline(false);
