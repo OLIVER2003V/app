@@ -1,22 +1,21 @@
 import React from "react";
 
-export function DashboardCard({ icon, title, desc, children }) {
+export function DashboardCard({ title, icon, desc, children }) {
   return (
-    <div className="flex h-full flex-col rounded-xl border border-slate-700 bg-slate-800 shadow-xl transition-all duration-300 hover:border-blue-500/50 hover:shadow-blue-500/10">
-      
-      {/* Encabezado de la tarjeta */}
-      <div className="flex items-start gap-4 p-5">
-        <div className="flex-shrink-0 rounded-lg bg-blue-500/10 p-2.5 text-blue-400 ring-1 ring-blue-500/20">
-          {icon}
+    <div className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-800/50 p-5 shadow-sm transition-all hover:border-slate-700 hover:bg-slate-800 hover:shadow-md">
+      <div>
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            {icon}
+          </div>
+          <h3 className="text-lg font-bold text-slate-100">{title}</h3>
         </div>
-        <div>
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <p className="mt-1 text-sm text-slate-400">{desc}</p>
-        </div>
+        <p className="mb-6 text-sm text-slate-400 leading-relaxed">
+          {desc}
+        </p>
       </div>
-
-      {/* Footer con botones */}
-      <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-slate-700 px-5 py-4">
+      
+      <div className="flex flex-col gap-2 mt-auto">
         {children}
       </div>
     </div>

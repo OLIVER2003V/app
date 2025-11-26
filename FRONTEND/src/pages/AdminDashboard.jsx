@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
+
+// IMPORTANTE: Usamos el contexto para no volver a cargar los datos
+import { useAuth } from "@/context/AuthContext";
 
 // --- Importar Componentes de Admin ---
 import { DashboardButton } from "@/components/admin/DashboardButton";
@@ -17,45 +20,22 @@ import {
   ShieldCheck,
   Phone,
   Search,
-  BookCopy,
 } from "lucide-react";
 
-// URL base de la API (sin cambios)
+// URL base (mantenemos tu lógica)
 const ROOT = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
 export default function AdminDashboard() {
   const nav = useNavigate();
-  const [me, setMe] = useState(null);
+  
+  // 1. OPTIMIZACIÓN: Usamos los datos que ya cargó el Dashboard.jsx
+  const { me } = useAuth();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  // Lógica de carga de 'me' (sin cambios)
-  useEffect(() => {
-    let ignore = false;
-    async function loadMe() {
-      if (!token) return;
-      try {
-        const res = await fetch(`${ROOT}/api/auth/me/`, {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Token ${token}`,
-          },
-        });
-        if (!ignore && res.ok) {
-          const data = await res.json();
-          setMe(data);
-        }
-      } catch (e) {
-        console.warn("No se pudo cargar /api/auth/me/:", e);
-      }
-    }
-    loadMe();
-    return () => { ignore = true; };
-  }, [token]);
 
   const role = me?.profile?.role ?? "admin";
   const displayName = me?.username || "Administrador";
 
-  // Lógica de Saludo (sin cambios)
+  // Lógica de Saludo
   const greet = useMemo(() => {
     const h = new Date().getHours();
     if (h < 12) return "Buenos días";
@@ -63,7 +43,7 @@ export default function AdminDashboard() {
     return "Buenas noches";
   }, []);
 
-  // Lógica del Probador de API (sin cambios)
+  // Probador de API
   const openApi = async (path) => {
     const clean = String(path).replace(/^\/+/, "");
     try {
@@ -78,16 +58,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- Mapeo de Rol a Estilo (con clases estándar) ---
+  // Estilos de rol
   const roleStyle = {
     admin: "text-blue-400",
     editor: "text-violet-400",
   };
 
   return (
-    // Aplicamos el fondo y los colores de texto estándar de Tailwind
-    <main className="mx-auto max-w-6xl p-4 py-6 md:py-8 lg:px-8 
-                    bg-slate-900 text-slate-200 min-h-screen">
+    <main className="mx-auto max-w-6xl p-4 py-6 md:py-8 lg:px-8 bg-slate-900 text-slate-200 min-h-screen">
       
       {/* --- Encabezado --- */}
       <header className="mb-6 grid grid-cols-1 items-center gap-4 md:grid-cols-[1fr,auto]">
@@ -138,7 +116,7 @@ export default function AdminDashboard() {
           </DashboardButton>
         </DashboardCard>
 
-        <DashboardCard title="Lugares" icon={<MapPin className="h-5 w-5" />} desc="Gestiona lugares turísticos (rol editor/admin).">
+        <DashboardCard title="Lugares" icon={<MapPin className="h-5 w-5" />} desc="Gestiona lugares turísticos.">
           <DashboardButton to="/admin/places">Gestionar Lugares</DashboardButton>
           <DashboardButton variant="secondary" to="/places">Ver sitio</DashboardButton>
           <DashboardButton variant="ghost" onClick={() => openApi("places/")}>
@@ -161,7 +139,7 @@ export default function AdminDashboard() {
           </DashboardButton>
         </DashboardCard>
 
-        <DashboardCard title="Contactos" icon={<Phone className="h-5 w-5" />} desc="Gestiona los contactos públicos del sitio (solo admin).">
+        <DashboardCard title="Contactos" icon={<Phone className="h-5 w-5" />} desc="Gestiona los contactos públicos del sitio.">
           <DashboardButton to="/admin/contactos/nuevo">Añadir contacto</DashboardButton>
           <DashboardButton variant="secondary" to="/admin/contactos">Gestionar lista</DashboardButton>
           <DashboardButton variant="ghost" onClick={() => openApi("contact/")}>

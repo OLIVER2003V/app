@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@context/AuthContext";
 
-// --- Iconos (Los dejamos por si los usas en otros lados, pero WaterfallIcon y UserIcon ya no se usan en el logo) ---
-const SearchIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+// --- Iconos ---
+const SearchIcon = ({ className = "h-5 w-5" }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 );
@@ -15,21 +15,23 @@ const WhatsappIcon = () => (
   </svg>
 );
 
+// --- Botones Base ---
+const btnBase = "inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold transition-all duration-300 rounded-full focus:outline-none";
+const btnAccent = `${btnBase} bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105`;
+const btnGhost = `${btnBase} text-cyan-100 hover:text-white hover:bg-white/10`;
+const btnWhatsapp = `${btnBase} bg-[#25D366] text-white hover:bg-[#20bd5a] shadow-lg shadow-green-500/20`;
 
-// --- Definiciones de Estilos de Botones ---
-const btnBase = "inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
-const btnPrimary = `${btnBase} bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 focus-visible:ring-orange-500`;
-const btnGhost = `${btnBase} bg-transparent text-white hover:bg-white/10 border border-white/30 focus-visible:ring-white`;
-const btnWhatsapp = `${btnBase} bg-[#25D366] text-white hover:bg-[#1fb257] border-transparent focus-visible:ring-[#25D366]`;
-
-// --- Componente NavLink (Desktop) ---
-const NavLinkItem = ({ to, children }) => {
-  const baseStyle = "px-3 py-2 rounded-lg font-semibold font-sans transition-colors duration-200 focus:outline-none focus-visible:bg-white/10 focus-visible:text-white";
+// --- NavPill ---
+const NavPill = ({ to, children }) => {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `${baseStyle} ${isActive ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/10'}`
+        `relative inline-flex items-center justify-center whitespace-nowrap px-5 py-2.5 text-sm rounded-full font-bold transition-all duration-300 ease-out flex-shrink-0 select-none border overflow-hidden
+         ${isActive 
+           ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md shadow-orange-900/30 scale-105 border-transparent' 
+           : 'text-cyan-100/90 border-cyan-500/20 bg-cyan-950/30 hover:bg-cyan-900/50 hover:border-cyan-400/50 hover:text-white'
+         }`
       }
     >
       {children}
@@ -37,24 +39,38 @@ const NavLinkItem = ({ to, children }) => {
   );
 };
 
-
 export default function Navbar() {
   const { token, me, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  
+  // 1. Estado para detectar el scroll
+  const [scrolled, setScrolled] = useState(false);
+  
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => { setOpen(false); }, [location]);
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    document.body.style.overflow = open ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; };
   }, [open]);
+
+  // 2. Efecto para escuchar el evento de scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      // Si bajamos más de 20px, activamos el modo "scrolled"
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const onSearch = (e) => {
     e.preventDefault();
@@ -66,197 +82,172 @@ export default function Navbar() {
   const handleMobileNav = (e, to) => {
     e.preventDefault();
     setOpen(false);
-    setTimeout(() => {
-      navigate(to);
-    }, 300);
+    setTimeout(() => navigate(to), 300);
   };
 
   return (
     <>
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
+      {/* === HEADER PRINCIPAL === */}
+      {/* Lógica dinámica en className:
+          - scrolled ? "transparente y borroso" : "sólido y degradado"
+          - scrolled ? "h-16" : "h-20" (Animación de altura)
+      */}
       <header
-        className={`sticky top-0 z-50 w-full font-sans transition-all duration-300 ease-in-out
-        bg-gradient-to-r from-emerald-600 to-teal-700 shadow-lg backdrop-blur-lg`}
+        className={`sticky top-0 z-50 w-full font-sans transition-all duration-500 ease-in-out
+        ${scrolled 
+            ? "bg-cyan-950/60 backdrop-blur-md shadow-lg border-b border-transparent" // ESTADO SCROLL: Transparente + Borroso (Glassmorphism)
+            : "bg-gradient-to-r from-cyan-950 via-teal-900 to-emerald-950 shadow-2xl border-b border-white/5" // ESTADO NORMAL: Sólido
+        }`}
       >
-        <div className="max-w-6xl mx-auto h-14 px-4 flex items-center justify-between gap-4">
+        <div 
+            className={`max-w-7xl mx-auto px-3 md:px-6 flex items-center justify-between gap-3 transition-all duration-500
+            ${scrolled ? "h-16" : "h-20 md:h-24"} 
+            `}
+        >
 
-          {/* --- LOGO: Ahora usa una IMAGEN ESTÁTICA --- */}
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 p-2 -m-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white flex-shrink-0 min-w-0"
-          >
-            {/* [NUEVO] Agregamos un tag <img> con la ruta de tu logo */}
-            {/* Asegúrate de que esta ruta sea correcta para tu proyecto */}
-            <img
-              src="/images/cascada.png" // <--- ¡CAMBIA ESTA RUTA POR LA DE TU IMAGEN REAL!
-              alt="Jardín de las Delicias Logo"
-              className="h-7 w-7 object-contain" // Ajusta h-7, w-7 y object-contain/cover según tu logo
-            />
-            <span className="text-lg font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200 whitespace-nowrap">
-              Jardín de las Delicias
-            </span>
-          </Link>
+          {/* === ZONA IZQUIERDA === */}
+          <div className="flex items-center gap-4 md:gap-8 flex-1 overflow-hidden">
+            
+            {/* LOGO */}
+            <Link to="/" className="flex-shrink-0 group relative z-20">
+               <img
+                  src="/images/cascada.png"
+                  alt="Inicio"
+                  // El logo también se hace un pelín más pequeño al hacer scroll para elegancia
+                  className={`relative object-contain drop-shadow-lg transform transition-all duration-500 group-hover:scale-110
+                  ${scrolled ? "h-9 w-9" : "h-10 w-10 md:h-11 md:w-11"}`}
+                />
+            </Link>
 
-          {/* --- LINKS + SEARCH (Desktop) --- */}
-          <nav className="hidden lg:flex flex-1 items-center justify-center gap-4">
-            <NavLinkItem to="/places">Lugares</NavLinkItem>
-            <NavLinkItem to="/events">Eventos</NavLinkItem>
-            <NavLinkItem to="/contact">Contacto</NavLinkItem>
+            {/* MENÚ DE BOTONES */}
+            <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar pr-4">
+               <NavPill to="/places">Lugares</NavPill>
+               <NavPill to="/events">Eventos</NavPill>
+               <NavPill to="/contact">Contactos</NavPill>
+            </nav>
 
-            <form className="flex items-center gap-2 ml-4" onSubmit={onSearch}>
-              <input
-                type="search"
-                placeholder="Buscar lugares..."
-                aria-label="Buscar"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="h-9 w-56 px-3 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-              <button className={`${btnPrimary} h-9 w-9 px-0`} type="submit" aria-label="Buscar">
-                <SearchIcon />
-              </button>
-            </form>
-          </nav>
-
-          {/* --- CTA + Auth (Desktop) --- */}
-          <div className="hidden lg:flex items-center gap-2">
-            <a
-              className={`${btnWhatsapp} hidden xl:inline-flex`}
-              href="https://chat.whatsapp.com/EpzISekSBCe08kJh9lsqpx"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <WhatsappIcon />
-              <span>WhatsApp</span>
-            </a>
-            {token ? (
-              <>
-                <Link to="/dashboard" className={btnGhost}>
-                  {me?.username || "Mi panel"}
-                </Link>
-                <button className={btnGhost} onClick={logout}>Salir</button>
-              </>
-            ) : (
-              <Link to="/login" className={btnGhost}>Ingresar</Link>
-            )}
           </div>
 
-          {/* --- HAMBURGER (Mobile) --- */}
-          <button
-            className={`lg:hidden w-10 h-10 p-2 border border-white/20 rounded-lg text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700`}
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-          >
-            <div className="space-y-1.5">
-              <span className={`block h-0.5 w-full bg-white rounded-full transition-transform duration-300 ease-in-out ${open ? 'rotate-45 translate-y-2' : ''}`} />
-              <span className={`block h-0.5 w-full bg-white rounded-full transition-opacity duration-300 ease-in-out ${open ? 'opacity-0' : ''}`} />
-              <span className={`block h-0.5 w-full bg-white rounded-full transition-transform duration-300 ease-in-out ${open ? '-rotate-45 -translate-y-2' : ''}`} />
+          {/* === ZONA DERECHA === */}
+          <div className="flex flex-shrink-0 items-center justify-end gap-2 md:gap-4">
+            
+            {/* Buscador Desktop */}
+            <form className="hidden lg:flex items-center gap-2 group relative" onSubmit={onSearch}>
+              <input
+                  type="search"
+                  placeholder="Buscar..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-10 h-10 rounded-full border-2 border-transparent bg-transparent text-transparent focus:w-48 xl:focus:w-60 focus:bg-cyan-950/80 focus:text-white focus:px-4 focus:border-cyan-700 transition-all duration-300 absolute right-0 cursor-pointer focus:cursor-text z-10 outline-none placeholder:text-cyan-200/50"
+              />
+              {/* Botón lupa eliminado en desktop */}
+            </form>
+
+            {/* Auth Desktop */}
+            <div className="hidden lg:flex items-center gap-3">
+              {token ? (
+                <Link to="/dashboard" className={btnGhost}>
+                  {me?.username?.split(' ')[0] || "Panel"}
+                </Link>
+              ) : (
+                <Link to="/login" className={btnAccent}>Ingresar</Link>
+              )}
             </div>
-          </button>
+
+            {/* Hamburger Menu */}
+            <button
+              className={`lg:hidden relative z-50 p-1.5 text-cyan-200 hover:text-white transition-colors focus:outline-none`}
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Menu"
+            >
+              <div className="flex flex-col justify-between w-6 h-4.5">
+                <span className={`block h-0.5 w-full bg-current rounded-full transition-all duration-300 origin-left ${open ? 'rotate-45 bg-white' : ''}`} />
+                <span className={`block h-0.5 w-full bg-current rounded-full transition-all duration-300 ${open ? 'opacity-0' : ''}`} />
+                <span className={`block h-0.5 w-full bg-current rounded-full transition-all duration-300 origin-left ${open ? '-rotate-45 bg-white' : ''}`} />
+              </div>
+            </button>
+          </div>
+
         </div>
       </header>
 
-      {/* ===== PANEL MÓVIL (SIN CAMBIOS RELEVANTES AQUÍ, USA EL ANTERIOR) ===== */}
+      {/* ===== DRAWER MÓVIL (Sin cambios) ===== */}
       <div
-        className={`lg:hidden fixed inset-0 z-40 h-full w-full font-sans bg-gradient-to-b from-emerald-900 via-gray-950 to-black overflow-y-auto
-        transition-all duration-300 ease-in-out
-        ${open
-            ? 'opacity-100 scale-100 pointer-events-auto'
-            : 'opacity-0 scale-95 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 h-screen w-full font-sans bg-cyan-950/90 backdrop-blur-xl transition-opacity duration-300
+        ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       >
-        <div className="flex flex-col h-full w-full max-w-md mx-auto p-6 pt-20 pb-8">
+        <div className={`flex flex-col h-full max-w-sm ml-auto bg-gradient-to-b from-cyan-900 to-teal-950 shadow-2xl transition-transform duration-300 border-l border-white/10 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+            
+            <div className="flex flex-col h-full p-6 pt-24 overflow-y-auto">
+                
+                <div className="mb-8">
+                    <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
+                        Jardín de las Delicias
+                    </h2>
+                    <p className="text-cyan-200 mt-2 font-medium">Tu próxima aventura</p>
+                </div>
 
-          <div
-            className={`mb-8 transition-all duration-300 ${open ? 'opacity-100 translate-y-0 delay-100' : 'opacity-0 translate-y-4'}`}
-          >
-            <h2 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-red-500">
-              {token ? `Hola, ${me?.username || 'viajero'}` : 'Bienvenido al Jardín'}
-            </h2>
-            <p className="text-2xl text-slate-300 font-semibold">¿Qué aventura te espera hoy?</p>
-          </div>
+                <form className="relative mb-8" onSubmit={onSearch}>
+                    <input
+                        type="search"
+                        placeholder="Buscar lugares..."
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="w-full h-12 px-5 rounded-xl bg-black/20 border border-white/10 text-white placeholder:text-cyan-200/50 focus:outline-none focus:border-orange-500/50 focus:bg-black/40 transition-all"
+                    />
+                    <button type="submit" className="absolute right-4 top-3.5 text-cyan-200">
+                        <SearchIcon />
+                    </button>
+                </form>
 
-          <form
-            className={`flex flex-col gap-3 transition-all duration-300 ${open ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-4'}`}
-            onSubmit={onSearch}
-          >
-            <input
-              type="search"
-              placeholder="Buscar lugares..."
-              aria-label="Buscar"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-12 w-full px-4 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            <button className={`${btnPrimary} w-full h-12 text-base`} type="submit">
-              Buscar
-            </button>
-          </form>
+                <nav className="flex flex-col gap-2">
+                    {['/places', '/events', '/contact'].map((path) => (
+                        <NavLink
+                            key={path}
+                            to={path}
+                            onClick={(e) => handleMobileNav(e, path)}
+                            className={({ isActive }) => `text-xl font-bold py-3 px-4 rounded-xl transition-all flex items-center ${isActive ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-300 border border-orange-500/30' : 'text-cyan-100/70 hover:text-white hover:bg-white/5'}`}
+                        >
+                            {({ isActive }) => (
+                                <>
+                                    <span className={`w-1.5 h-1.5 rounded-full mr-3 ${isActive ? 'bg-orange-400' : 'bg-cyan-600/50'}`}></span>
+                                    {path === '/places' ? 'Lugares' : path === '/events' ? 'Eventos' : 'Contacto'}
+                                </>
+                            )}
+                        </NavLink>
+                    ))}
+                </nav>
 
-          <nav className="flex flex-col gap-2 mt-8">
-            <NavLink
-              to="/places"
-              onClick={(e) => handleMobileNav(e, '/places')}
-              className={({ isActive }) => `block text-3xl font-extrabold p-3 rounded-lg transition-all duration-200 ${isActive ? 'text-white' : 'text-slate-400'} ${open ? 'opacity-100 translate-y-0 delay-250' : 'opacity-0 translate-y-4'} hover:text-white hover:scale-105 transform`}
-            >
-              Lugares
-            </NavLink>
-            <NavLink
-              to="/events"
-              onClick={(e) => handleMobileNav(e, '/events')}
-              className={({ isActive }) => `block text-3xl font-extrabold p-3 rounded-lg transition-all duration-200 ${isActive ? 'text-white' : 'text-slate-400'} ${open ? 'opacity-100 translate-y-0 delay-300' : 'opacity-0 translate-y-4'} hover:text-white hover:scale-105 transform`}
-            >
-              Eventos
-            </NavLink>
-            <NavLink
-              to="/contact"
-              onClick={(e) => handleMobileNav(e, '/contact')}
-              className={({ isActive }) => `block text-3xl font-extrabold p-3 rounded-lg transition-all duration-200 ${isActive ? 'text-white' : 'text-slate-400'} ${open ? 'opacity-100 translate-y-0 delay-350' : 'opacity-0 translate-y-4'} hover:text-white hover:scale-105 transform`}
-            >
-              Contacto
-            </NavLink>
-          </nav>
-
-          <div className="mt-auto flex flex-col gap-3">
-            <a
-              className={`${btnWhatsapp} w-full transition-all duration-300 h-11 text-base ${open ? 'opacity-100 translate-y-0 delay-400' : 'opacity-0 translate-y-4'}`}
-              href="https://chat.whatsapp.com/EpzISekSBCe08kJh9lsqpx"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <WhatsappIcon />
-              <span>WhatsApp</span>
-            </a>
-
-            {token ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  onClick={(e) => handleMobileNav(e, '/dashboard')}
-                  className={`${btnGhost} w-full transition-all duration-300 h-11 text-base ${open ? 'opacity-100 translate-y-0 delay-450' : 'opacity-0 translate-y-4'}`}
-                >
-                  Mi panel
-                </Link>
-                <button
-                  className={`${btnGhost} w-full transition-all duration-300 h-11 text-base ${open ? 'opacity-100 translate-y-0 delay-500' : 'opacity-0 translate-y-4'}`}
-                  onClick={() => {
-                    setOpen(false);
-                    setTimeout(logout, 300);
-                  }}
-                >
-                  Salir
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                onClick={(e) => handleMobileNav(e, '/login')}
-                className={`${btnGhost} w-full transition-all duration-300 h-11 text-base ${open ? 'opacity-100 translate-y-0 delay-450' : 'opacity-0 translate-y-4'}`}
-              >
-                Ingresar
-              </Link>
-            )}
-          </div>
+                <div className="mt-auto pt-8 flex flex-col gap-4">
+                     <a
+                        href="https://chat.whatsapp.com/EpzISekSBCe08kJh9lsqpx"
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`${btnWhatsapp} h-12 w-full text-base`}
+                    >
+                        <WhatsappIcon /> WhatsApp
+                    </a>
+                    {token ? (
+                        <button onClick={() => { setOpen(false); setTimeout(logout, 300); }} className="w-full h-12 rounded-xl border border-red-500/30 text-red-300 font-bold hover:bg-red-500/10 transition-all">
+                            Cerrar Sesión
+                        </button>
+                    ) : (
+                        <Link to="/login" onClick={(e) => handleMobileNav(e, '/login')} className={`${btnAccent} h-12 w-full text-base`}>
+                            Iniciar Sesión
+                        </Link>
+                    )}
+                </div>
+            </div>
         </div>
       </div>
     </>

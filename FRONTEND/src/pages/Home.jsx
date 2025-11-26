@@ -1,65 +1,32 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// [CORREGIDO] Intentando con rutas relativas
 import api from "../lib/api";
 
-// [CORREGIDO] Intentando con rutas relativas
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { GuidedTour } from "../components/GuidedTour";
 
-// [NUEVO] Importamos el carrusel con "lazy loading"
-// Asegúrate de que la ruta coincida con donde guardaste el archivo anterior.
+// --- Iconos Lucide ---
+import { 
+  Clock, 
+  Ticket, 
+  Trees, 
+  Compass, 
+  Info, 
+  MessageCircle, 
+  Newspaper, 
+  Star, 
+  ChevronDown,
+  ArrowRight,
+  ExternalLink,
+  MapPin
+} from "lucide-react";
+
+// Lazy load del Carrusel
 const HeroCarousel = lazy(() => 
   import("../components/HeroCarousel").then(module => ({ default: module.HeroCarousel }))
 );
 
-// --- Iconos SVG Profesionales ---
-const ImageIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 8h.01" /><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z" /><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" /><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l2 2" />
-  </svg>
-);
-const CompassIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 16l2 -6l6 -2l-2 6l-6 2" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 3l0 2" /><path d="M12 19l0 2" /><path d="M3 12l2 0" /><path d="M19 12l2 0" />
-  </svg>
-);
-const InfoIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 9l0 3" /><path d="M12 16l.01 0" />
-  </svg>
-);
-const WhatsappIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" />
-  </svg>
-);
-const NewspaperIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a1 1 0 0 1 1 -1h3" /><path d="M10 16h4" /><path d="M10 12h4" /><path d="M10 8h4" /><path d="M6 4h8a1 1 0 0 1 1 1v3h-10v-3a1 1 0 0 1 1 -1z" />
-  </svg>
-);
-const Star = () => <span className="text-amber-400">⭐</span>;
-
-const ClockIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 7l0 5l3 3" />
-  </svg>
-);
-const LeafIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 21c.5 -4.5 2.5 -8 7 -8s6.5 3.5 7 8" /><path d="M12 18c-5.413 -2.373 -8 -7.144 -8 -13" /><path d="M12 18c5.413 -2.373 8 -7.144 8 -13" />
-  </svg>
-);
-const MountainIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 20h18l-6.921 -14.612a2.3 2.3 0 0 0 -4.158 0l-6.921 14.612z" /><path d="M7.5 11l2.5 4l2.5 -4l2.5 4l2 -3.5" />
-  </svg>
-);
-/* ---------------- Fin de Iconos ---------------- */
-
-
-/* ---------------- Función de Utilidad ---------------- */
+// --- Funciones de Utilidad ---
 function unwrapResults(data) {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.results)) return data.results;
@@ -67,39 +34,21 @@ function unwrapResults(data) {
   return [];
 }
 
-// ▼▼▼ INICIO DE LA CORRECCIÓN ▼▼▼
-// Esta función "traduce" los datos de tu API al formato que HeroCarousel espera ({ id, src, title, media_type })
 function normalizeGalleryItem(raw, idx) {
   const id = raw?.id ?? raw?.pk ?? idx;
   const title = raw?.title ?? raw?.name ?? raw?.titulo ?? "Slide";
   
-  // Busca la URL en todas las propiedades posibles
   const candidates = [
-    raw?.media_file_url, 
-    raw?.media_url, 
-    raw?.file_url, 
-    raw?.url, 
-    raw?.image_url, 
-    raw?.image, 
-    raw?.src, 
-    raw?.cover, 
-    raw?.video_url
+    raw?.media_file_url, raw?.media_url, raw?.file_url, raw?.url, 
+    raw?.image_url, raw?.image, raw?.src, raw?.cover, raw?.video_url
   ];
   const src = candidates.find(Boolean) ?? "";
-
-  // Determina si es video o imagen
   const mt = raw?.media_type ?? (src?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? "VIDEO" : "IMAGE");
   const media_type = String(mt).toUpperCase();
   
-  // Devuelve el objeto "traducido" que HeroCarousel entiende
   return { id, title, media_type, src };
 }
-// ▲▲▲ FIN DE LA CORRECCIÓN ▲▲▲
 
-/* ---------------- Fin de Utilidades ---------------- */
-
-
-/* ---------------- Home ---------------- */
 export default function Home() {
   const [reviews, setReviews] = useState([]);
   const [galleryItems, setGalleryItems] = useState([]); 
@@ -119,26 +68,21 @@ export default function Home() {
         ]);
         
         if (results[0].status === "fulfilled") {
-          setReviews(unwrapResults(results[0].value.data).slice(0, 5));
+          setReviews(unwrapResults(results[0].value.data).slice(0, 6)); 
         }
 
-        // ▼▼▼ INICIO DE LA CORRECCIÓN ▼▼▼
         if (results[1].status === "fulfilled") {
           const rawItems = unwrapResults(results[1].value.data);
-          // Usamos el "traductor" para normalizar los datos antes de guardarlos
           const normalizedItems = rawItems.map(normalizeGalleryItem).filter(item => item.src);
           setGalleryItems(normalizedItems); 
         }
-        // ▲▲▲ FIN DE LA CORRECCIÓN ▲▲▲
-
-        results.forEach(r => { if (r.status === 'rejected') console.error("Error en petición:", r.reason); });
       } catch (e) {
-        console.error("Error al cargar la página:", e);
-        setError("Ocurrió un problema al cargar el contenido. Intenta nuevamente.");
+        console.error("Error crítico:", e);
+        setError("No pudimos cargar toda la información. Por favor revisa tu conexión.");
       } finally {
         setLoading(false);
         const hasSeenTour = localStorage.getItem('tourCompletado');
-        if (!hasSeenTour) setTimeout(() => setIsTourActive(true), 500);
+        if (!hasSeenTour) setTimeout(() => setIsTourActive(true), 1000);
       }
     };
     loadInitialData();
@@ -149,282 +93,270 @@ export default function Home() {
     localStorage.setItem('tourCompletado', 'true');
   };
   
-  if (loading) return <LoadingSpinner />;
+  if (loading) return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-100 flex items-center justify-center">
+        <div className="text-emerald-600"><LoadingSpinner /></div>
+    </div>
+  );
 
-  // El resto de tu JSX está perfecto y no necesita cambios.
   return (
-    <div className="font-sans text-slate-800 antialiased motion-safe:scroll-smooth bg-gray-50">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden">
+      
       {isTourActive && <GuidedTour onComplete={handleTourComplete} />}
 
+      {/* --- FONDO AMBIENTAL VIBRANTE Y CLARO --- */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-emerald-100 to-cyan-100"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-overlay"
+           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1463695973559-943f5502758f?q=80&w=2070&auto=format&fit=crop')" }}
+        ></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[70vh] h-[70vh] bg-emerald-400/30 rounded-full blur-[128px] animate-pulse mix-blend-multiply"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[70vh] h-[70vh] bg-cyan-400/30 rounded-full blur-[128px] mix-blend-multiply"></div>
+      </div>
+
       {error && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 my-6 rounded-lg border border-red-300 bg-red-50 p-4 text-center font-medium text-red-800" role="alert">
-          <span className="mr-2 inline-block text-lg" aria-hidden="true">⚠️</span> {error}
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-red-100 border border-red-400 text-red-700 px-6 py-3 rounded-full shadow-xl flex items-center gap-3 animate-bounce">
+          <span className="text-xl">⚠️</span> {error}
         </div>
       )}
 
-      {/* --- Sección Hero de Información (Móvil-First) --- */}
-      <section 
-        className="relative flex items-center justify-center text-white pt-2 pb-20 sm:pt-16 sm:pb-28"
-      >
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-600 to-emerald-700"></div>
-        <div className="absolute inset-0 w-full h-full bg-black/50"></div>
-        
-        <div className="relative z-10 p-4 max-w-4xl mx-auto w-full">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg text-left">
-            Tu Aventura te Espera
-          </h1>
-          <p className="mt-4 max-w-xl text-base md:text-lg text-cyan-100 drop-shadow-md text-left">
-            Descubre un paraíso natural de cascadas, senderos y maravillas inolvidables.
-          </p>
+      <div className="relative z-10">
+
+        {/* --- HERO SECTION --- */}
+        {/* AJUSTE 1: Reduje el padding superior de 'pt-20' a 'pt-12' para subir el contenido */}
+        <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-0 px-4 sm:px-6 lg:px-8 text-center">
           
-          {/* --- Panel de Información Vital (Compacto) --- */}
-          <div className="mt-8 max-w-3xl">
+          <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
             
-            {/* Horarios (Píldora destacada) */}
-            <div className="flex items-center justify-start gap-3 mb-6">
-              <div className="flex-shrink-0 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-sm p-2 border border-cyan-400/30">
-                <ClockIcon className="h-5 w-5 text-cyan-300" />
-              </div>
-              <span className="text-base font-semibold text-white">
-                Abierto todos los días: 08:00 - 18:00
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-emerald-200 backdrop-blur-md text-emerald-700 text-xs font-extrabold uppercase tracking-widest shadow-sm">
+              <Trees className="h-4 w-4 text-emerald-600" /> 
+              <span>Paraíso Ecoturístico</span>
+            </div>
+            
+            {/* Título Principal */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.1]">
+              Descubre el <br className="hidden md:block" />
+              <span className="relative inline-block">
+                {/* Sombra de color detrás */}
+                <span className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 blur-xl opacity-30"></span>
+                {/* AJUSTE 3: Degradado con más contraste (from-emerald-700) y mejor sombra (drop-shadow) */}
+                <span className="relative text-transparent bg-clip-text bg-gradient-to-br from-emerald-700 via-teal-500 to-cyan-600 drop-shadow-[0_2px_2px_rgba(0,0,0,0.15)]">
+                  Jardín de las Delicias
+                </span>
               </span>
-            </div>
-
-            {/* Grid de Precios Simplificado */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              
-              {/* Tarjeta 1: Ingreso Jardín */}
-              <div className="group relative rounded-xl border border-white/20 bg-black/30 p-5 text-left backdrop-blur-md transition-all duration-300 hover:bg-black/50 hover:border-white/30 hover:scale-[1.02] will-change-transform">
-                <div className="flex items-center gap-4">
-                  <div className="inline-flex rounded-full bg-cyan-500/20 p-3">
-                    <LeafIcon className="h-6 w-6 text-cyan-300" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Ingreso al Jardín</h3>
-                    <p className="text-xs text-slate-200">
-                      Incluye: Parqueo, Guías, Salvavidas, Baños y Senderos.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 text-right">
-                  <span className="block text-4xl font-extrabold text-cyan-300">15 Bs</span>
-                  <span className="block text-sm font-medium text-white">Nacionales y Extranjeros</span>
-                </div>
-              </div>
-
-              {/* Tarjeta 2: Ingreso P.N. Amboró */}
-              <div className="group relative rounded-xl border border-white/20 bg-black/30 p-5 text-left backdrop-blur-md transition-all duration-300 hover:bg-black/50 hover:border-white/30 hover:scale-[1.02] will-change-transform">
-                <div className="flex items-center gap-4">
-                  <div className="inline-flex rounded-full bg-cyan-500/20 p-3">
-                    <MountainIcon className="h-6 w-6 text-cyan-300" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Ingreso al P.N. Amboró</h3>
-                    <p className="text-xs text-slate-200">
-                      Tasa del SERNAP (SISCO) para áreas protegidas.
-                    </p>
-                  </div>
-                </div>
-                {/* Mini-grid de precios */}
-                <div className="mt-4 grid grid-cols-2 divide-x divide-cyan-400/30 text-center">
-                  <div className="px-2">
-                    <span className="block text-4xl font-extrabold text-cyan-300">20 Bs</span>
-                    <span className="block text-sm font-medium text-white">Nacionales</span>
-                  </div>
-                  <div className="px-2">
-                    <span className="block text-4xl font-extrabold text-cyan-300">100 Bs</span>
-                    <span className="block text-sm font-medium text-white">Extranjeros</span>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-          {/* --- Fin Panel de Información --- */}
-
-        </div>
-        
-        {/* --- [NUEVO] Indicador de Scroll --- */}
-        <a 
-          href="#cta-links" 
-          className="absolute z-20 bottom-6 left-1/2 -translate-x-1/2 animate-bounce p-2 rounded-full bg-black/20 backdrop-blur-sm transition-colors hover:bg-white/20"
-          aria-label="Deslizar hacia abajo"
-        >
-          <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-          </svg>
-        </a>
-      </section>
-
-      {/* --- [NUEVO] Sección de Botones CTA (MOVIBLES) --- */}
-      <section id="cta-links" className="bg-gray-50 pt-16 pb-12 sm:pt-20 sm:pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8 justify-center">
+            </h1>
             
-            {/* Botón 1: Posts (Guías) - [TAMAÑO AJUSTADO] */}
-            <Link 
-              to="/posts"
-              className="group flex-1 flex items-center justify-center gap-4 text-center px-6 py-4 rounded-xl bg-gradient-to-r from-lime-500 to-green-600 text-white text-lg md:text-xl font-bold shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-lime-300"
-            >
-              <NewspaperIcon className="h-7 w-7 transition-transform duration-300 group-hover:rotate-[-5deg]" />
-              <span>Ver Guías y Artículos</span>
-            </Link>
-
-            {/* Botón 2: Ubicación (Cómo Llegar) - [TAMAÑO AJUSTADO] */}
-            <Link 
-              to="/como-llegar"
-              className="group flex-1 flex items-center justify-center gap-4 text-center px-6 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white text-lg md:text-xl font-bold shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300"
-            >
-              <CompassIcon className="h-7 w-7 transition-transform duration-300 group-hover:rotate-[10deg]" />
-              <span>Nuestra Ubicación</span>
-            </Link>
-
-          </div>
-        </div>
-      </section>
-
-      {/* --- Sección de Accesos Rápidos (Colores Modificados) --- */}
-      <section id="accesos" className="bg-white py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-emerald-900">
-              Planifica tu Visita
-            </h2>
-            <p className="mt-3 max-w-2xl mx-auto text-lg text-slate-600">
-              Todo lo que necesitas saber en un solo lugar.
+            <p className="text-lg md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed">
+              Un Paraíso Por Descubrir
             </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-6">
+              
+              {/* Botón Principal */}
+              <Link 
+                to="/como-llegar"
+                className="group relative w-full sm:w-auto overflow-hidden rounded-2xl transition-all hover:-translate-y-1 shadow-lg hover:shadow-emerald-500/30"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <span className="relative flex h-full w-full items-center justify-center gap-3 px-8 py-4 text-lg font-bold text-white">
+                  <Compass className="h-6 w-6" />
+                  Cómo Llegar
+                  <ArrowRight className="h-5 w-5 opacity-80 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </Link>
+
+              {/* Botón Secundario */}
+              <Link 
+                to="/posts"
+                className="group w-full sm:w-auto relative flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-white/70 border-2 border-white text-emerald-700 font-extrabold backdrop-blur-md shadow-md transition-all hover:-translate-y-1 hover:bg-white/90 hover:text-emerald-800 hover:border-emerald-200"
+              >
+                <Newspaper className="h-5 w-5 text-emerald-600 group-hover:scale-110 transition-transform" />
+                Ver Guías y Tips
+              </Link>
+
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
-            <Link className="group block rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-300/30 hover:border-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500" to="/como-llegar">
-              <span className="mb-4 inline-block rounded-full bg-cyan-100 p-4 text-cyan-700 transition-all duration-300 group-hover:scale-105 group-hover:bg-cyan-600 group-hover:text-white">
-                <CompassIcon className="h-10 w-10" />
-              </span>
-              <h3 className="mb-2 text-xl font-bold text-emerald-900 transition-colors group-hover:text-emerald-700">¿Cómo llegar?</h3>
-              <p className="text-slate-500">Ruta interactiva y opciones de transporte.</p>
-            </Link>
-            
-            <Link className="group block rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-300/30 hover:border-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500" to="/informacion">
-              <span className="mb-4 inline-block rounded-full bg-cyan-100 p-4 text-cyan-700 transition-all duration-300 group-hover:scale-105 group-hover:bg-cyan-600 group-hover:text-white">
-                <InfoIcon className="h-10 w-10" />
-              </span>
-              <h3 className="mb-2 text-xl font-bold text-emerald-900 transition-colors group-hover:text-emerald-700">Información Útil</h3>
-              <p className="text-slate-500">Horarios, tarifas y contacto.</p>
-            </Link>
-            
-            <a className="group block rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-300/30 hover:border-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500" href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx" target="_blank" rel="noreferrer noopener">
-              <span className="mb-4 inline-block rounded-full bg-cyan-100 p-4 text-cyan-700 transition-all duration-300 group-hover:scale-105 group-hover:bg-cyan-600 group-hover:text-white">
-                <WhatsappIcon className="h-10 w-10" />
-              </span>
-              <h3 className="mb-2 text-xl font-bold text-emerald-900 transition-colors group-hover:text-emerald-700">WhatsApp</h3>
-              <p className="text-slate-500">Atención turística directa.</p>
+
+          {/* Flecha Scroll */}
+          {/* AJUSTE 2: Cambié 'bottom-10' por 'bottom-4' para bajar la flecha */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce">
+            <a href="#info-rapida" className="flex flex-col items-center text-emerald-600/70 hover:text-emerald-800 transition-colors gap-2">
+              <ChevronDown className="h-8 w-8" />
             </a>
           </div>
-        </div>
-      </section>
+        </section>
 
-      
-      {/* --- [NUEVA SECCIÓN DE CARRUSEL] --- */}
-      {galleryItems.length > 0 && (
-        <section id="gallery-carousel" className="bg-gray-50 py-16 sm:py-24">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-emerald-900">
-                Nuestra Galería
-              </h2>
-              <p className="mt-3 max-w-2xl mx-auto text-lg text-slate-600">
-                Un vistazo a las maravillas que te esperan.
-              </p>
+        {/* --- INFO RÁPIDA --- */}
+        <section id="info-rapida" className="py-16 px-4 relative">
+          <div className="max-w-6xl mx-auto">
+             <div className="text-center mb-10">
+                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-cyan-600">
+                    Información Esencial
+                </h2>
             </div>
-            
-            <div className="relative h-[300px] sm:h-[400px] md:h-[550px] w-full rounded-xl overflow-hidden shadow-2xl bg-slate-200 border border-slate-200">
-              <Suspense fallback={<LoadingSpinner />}>
-                <HeroCarousel items={galleryItems} />
-              </Suspense>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              
+              {/* Card Horario */}
+              <div className="bg-white/60 backdrop-blur-xl border border-white/80 p-8 rounded-3xl hover:border-emerald-400 transition-all group shadow-xl hover:shadow-2xl hover:shadow-emerald-100/50">
+                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
+                  <Clock className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Horario de Visita</h3>
+                <p className="text-slate-600 font-medium mb-4">Abierto todos los días.</p>
+                <div className="text-4xl font-black text-emerald-700">08:00 - 18:00</div>
+              </div>
+
+              {/* Card Precio */}
+              <div className="bg-gradient-to-br from-white/70 to-cyan-50/70 backdrop-blur-xl border-2 border-cyan-200 p-8 rounded-3xl transition-all group shadow-xl hover:shadow-2xl hover:shadow-cyan-100/50 relative overflow-hidden transform hover:-translate-y-1">
+                <div className="absolute top-0 right-0 p-4 opacity-10"><Ticket className="w-32 h-32 text-cyan-600 rotate-12"/></div>
+                <div className="w-16 h-16 bg-cyan-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm relative z-10">
+                   <Ticket className="h-8 w-8 text-cyan-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2 relative z-10">Ingreso General</h3>
+                <div className="flex items-baseline gap-2 relative z-10">
+                    <span className="text-5xl font-black text-cyan-700">15 Bs</span>
+                    <span className="text-slate-600 font-semibold">/ persona</span>
+                </div>
+              </div>
+
+              {/* Card Parque */}
+              <div className="bg-white/60 backdrop-blur-xl border border-white/80 p-8 rounded-3xl hover:border-orange-400 transition-all group shadow-xl hover:shadow-2xl hover:shadow-orange-100/50">
+                 <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
+                  <Trees className="h-8 w-8 text-orange-500" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Tasa Parque Amboró</h3>
+                <div className="space-y-3 text-slate-700 font-medium">
+                  <div className="flex justify-between items-center bg-white/50 p-3 rounded-xl">
+                    <span>Nacionales</span> <span className="text-orange-700 font-black text-lg">20 Bs</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white/50 p-3 rounded-xl">
+                    <span>Extranjeros</span> <span className="text-orange-700 font-black text-lg">100 Bs</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
-      )}
-      {/* --- [FIN DE LA NUEVA SECCIÓN] --- */}
 
+        {/* --- CARRUSEL --- */}
+        {galleryItems.length > 0 && (
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-emerald-100/50 border-4 border-white bg-slate-100 aspect-video md:aspect-[21/9]">
+                <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-emerald-600"><LoadingSpinner /></div>}>
+                  <HeroCarousel items={galleryItems} />
+                </Suspense>
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+                <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 pointer-events-none">
+                  <h2 className="text-3xl md:text-5xl font-black text-white drop-shadow-lg mb-2">
+                    Galería Multimedia
+                  </h2>
+                  <p className="text-white text-lg font-medium drop-shadow-md">
+                    Explora la belleza natural antes de tu viaje.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
-      {/* --- Sección Opiniones (Colores Modificados) --- */}
-      {reviews.length > 0 && (
-        <section id="opiniones" className="bg-white py-16 sm:py-24">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <header className="mb-12 text-center md:mb-16">
-              <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-emerald-900 sm:text-5xl md:text-6xl">
-                Lo que dicen nuestros visitantes
-              </h2>
-            </header>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {reviews.map((review) => (
-                <blockquote key={review.id} className="flex flex-col rounded-xl border border-slate-200 bg-white p-7 text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                  {review.photo && (
-                    <img src={review.photo} alt={`Foto de ${review.author_name}`} className="mx-auto mb-4 h-16 w-16 rounded-full border-4 border-white object-cover shadow-lg" loading="lazy" />
-                  )}
-                  <p className="flex-grow mb-5 italic text-slate-700">"{review.comment}"</p>
-                  <footer className="mt-auto">
-                    <cite className="flex flex-col items-center not-italic">
-                      <span className="font-bold text-emerald-800">{review.author_name}</span>
-                      <span>
-                        {[...Array(review.rating)].map((_, i) => <Star key={i} />)}
-                      </span>
-                    </cite>
-                    {review.place_name && review.place_slug && (
-                      <Link to={`/places/${review.place_slug}`} className="mt-2 inline-block text-sm font-semibold text-cyan-700 hover:underline">
-                        en {review.place_name}
-                      </Link>
+        {/* --- OPINIONES --- */}
+        {reviews.length > 0 && (
+          <section className="py-20 relative bg-white/40 backdrop-blur-lg my-10">
+             <div className="text-center mb-12">
+                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-cyan-700">
+                    Experiencias de Viajeros
+                </h2>
+                <p className="text-slate-600 mt-3 text-lg">Lo que dicen quienes ya vivieron la aventura.</p>
+              </div>
+
+            <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+                {reviews.map((review) => (
+                  <div key={review.id} className="bg-white border border-slate-100 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all flex flex-col">
+                     <div className="flex items-center gap-4 mb-6">
+                      {review.photo ? (
+                        <img src={review.photo} alt={review.author_name} className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200 shadow-sm" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                          {review.author_name.charAt(0)}
+                        </div>
+                      )}
+                        <div>
+                           <div className="font-bold text-slate-900 text-lg">{review.author_name}</div>
+                           <div className="flex text-amber-400">
+                             {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-current" : "text-slate-200 fill-slate-200"}`} />
+                              ))}
+                           </div>
+                        </div>
+                     </div>
+                     <p className="text-slate-700 italic flex-grow mb-6 leading-relaxed">"{review.comment}"</p>
+                     {review.place_name && (
+                      <div className="mt-auto pt-4 border-t border-slate-100 text-sm font-medium">
+                        <span className="text-slate-500">Visitó: </span>
+                        <Link to={`/places/${review.place_slug}`} className="text-emerald-600 hover:text-emerald-800 hover:underline inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3"/> {review.place_name}
+                        </Link>
+                      </div>
                     )}
-                  </footer>
-                </blockquote>
-              ))}
+                  </div>
+                ))}
+            </div>
+          </section>
+        )}
+
+        {/* --- FOOTER CTA --- */}
+        <section className="py-24 text-center relative overflow-hidden">
+           <div className="absolute inset-0 bg-gradient-to-t from-emerald-200/30 to-transparent blur-3xl pointer-events-none"></div>
+          <div className="relative max-w-4xl mx-auto px-4">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8 leading-tight">
+                ¿Tienes dudas sobre tu <br/> próxima aventura?
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-5 justify-center">
+              <a 
+                href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx" 
+                target="_blank" 
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#1da851] text-white font-extrabold rounded-2xl transition-all shadow-lg shadow-green-500/30 hover:scale-105 hover:shadow-green-500/50"
+              >
+                <MessageCircle className="h-6 w-6" />
+                Unirme al Grupo de WhatsApp
+              </a>
+              <Link 
+                to="/informacion"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 font-extrabold rounded-2xl transition-all shadow-sm hover:scale-105 hover:bg-slate-50 hover:border-emerald-300 hover:text-emerald-700"
+              >
+                <Info className="h-6 w-6" />
+                Ver Información Completa
+              </Link>
             </div>
           </div>
         </section>
-      )}
 
-      {/* --- Footer (Colores Modificados) --- */}
-      <footer className="bg-emerald-950 text-slate-300"> {/* Un poco más oscuro para contraste */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-200">
-                Jardín de las Delicias
-              </h3>
-              <p className="mt-4 text-sm text-emerald-100">
-                Desarrollado por{" "}
-                <a href="https://wa.me/59172672767" target="_blank" rel="noopener noreferrer" className="font-semibold text-cyan-300 hover:text-cyan-200 hover:underline">
-                  Oliver Ventura
-                </a> | 2025
-              </p>
+        {/* --- FOOTER FINAL --- */}
+        <footer className="bg-white/80 backdrop-blur-md py-12 text-center text-slate-600 text-sm border-t border-slate-200">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="mb-6 flex items-center justify-center gap-2">
+                <Trees className="h-6 w-6 text-emerald-500"/>
+                <span className="font-black text-xl text-slate-800">Jardín de las Delicias</span>
             </div>
-            <div>
-              <h4 className="font-semibold text-white tracking-wider">Navegación</h4>
-              <ul className="mt-4 space-y-2">
-                <li><Link to="/places" className="hover:text-white hover:underline">Lugares</Link></li>
-                <li><Link to="/events" className="hover:text-white hover:underline">Eventos</Link></li>
-                <li><Link to="/contact" className="hover:text-white hover:underline">Contacto</Link></li>
-                <li><Link to="/como-llegar" className="hover:text-white hover:underline">Cómo Llegar</Link></li>
-              </ul>
+            <div className="flex justify-center gap-8 mb-8 font-bold">
+              <Link to="/places" className="hover:text-emerald-600 transition-colors">Lugares</Link>
+              <Link to="/events" className="hover:text-emerald-600 transition-colors">Eventos</Link>
+              <Link to="/contact" className="hover:text-emerald-600 transition-colors">Contacto</Link>
             </div>
-            <div>
-              <h4 className="font-semibold text-white tracking-wider">Contacto Rápido</h4>
-              <ul className="mt-4 space-y-2">
-                <li>
-                  <a href="https://chat.whatsapp.com/EpzISekSBCe08kJh9LsQpx" target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline">
-                    Grupo de WhatsApp
-                  </a>
-                </li>
-                <li>
-                  <a href="mailto:jardindelasdelicias@gmail.com" className="hover:text-white hover:underline">
-                    jardindelasdelicias@gmail.com"
-                  </a>
-                </li>
-              </ul>
-            </div>
+            <p className="mb-4">&copy; {new Date().getFullYear()} Todos los derechos reservados.</p>
+            <p className="mt-8 text-xs text-slate-500">
+              Hecho por <a href="https://wa.me/59172672767" className="font-bold text-emerald-600 hover:underline">Oliver Ventura</a>
+            </p>
           </div>
-        </div>
-      </footer>
+        </footer>
+
+      </div>
     </div>
   );
 }

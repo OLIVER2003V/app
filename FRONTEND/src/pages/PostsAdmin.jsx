@@ -1,10 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./PostsAdmin.css";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { 
+  Search, 
+  Plus, 
+  FileText, 
+  Image as ImageIcon, 
+  Save, 
+  Trash2, 
+  ArrowLeft, 
+  ExternalLink, 
+  CheckCircle, 
+  XCircle,
+  Loader2,
+  MoreHorizontal
+} from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
-/** Normaliza errores DRF en un texto legible */
+// --- HELPERS (Manteniendo tu lógica original) ---
 function normalizeErrors(obj) {
   if (!obj || typeof obj !== "object") return "Error 400. Revisa los campos.";
   const parts = [];
@@ -19,12 +32,11 @@ function normalizeErrors(obj) {
   return parts.length ? parts.join(" · ") : "Error 400. Revisa los campos.";
 }
 
-/** Convierte URL relativa (/media/...) a absoluta, o devuelve la absoluta tal cual */
 function toAbsolute(url) {
   if (!url) return null;
   try {
     const u = new URL(url);
-    return u.href; // ya es absoluta
+    return u.href;
   } catch {
     const base = BASE_URL?.replace(/\/+$/, "");
     const path = String(url).startsWith("/") ? url : `/${url}`;
@@ -32,86 +44,54 @@ function toAbsolute(url) {
   }
 }
 
-/**
- * Revisa si el nombre de un archivo excede el límite. Si es así, lo acorta
- * y devuelve un nuevo objeto File con el nombre corregido.
- * @param {File} file - El archivo original.
- * @param {number} maxLength - El largo máximo permitido para el nombre.
- * @returns {File} - El archivo original o uno nuevo con el nombre acortado.
- */
 function renameFileIfTooLong(file, maxLength = 100) {
-  if (!file || file.name.length <= maxLength) {
-    return file; // No es necesario cambiar nada
-  }
-
-  console.warn(`Filename "${file.name}" is too long. Shortening it.`);
-
+  if (!file || file.name.length <= maxLength) return file;
   const fileName = file.name;
   const lastDot = fileName.lastIndexOf('.');
-  
-  if (lastDot === -1) {
-    return new File([file], fileName.substring(0, maxLength), { type: file.type });
-  }
-
-  const extension = fileName.substring(lastDot); // .jpg, .png, etc.
+  if (lastDot === -1) return new File([file], fileName.substring(0, maxLength), { type: file.type });
+  const extension = fileName.substring(lastDot);
   const baseName = fileName.substring(0, lastDot);
-  
   const maxBaseNameLength = maxLength - extension.length;
   const truncatedBaseName = baseName.substring(0, maxBaseNameLength);
-  
-  const newName = truncatedBaseName + extension;
-
-  return new File([file], newName, { type: file.type });
+  return new File([file], truncatedBaseName + extension, { type: file.type });
 }
 
+// --- COMPONENTE PRINCIPAL ---
 export default function PostsAdmin() {
   const nav = useNavigate();
   const token = localStorage.getItem("token");
 
-  // ------- LISTADO -------
+  // --- ESTADOS ---
   const [posts, setPosts] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [q, setQ] = useState("");
+  const [mode, setMode] = useState("create"); // 'create' | 'edit'
 
-  // ------- CREAR -------
+  // CREATE FORM
   const [createForm, setCreateForm] = useState({
-    title: "",
-    body: "",
-    is_published: true,
-    is_featured: false,
-    place_id: "",
-    cta_url: "",
-    cta_label: "",
-    cover_file: null,
+    title: "", body: "", is_published: true, is_featured: false,
+    place_id: "", cta_url: "", cta_label: "", cover_file: null,
   });
   const [createPreview, setCreatePreview] = useState(null);
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState("");
   const [createErrs, setCreateErrs] = useState({});
 
-  // ------- DETALLE/EDITAR -------
+  // EDIT FORM
   const [selectedId, setSelectedId] = useState(null);
   const [detail, setDetail] = useState(null);
   const [detailMsg, setDetailMsg] = useState("");
   const [loadingDetail, setLoadingDetail] = useState(false);
-
   const [editForm, setEditForm] = useState({
-    title: "",
-    body: "",
-    is_published: true,
-    is_featured: false,
-    place_id: "",
-    cta_url: "",
-    cta_label: "",
-    cover_file: null,
+    title: "", body: "", is_published: true, is_featured: false,
+    place_id: "", cta_url: "", cta_label: "", cover_file: null,
   });
   const [editPreview, setEditPreview] = useState(null);
   const [updatingPut, setUpdatingPut] = useState(false);
-  const [updatingPatch, setUpdatingPatch] = useState(false);
-  const [editErrs, setEditErrs] = useState({});
   const [deleting, setDeleting] = useState(false);
+  const [editErrs, setEditErrs] = useState({});
 
-  // ------------------ HELPERS ------------------
+  // --- MEMOS ---
   const authHeaders = useMemo(() => {
     const h = { "Content-Type": "application/json", Accept: "application/json" };
     if (token) h.Authorization = `Token ${token}`;
@@ -122,31 +102,27 @@ export default function PostsAdmin() {
     const term = q.trim().toLowerCase();
     if (!term) return posts;
     return posts.filter(
-      (p) =>
-        String(p?.id).includes(term) ||
-        (p?.title || "").toLowerCase().includes(term) ||
-        (p?.body || p?.content || "").toLowerCase?.()?.includes?.(term)
+      (p) => String(p?.id).includes(term) || (p?.title || "").toLowerCase().includes(term)
     );
   }, [posts, q]);
 
   const validatePost = (obj) => {
     const e = {};
-    if (!obj.title?.trim()) e.title = "Título requerido";
-    if (!obj.body?.trim()) e.body = "Contenido requerido";
+    if (!obj.title?.trim()) e.title = "El título es obligatorio.";
+    if (!obj.body?.trim()) e.body = "El contenido no puede estar vacío.";
     if (obj.cta_url?.trim()) {
-      try { new URL(obj.cta_url.trim()); } catch { e.cta_url = "URL inválida"; }
+      try { new URL(obj.cta_url.trim()); } catch { e.cta_url = "URL inválida (debe incluir http:// o https://)"; }
     }
-    if (obj.place_id && Number(obj.place_id) <= 0) e.place_id = "ID inválido";
     return e;
   };
 
   const fileToPreview = (file) => (file ? URL.createObjectURL(file) : null);
 
-  // Limpieza de object URLs
+  // Cleanups
   useEffect(() => () => { if (createPreview) URL.revokeObjectURL(createPreview); }, [createPreview]);
   useEffect(() => () => { if (editPreview) URL.revokeObjectURL(editPreview); }, [editPreview]);
 
-  // ------------------ API CALLS ------------------
+  // --- API FETCH ---
   async function fetchList() {
     setLoadingList(true);
     try {
@@ -164,13 +140,15 @@ export default function PostsAdmin() {
   async function fetchDetail(id) {
     setLoadingDetail(true);
     setDetailMsg("");
+    setMode("edit");
+    setSelectedId(id);
+    
+    // Scroll to top on mobile mainly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     try {
       const res = await fetch(`${BASE_URL}/api/posts/${id}/`);
-      if (!res.ok) {
-        setDetail(null);
-        setDetailMsg(`No encontrado (${res.status})`);
-        return;
-      }
+      if (!res.ok) throw new Error("Not found");
       const data = await res.json();
       setDetail(data);
       setEditForm({
@@ -216,63 +194,59 @@ export default function PostsAdmin() {
     };
   }
 
+  // --- ACTIONS ---
+  const switchToCreate = () => {
+    setMode("create");
+    setSelectedId(null);
+    setDetail(null);
+    setCreateMsg("");
+    setCreateErrs({});
+    // Limpiar form
+    setCreateForm({
+        title: "", body: "", is_published: true, is_featured: false,
+        place_id: "", cta_url: "", cta_label: "", cover_file: null,
+    });
+    setCreatePreview(null);
+  };
+
   async function createPost() {
     setCreateMsg("");
     const errs = validatePost(createForm);
     setCreateErrs(errs);
     if (Object.keys(errs).length) return;
-    if (!token) { setCreateMsg("No hay token. Inicia sesión (admin/editor)."); return; }
 
     setCreating(true);
     try {
       const hasFile = !!createForm.cover_file;
       const url = `${BASE_URL}/api/posts/`;
-
       let res;
+      
       if (hasFile) {
         const fd = buildFormData(createForm);
         res = await fetch(url, { method: "POST", headers: { Authorization: `Token ${token}` }, body: fd });
       } else {
-        const payload = buildJsonPayload(createForm);
-        res = await fetch(url, {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify(payload),
-        });
+        res = await fetch(url, { method: "POST", headers: authHeaders, body: JSON.stringify(buildJsonPayload(createForm)) });
       }
 
       const text = await res.text();
       let data; try { data = JSON.parse(text); } catch { data = text; }
 
-      if (res.status === 401) return setCreateMsg("401: No autorizado.");
-      if (res.status === 403) return setCreateMsg("403: Requiere rol admin/editor.");
       if (!res.ok) {
-        console.warn("POST /api/posts/ ->", data);
-        const message = typeof data === "string" ? data : normalizeErrors(data);
-        return setCreateMsg(message);
+        setCreateMsg(typeof data === "string" ? data : normalizeErrors(data));
+      } else {
+        const createdPost = typeof data === "string" ? JSON.parse(data) : data;
+        fetchList(); // Recargar lista
+        fetchDetail(createdPost.id); // Ir a modo editar
       }
-
-      setCreateMsg("✔ Publicación creada");
-      const createdPost = typeof data === "string" ? JSON.parse(data) : data;
-
-      setCreateForm({
-        title: "", body: "", is_published: true, is_featured: false,
-        place_id: "", cta_url: "", cta_label: "", cover_file: null,
-      });
-      if (createPreview) URL.revokeObjectURL(createPreview);
-      setCreatePreview(null);
-      setSelectedId(createdPost.id);
-      setDetail(createdPost);
-      fetchList();
     } catch {
-      setCreateMsg("Error de red/servidor");
+      setCreateMsg("Error de conexión.");
     } finally {
       setCreating(false);
     }
   }
 
-  async function updatePostPut() {
-    if (!selectedId) return setDetailMsg("Selecciona un post.");
+  async function updatePost() {
+    if (!selectedId) return;
     const errs = validatePost(editForm);
     setEditErrs(errs);
     if (Object.keys(errs).length) return;
@@ -282,277 +256,368 @@ export default function PostsAdmin() {
     try {
       const hasFile = !!editForm.cover_file;
       const url = `${BASE_URL}/api/posts/${selectedId}/`;
-
       let res;
+
       if (hasFile) {
         const fd = buildFormData(editForm);
         res = await fetch(url, { method: "PUT", headers: { Authorization: `Token ${token}` }, body: fd });
       } else {
-        const payload = buildJsonPayload(editForm);
-        res = await fetch(url, { method: "PUT", headers: authHeaders, body: JSON.stringify(payload) });
+        res = await fetch(url, { method: "PUT", headers: authHeaders, body: JSON.stringify(buildJsonPayload(editForm)) });
       }
 
       const text = await res.text();
       let data; try { data = JSON.parse(text); } catch { data = text; }
 
       if (!res.ok) {
-        console.warn("PUT /api/posts/{id}/ ->", data);
-        const msg = typeof data === "string" ? data : normalizeErrors(data);
-        setDetailMsg(`PUT ${res.status}: ${msg}`);
+        setDetailMsg(typeof data === "string" ? data : normalizeErrors(data));
       } else {
-        setDetail(typeof data === "string" ? JSON.parse(data) : data);
-        setDetailMsg("✔ Actualizado (PUT)");
-        if (editPreview) URL.revokeObjectURL(editPreview);
+        setDetailMsg("✔ Cambios guardados correctamente.");
+        setDetail(data);
         setEditPreview(null);
         fetchList();
       }
     } catch {
-      setDetailMsg("Error de red/servidor");
+      setDetailMsg("Error de conexión.");
     } finally {
       setUpdatingPut(false);
     }
   }
 
-  async function updatePostPatch(partial = {}) {
-    if (!selectedId) return setDetailMsg("Selecciona un post.");
-    setUpdatingPatch(true);
-    setDetailMsg("");
-
-    try {
-      const hasFile = !!editForm.cover_file;
-      const url = `${BASE_URL}/api/posts/${selectedId}/`;
-
-      let res;
-      if (hasFile) {
-        const fd = new FormData();
-        if (editForm.title?.trim()) fd.append("title", editForm.title.trim());
-        if (editForm.body?.trim()) fd.append("body", editForm.body.trim());
-        fd.append("is_published", String(!!editForm.is_published));
-        fd.append("is_featured", String(!!editForm.is_featured));
-        if (editForm.place_id) fd.append("place", String(editForm.place_id));
-        if (editForm.cta_url?.trim()) fd.append("cta_url", editForm.cta_url.trim());
-        if (editForm.cta_label?.trim()) fd.append("cta_label", editForm.cta_label.trim());
-        fd.append("cover", editForm.cover_file);
-        res = await fetch(url, { method: "PATCH", headers: { Authorization: `Token ${token}` }, body: fd });
-      } else {
-        const patchObj = Object.keys(partial).length > 0 ? partial : {
-            ...(editForm.title?.trim() ? { title: editForm.title.trim() } : {}),
-            ...(editForm.body?.trim() ? { body: editForm.body.trim() } : {}),
-            ...(typeof editForm.is_published === "boolean" ? { is_published: !!editForm.is_published } : {}),
-            ...(typeof editForm.is_featured === "boolean" ? { is_featured: !!editForm.is_featured } : {}),
-            ...(editForm.place_id ? { place: Number(editForm.place_id) } : {}),
-            ...(editForm.cta_url?.trim() ? { cta_url: editForm.cta_url.trim() } : {}),
-            ...(editForm.cta_label?.trim() ? { cta_label: editForm.cta_label.trim() } : {}),
-        };
-        res = await fetch(url, { method: "PATCH", headers: authHeaders, body: JSON.stringify(patchObj) });
-      }
-
-      const text = await res.text();
-      let data; try { data = JSON.parse(text); } catch { data = text; }
-
-      if (!res.ok) {
-        console.warn("PATCH /api/posts/{id}/ ->", data);
-        const msg = typeof data === "string" ? data : normalizeErrors(data);
-        setDetailMsg(`PATCH ${res.status}: ${msg}`);
-      } else {
-        setDetail(typeof data === "string" ? JSON.parse(data) : data);
-        setDetailMsg("✔ Actualizado (PATCH)");
-        if (editPreview) URL.revokeObjectURL(editPreview);
-        setEditPreview(null);
-        fetchList();
-      }
-    } catch {
-      setDetailMsg("Error de red/servidor");
-    } finally {
-      setUpdatingPatch(false);
-    }
-  }
-
   async function deletePost(id) {
-    if (!window.confirm(`¿Seguro que quieres eliminar el post #${id}? Esta acción no se puede deshacer.`)) {
-      return;
-    }
+    if (!window.confirm("¿Eliminar permanentemente este post?")) return;
     setDeleting(true);
-    setDetailMsg("");
     try {
       const res = await fetch(`${BASE_URL}/api/posts/${id}/`, {
         method: "DELETE",
         headers: { Authorization: `Token ${token}` },
       });
-      if (res.status === 204) {
-        setDetailMsg("✔ Post eliminado correctamente.");
-        setDetail(null);
-        setSelectedId(null);
+      if (res.ok) {
         fetchList();
-      } else if (res.status === 404) {
-        setDetailMsg("Error: El post no fue encontrado.");
-      } else if (res.status === 403) {
-        setDetailMsg("Error: No tienes permiso para eliminar este post.");
+        switchToCreate();
       } else {
-        const data = await res.json().catch(() => ({ detail: "Error desconocido" }));
-        const msg = normalizeErrors(data);
-        setDetailMsg(`Error ${res.status}: ${msg}`);
+        alert("No se pudo eliminar.");
       }
-    } catch (err) {
-      setDetailMsg("Error de red o servidor al intentar eliminar.");
-      console.error("Delete failed:", err);
+    } catch {
+      alert("Error de conexión.");
     } finally {
       setDeleting(false);
     }
   }
 
-  // ------------------ EFFECTS ------------------
   useEffect(() => { fetchList(); }, []);
 
-  // ------------------ UI ------------------
-  const coverSrc = toAbsolute(detail?.cover);
+  // --- VARIABLES UI ---
+  const isCreate = mode === "create";
+  const currentForm = isCreate ? createForm : editForm;
+  const currentSetForm = isCreate ? setCreateForm : setEditForm;
+  const currentErrs = isCreate ? createErrs : editErrs;
+  const currentPreview = isCreate ? createPreview : editPreview;
+  const msg = isCreate ? createMsg : detailMsg;
+  
+  // Preview final (si hay nueva imagen, usa esa, si no, usa la del detalle)
+  const displayCover = currentPreview || (!isCreate && toAbsolute(detail?.cover));
 
   return (
-    <div className="pa-container">
-      <header className="pa-head">
-        <div><h1 className="pa-title">Administración de Posts</h1></div>
-        <div className="pa-toolbar">
-          <button className="pa-btn pa-btn--ghost" onClick={fetchList}>🔄 Recargar</button>
-          <button className="pa-btn pa-btn--ghost" onClick={() => nav("/posts")}>📚 Ver público</button>
-        </div>
-      </header>
-      <div className="pa-grid">
-        <section className="pa-card pa-col-left" aria-label="Listado de posts">
-          <div className="pa-card__header">
-            <h2 className="pa-card__title">Listar posts</h2>
-            <input className="pa-input" placeholder="Buscar por id/título/contenido…" value={q} onChange={(e) => setQ(e.target.value)} />
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-20 relative overflow-hidden">
+      
+      {/* Fondo decorativo */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-900/20 rounded-full blur-[128px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-900/20 rounded-full blur-[128px]"></div>
+      </div>
+
+      <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-6 pt-6 h-full flex flex-col">
+        
+        {/* --- Header --- */}
+        <header className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard" className="p-2 rounded-full bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors text-slate-400 hover:text-white">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Blog & Noticias</h1>
+              <p className="text-slate-400 text-xs">Gestiona el contenido editorial.</p>
+            </div>
           </div>
-          <div className="pa-list">
-            {loadingList ? <div className="pa-empty">Cargando…</div> : filtered.length === 0 ? <div className="pa-empty">Sin resultados</div> : (
-              filtered.map((p) => {
-                const thumb = toAbsolute(p.cover);
-                return (
-                  <button key={p.id} className={`pa-listitem ${selectedId === p.id ? "is-active" : ""}`} onClick={() => { setSelectedId(p.id); fetchDetail(p.id); }} title={`Abrir detalle #${p.id}`}>
-                    <div className="pa-listitem__title">
-                      {thumb && <img className="pa-thumb" src={thumb} alt="" />}
-                      <span className="pa-badge">#{p.id}</span> {p.title || "(sin título)"}
+          <div className="flex gap-2">
+             <Link to="/posts" target="_blank" className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 text-sm transition-all">
+                <ExternalLink className="h-4 w-4" /> Ver Blog Público
+             </Link>
+          </div>
+        </header>
+
+        {/* --- GRID LAYOUT (Master-Detail) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* --- IZQUIERDA: LISTA (4 cols) --- */}
+          <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-140px)] sticky top-24">
+            
+            {/* Toolbar Lista */}
+            <div className="bg-slate-900/80 backdrop-blur border border-slate-800 p-4 rounded-xl flex flex-col gap-3 shadow-lg">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                  <input 
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all" 
+                    placeholder="Buscar post..." 
+                    value={q} 
+                    onChange={(e) => setQ(e.target.value)} 
+                  />
+                </div>
+                <button onClick={switchToCreate} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition-colors" title="Crear Nuevo">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Lista Scrollable */}
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2 pb-10">
+              {loadingList ? (
+                <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" /></div>
+              ) : filtered.length === 0 ? (
+                <div className="text-center text-slate-500 py-10 text-sm">No hay posts.</div>
+              ) : (
+                filtered.map((p) => (
+                  <div 
+                    key={p.id} 
+                    onClick={() => fetchDetail(p.id)}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all group flex gap-3 items-start
+                      ${selectedId === p.id 
+                        ? "bg-indigo-900/20 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]" 
+                        : "bg-slate-900/50 border-slate-800 hover:border-slate-600 hover:bg-slate-900"
+                      }`}
+                  >
+                    {/* Miniatura */}
+                    <div className="h-16 w-16 bg-slate-950 rounded-lg overflow-hidden flex-shrink-0 border border-slate-800">
+                      {p.cover ? (
+                        <img src={toAbsolute(p.cover)} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-slate-700"><ImageIcon className="h-6 w-6" /></div>
+                      )}
                     </div>
-                    <div className="pa-listitem__meta">{p.is_published ? "Publicado" : "Borrador"}</div>
-                  </button>
-                );
-              })
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold text-sm truncate ${selectedId === p.id ? "text-white" : "text-slate-300 group-hover:text-white"}`}>
+                        {p.title || "Sin título"}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border 
+                          ${p.is_published 
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
+                          {p.is_published ? "Publicado" : "Borrador"}
+                        </span>
+                        {p.is_featured && (
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border bg-purple-500/10 text-purple-400 border-purple-500/20">
+                            Hero
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-600 ml-auto">#{p.id}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* --- DERECHA: EDITOR (8 cols) --- */}
+          <div className="lg:col-span-8 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full min-h-[600px]">
+            
+            {/* Header Editor */}
+            <div className="border-b border-slate-800 p-4 md:p-6 flex justify-between items-center bg-slate-900/80">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  {isCreate ? <Plus className="h-5 w-5 text-indigo-400" /> : <FileText className="h-5 w-5 text-indigo-400" />}
+                  {isCreate ? "Crear Nueva Publicación" : "Editando Publicación"}
+                </h2>
+                <p className="text-slate-400 text-xs mt-1">
+                  {isCreate ? "Rellena los datos para añadir contenido." : `Modificando ID: ${detail?.id} • Creado: ${new Date(detail?.created_at).toLocaleDateString()}`}
+                </p>
+              </div>
+              
+              {!isCreate && (
+                <button onClick={() => deletePost(selectedId)} disabled={deleting} className="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors" title="Eliminar">
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Mensajes Alerta */}
+            {msg && (
+              <div className={`px-6 py-3 text-sm font-medium flex items-center gap-2 ${msg.includes("✔") ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+                {msg.includes("✔") ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                {msg}
+              </div>
             )}
-          </div>
-        </section>
 
-        <section className="pa-card pa-col-right" aria-label="Crear post">
-          <h2 className="pa-card__title">Crear post</h2>
-          {createMsg && <div className="pa-alert">{createMsg}</div>}
-          <div className="pa-field">
-            <label>Título *</label>
-            <input className={`pa-input ${createErrs.title ? "has-error" : ""}`} value={createForm.title} onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })} placeholder="Ej. Ruta corta al mirador" />
-            {createErrs.title && <div className="pa-error">{createErrs.title}</div>}
-          </div>
-          <div className="pa-field">
-            <label>Contenido *</label>
-            <textarea className={`pa-textarea ${createErrs.body ? "has-error" : ""}`} value={createForm.body} onChange={(e) => setCreateForm({ ...createForm, body: e.target.value })} placeholder="Contenido de la publicación…" rows={6} />
-            {createErrs.body && <div className="pa-error">{createErrs.body}</div>}
-          </div>
-          <div className="pa-row">
-            <label className="pa-check"><input type="checkbox" checked={createForm.is_published} onChange={(e) => setCreateForm({ ...createForm, is_published: e.target.checked })} /> Publicar inmediatamente</label>
-            <label className="pa-check"><input type="checkbox" checked={createForm.is_featured} onChange={(e) => setCreateForm({ ...createForm, is_featured: e.target.checked })} /> Destacado (hero)</label>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input className={`pa-input ${createErrs.place_id ? "has-error" : ""}`} type="number" min="1" placeholder="ID Place (opcional)" value={createForm.place_id} onChange={(e) => setCreateForm({ ...createForm, place_id: e.target.value })} style={{ maxWidth: 180 }} />
-            </div>
-          </div>
-          {createErrs.place_id && <div className="pa-error">{createErrs.place_id}</div>}
-          <div className="pa-field">
-            <label>CTA URL (opcional)</label>
-            <input className={`pa-input ${createErrs.cta_url ? "has-error" : ""}`} value={createForm.cta_url} onChange={(e) => setCreateForm({ ...createForm, cta_url: e.target.value })} placeholder="https://tu-enlace.com" />
-            {createErrs.cta_url && <div className="pa-error">{createErrs.cta_url}</div>}
-          </div>
-          <div className="pa-field">
-            <label>CTA Label (opcional)</label>
-            <input className="pa-input" value={createForm.cta_label} onChange={(e) => setCreateForm({ ...createForm, cta_label: e.target.value })} placeholder='Ej. "Reservar"' />
-          </div>
-          <div className="pa-field">
-            <label>Portada (imagen)</label>
-            <input type="file" accept="image/*" onChange={(e) => {
-                let file = e.target.files?.[0] || null;
-                if (file) {
-                  file = renameFileIfTooLong(file);
-                }
-                setCreateForm({ ...createForm, cover_file: file });
-                if (createPreview) URL.revokeObjectURL(createPreview);
-                setCreatePreview(fileToPreview(file));
-            }} />
-            {createPreview && <div style={{ marginTop: 8 }}><img src={createPreview} alt="preview" style={{ maxWidth: 240, borderRadius: 10 }} /></div>}
-          </div>
-          <div className="pa-actions">
-            <button className="pa-btn pa-btn--primary" disabled={creating} onClick={createPost}>{creating ? "Guardando…" : "Crear post"}</button>
-          </div>
-        </section>
+            {/* Formulario Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+              <div className="max-w-4xl mx-auto space-y-6">
+                
+                {/* Título */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Título del Post <span className="text-red-400">*</span></label>
+                  <input 
+                    className={`w-full bg-slate-950 border rounded-xl px-4 py-3 text-lg font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${currentErrs.title ? "border-red-500" : "border-slate-700"}`}
+                    placeholder="Escribe un título atractivo..."
+                    value={currentForm.title}
+                    onChange={(e) => currentSetForm({ ...currentForm, title: e.target.value })}
+                  />
+                  {currentErrs.title && <span className="text-xs text-red-400">{currentErrs.title}</span>}
+                </div>
 
-        <section className="pa-card pa-col-full" aria-label="Detalle y edición">
-          <div className="pa-card__header">
-            <h2 className="pa-card__title">Detalle post</h2>
-            <div className="pa-idpick">
-              <input className="pa-input" type="number" min="1" placeholder="ID" value={selectedId || ""} onChange={(e) => setSelectedId(e.target.value ? Number(e.target.value) : null)} />
-              <button className="pa-btn pa-btn--ghost" onClick={() => selectedId && fetchDetail(selectedId)}>Abrir</button>
+                {/* Layout: Portada + Opciones */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  
+                  {/* Columna Portada */}
+                  <div className="md:col-span-1 space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Imagen de Portada</label>
+                    <div className="relative group aspect-[3/4] bg-slate-950 border-2 border-dashed border-slate-700 rounded-xl overflow-hidden hover:border-indigo-500 transition-colors">
+                      {displayCover ? (
+                        <>
+                          <img src={displayCover} alt="Cover" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-white text-xs font-bold">Cambiar Imagen</p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 p-4 text-center">
+                          <ImageIcon className="h-8 w-8 mb-2" />
+                          <span className="text-xs">Click para subir</span>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          let file = e.target.files?.[0];
+                          if (file) file = renameFileIfTooLong(file);
+                          currentSetForm({ ...currentForm, cover_file: file });
+                          if (currentPreview) URL.revokeObjectURL(currentPreview);
+                          setCreatePreview(file ? URL.createObjectURL(file) : null);
+                          if(!isCreate) setEditPreview(file ? URL.createObjectURL(file) : null);
+                        }} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Columna Opciones */}
+                  <div className="md:col-span-2 space-y-6">
+                    
+                    {/* Body */}
+                    <div className="space-y-2 h-full flex flex-col">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Contenido <span className="text-red-400">*</span></label>
+                      <textarea 
+                        className={`w-full flex-1 bg-slate-950 border rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:border-indigo-500 transition-all min-h-[180px] ${currentErrs.body ? "border-red-500" : "border-slate-700"}`}
+                        placeholder="Escribe el contenido de la publicación aquí..."
+                        value={currentForm.body}
+                        onChange={(e) => currentSetForm({ ...currentForm, body: e.target.value })}
+                      />
+                      {currentErrs.body && <span className="text-xs text-red-400">{currentErrs.body}</span>}
+                    </div>
+
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-800 my-6"></div>
+
+                {/* Configuración Avanzada */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* Toggles */}
+                  <div className="space-y-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                    <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                        <MoreHorizontal className="h-4 w-4" /> Configuración
+                    </h3>
+                    
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <span className="text-sm text-slate-400 group-hover:text-white transition-colors">Estado Publicado</span>
+                      <div className={`w-11 h-6 flex items-center bg-slate-700 rounded-full p-1 transition-colors ${currentForm.is_published ? 'bg-emerald-600' : ''}`}>
+                        <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${currentForm.is_published ? 'translate-x-5' : ''}`}></div>
+                        <input type="checkbox" className="hidden" checked={currentForm.is_published} onChange={(e) => currentSetForm({ ...currentForm, is_published: e.target.checked })} />
+                      </div>
+                    </label>
+
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <span className="text-sm text-slate-400 group-hover:text-white transition-colors">Destacado (Hero)</span>
+                      <div className={`w-11 h-6 flex items-center bg-slate-700 rounded-full p-1 transition-colors ${currentForm.is_featured ? 'bg-purple-600' : ''}`}>
+                        <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${currentForm.is_featured ? 'translate-x-5' : ''}`}></div>
+                        <input type="checkbox" className="hidden" checked={currentForm.is_featured} onChange={(e) => currentSetForm({ ...currentForm, is_featured: e.target.checked })} />
+                      </div>
+                    </label>
+
+                    <div className="pt-2">
+                        <span className="text-xs text-slate-500 block mb-1">Asociar Lugar (ID)</span>
+                        <input 
+                            type="number" 
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-indigo-500 outline-none"
+                            placeholder="Ej. 5"
+                            value={currentForm.place_id}
+                            onChange={(e) => currentSetForm({ ...currentForm, place_id: e.target.value })}
+                        />
+                    </div>
+                  </div>
+
+                  {/* Call To Action */}
+                  <div className="space-y-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                    <h3 className="text-sm font-bold text-white mb-2">Botón de Acción (CTA)</h3>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-xs text-slate-500 block mb-1">Texto del botón</label>
+                            <input 
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none"
+                                placeholder="Ej. Reservar ahora"
+                                value={currentForm.cta_label}
+                                onChange={(e) => currentSetForm({ ...currentForm, cta_label: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-slate-500 block mb-1">Enlace (URL)</label>
+                            <input 
+                                className={`w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none ${currentErrs.cta_url ? "border-red-500" : ""}`}
+                                placeholder="https://..."
+                                value={currentForm.cta_url}
+                                onChange={(e) => currentSetForm({ ...currentForm, cta_url: e.target.value })}
+                            />
+                            {currentErrs.cta_url && <span className="text-xs text-red-400">{currentErrs.cta_url}</span>}
+                        </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
             </div>
+
+            {/* Footer Acciones */}
+            <div className="border-t border-slate-800 p-4 bg-slate-900/80 flex justify-end gap-3">
+                {isCreate ? (
+                    <button 
+                        onClick={createPost} 
+                        disabled={creating}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50"
+                    >
+                        {creating ? <Loader2 className="animate-spin h-5 w-5" /> : <Save className="h-5 w-5" />}
+                        Crear Publicación
+                    </button>
+                ) : (
+                    <button 
+                        onClick={updatePost} 
+                        disabled={updatingPut}
+                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                    >
+                        {updatingPut ? <Loader2 className="animate-spin h-5 w-5" /> : <Save className="h-5 w-5" />}
+                        Guardar Cambios
+                    </button>
+                )}
+            </div>
+
           </div>
-          {detailMsg && <div className="pa-alert">{detailMsg}</div>}
-          {loadingDetail ? <div className="pa-empty">Cargando detalle…</div> : !detail ? <div className="pa-empty">Selecciona un post del listado o ingresa un ID.</div> : (
-            <>
-              <div className="pa-detail">
-                <div><strong>ID:</strong> {detail.id}</div>
-                <div><strong>Título:</strong> {detail.title}</div>
-                <div><strong>Estado:</strong> {detail.is_published ? "Publicado" : "Borrador"}</div>
-              </div>
-              {coverSrc && <div style={{ marginBottom: 10 }}><div style={{ color: "var(--pa-muted)", marginBottom: 6 }}>Portada actual</div><img src={coverSrc} alt="Cover" style={{ maxWidth: 320, borderRadius: 12 }} /></div>}
-              <div className="pa-split">
-                <div className="pa-field">
-                  <label>Título</label>
-                  <input className={`pa-input ${editErrs.title ? "has-error" : ""}`} value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
-                  {editErrs.title && <div className="pa-error">{editErrs.title}</div>}
-                </div>
-                <div className="pa-field">
-                  <label>Contenido</label>
-                  <textarea className={`pa-textarea ${editErrs.body ? "has-error" : ""}`} value={editForm.body} onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} rows={5} />
-                  {editErrs.body && <div className="pa-error">{editErrs.body}</div>}
-                </div>
-                <div className="pa-row">
-                  <label className="pa-check"><input type="checkbox" checked={editForm.is_published} onChange={(e) => setEditForm({ ...editForm, is_published: e.target.checked })} /> Publicado</label>
-                  <label className="pa-check"><input type="checkbox" checked={editForm.is_featured} onChange={(e) => setEditForm({ ...editForm, is_featured: e.target.checked })} /> Destacado (hero)</label>
-                  <input className={`pa-input ${editErrs.place_id ? "has-error" : ""}`} type="number" min="1" placeholder="ID Place (opcional)" value={editForm.place_id} onChange={(e) => setEditForm({ ...editForm, place_id: e.target.value })} style={{ maxWidth: 180 }} />
-                </div>
-                {editErrs.place_id && <div className="pa-error">{editErrs.place_id}</div>}
-                <div className="pa-field">
-                  <label>CTA URL (opcional)</label>
-                  <input className={`pa-input ${editErrs.cta_url ? "has-error" : ""}`} value={editForm.cta_url} onChange={(e) => setEditForm({ ...editForm, cta_url: e.target.value })} placeholder="https://tu-enlace.com" />
-                  {editErrs.cta_url && <div className="pa-error">{editErrs.cta_url}</div>}
-                </div>
-                <div className="pa-field">
-                  <label>CTA Label (opcional)</label>
-                  <input className="pa-input" value={editForm.cta_label} onChange={(e) => setEditForm({ ...editForm, cta_label: e.target.value })} placeholder='Ej. "Reservar"' />
-                </div>
-                <div className="pa-field">
-                  <label>Reemplazar portada</label>
-                  <input type="file" accept="image/*" onChange={(e) => {
-                      let file = e.target.files?.[0] || null;
-                      if (file) {
-                        file = renameFileIfTooLong(file);
-                      }
-                      setEditForm({ ...editForm, cover_file: file });
-                      if (editPreview) URL.revokeObjectURL(editPreview);
-                      setEditPreview(fileToPreview(file));
-                  }} />
-                  {editPreview && <div style={{ marginTop: 8 }}><img src={editPreview} alt="preview" style={{ maxWidth: 240, borderRadius: 10 }} /></div>}
-                </div>
-                <div className="pa-actions">
-                  <button className="pa-btn pa-btn--primary" disabled={updatingPut} onClick={updatePostPut}>{updatingPut ? "Actualizando (PUT)..." : "Actualizar (PUT)"}</button>
-                  <button className="pa-btn" disabled={updatingPatch} onClick={() => updatePostPatch()}>{updatingPatch ? "Actualizando (PATCH)..." : "Actualizar (PATCH)"}</button>
-                  <button className="pa-btn pa-btn--danger" disabled={deleting} onClick={() => deletePost(selectedId)} style={{ marginLeft: 'auto' }}>{deleting ? "Eliminando..." : "Eliminar"}</button>
-                </div>
-              </div>
-            </>
-          )}
-        </section>
+
+        </div>
       </div>
     </div>
   );

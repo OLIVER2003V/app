@@ -2,10 +2,14 @@ import React from "react";
 
 export function DashboardStat({ label, value, hint }) {
   return (
-    <div className="flex flex-col rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-lg transition-colors hover:border-slate-600">
-      <span className="text-sm font-medium text-slate-400">{label}</span>
-      <span className="mt-1 text-3xl font-bold text-white">{value}</span>
-      <span className="mt-1 text-xs text-slate-400">{hint}</span>
+    <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="text-2xl font-bold text-slate-100">{value}</span>
+        {hint && <span className="text-xs text-slate-400">{hint}</span>}
+      </div>
     </div>
   );
 }
