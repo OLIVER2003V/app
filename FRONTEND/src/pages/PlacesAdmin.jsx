@@ -1,25 +1,43 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css'; // Asegúrate de importar el CSS
 import api from "@/lib/api";
 import { 
   Search, Plus, MapPin, Image as ImageIcon, Save, 
-  Trash2, Navigation, Info, Layers, Loader2,
+  Trash2, Navigation, Info, Loader2,
   Mountain, Droplets, Utensils, Bed, Map as MapIcon, HelpCircle
 } from "lucide-react";
 
-// -- Configuración Leaflet --
-// Fix para iconos perdidos en producción
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+// --- 1. ICONO PERSONALIZADO CSS ---
+const customMarkerIcon = L.divIcon({
+  className: 'custom-pin',
+  html: `
+    <div style="
+      background-color: #ef4444; 
+      width: 30px; 
+      height: 30px; 
+      border-radius: 50% 50% 50% 0; 
+      transform: rotate(-45deg);
+      border: 3px solid white; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: -15px;
+      margin-left: -15px;
+    ">
+      <div style="
+        width: 8px; 
+        height: 8px; 
+        background-color: white; 
+        border-radius: 50%;
+        transform: rotate(45deg);
+      "></div>
+    </div>
+  `,
+  iconSize: [30, 42],
+  iconAnchor: [15, 42],
 });
-L.Marker.prototype.options.icon = DefaultIcon;
 
 const SANTA_CRUZ_CENTER = [-17.7833, -63.1821];
 
@@ -36,14 +54,23 @@ const CATEGORIES = {
   otro: { label: "Otro", icon: <HelpCircle className="w-4 h-4" />, color: "text-slate-400 bg-slate-400/10 border-slate-400/20" },
 };
 
-// Icono auxiliar para el objeto CATEGORIES
 function EyeIcon(props) { return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>; }
 
+// --- RESIZER PARA ARREGLAR EL MAPA ---
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    const resize = () => map.invalidateSize();
+    setTimeout(resize, 100);
+    setTimeout(resize, 500);
+    setTimeout(resize, 1000);
+  }, [map]);
+  return null;
+}
 
-// -- Sub-componentes del Mapa --
+// -- Controlador --
 function MapController({ center, onLocationSelect }) {
   const map = useMap();
-  
   useEffect(() => {
     if (center && !isNaN(center[0])) {
       map.flyTo(center, 15, { animate: true, duration: 1.5 });
@@ -52,37 +79,34 @@ function MapController({ center, onLocationSelect }) {
 
   useMapEvents({
     click(e) {
-      onLocationSelect({ lat: e.latlng.lat.toFixed(6), lng: e.latlng.lng.toFixed(6) });
+      onLocationSelect({ 
+        lat: e.latlng.lat.toFixed(6), 
+        lng: e.latlng.lng.toFixed(6) 
+      });
     },
   });
   return null;
 }
 
 export default function PlacesAdmin() {
-  // --- Estados ---
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   
-  // Selección y Edición
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [detail, setDetail] = useState(null);
-  const [mode, setMode] = useState("create"); // 'create' | 'edit'
-  const [activeTab, setActiveTab] = useState("info"); // 'info' | 'map' | 'media'
+  const [mode, setMode] = useState("create"); 
+  const [activeTab, setActiveTab] = useState("info");
 
-  // Formularios
   const initialForm = {
     name: "", slug: "", category: "otro", description: "",
     address: "", lat: "", lng: "", is_active: true
   };
   const [form, setForm] = useState(initialForm);
-  
-  // Estados de UI
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
 
-  // --- API Fetch ---
   const fetchPlaces = async () => {
     setLoading(true);
     try {
@@ -96,7 +120,7 @@ export default function PlacesAdmin() {
   };
 
   const fetchDetail = async (slug) => {
-    setSaving(true); // Usamos saving como loading local
+    setSaving(true);
     try {
       const { data } = await api.get(`/places/${slug}/`);
       setDetail(data);
@@ -123,7 +147,6 @@ export default function PlacesAdmin() {
 
   useEffect(() => { fetchPlaces(); }, []);
 
-  // --- Handlers ---
   const handleCreateNew = () => {
     setMode("create");
     setSelectedSlug(null);
@@ -145,7 +168,6 @@ export default function PlacesAdmin() {
         const { data } = await api.post("/places/", form);
         setSuccessMsg("Lugar creado correctamente");
         fetchPlaces();
-        // Pasar a modo edición del nuevo lugar
         setMode("edit");
         setSelectedSlug(data.slug);
         setDetail(data);
@@ -153,12 +175,10 @@ export default function PlacesAdmin() {
         const { data } = await api.put(`/places/${selectedSlug}/`, form);
         setSuccessMsg("Cambios guardados");
         setDetail(data);
-        // Si cambió el slug, actualizar la lista y el seleccionado
         if (data.slug !== selectedSlug) {
             setSelectedSlug(data.slug);
             fetchPlaces();
         }
-        // Actualizar lista localmente para reflejar cambios rápidos
         setPlaces(prev => prev.map(p => p.id === data.id ? data : p));
       }
     } catch (err) {
@@ -200,13 +220,14 @@ export default function PlacesAdmin() {
     );
   };
 
-  // Filtros
   const filteredPlaces = useMemo(() => {
     return places.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
   }, [places, q]);
 
   const centerMap = useMemo(() => {
-    if (form.lat && form.lng && !isNaN(form.lat)) return [parseFloat(form.lat), parseFloat(form.lng)];
+    if (form.lat && form.lng && !isNaN(parseFloat(form.lat))) {
+        return [parseFloat(form.lat), parseFloat(form.lng)];
+    }
     return SANTA_CRUZ_CENTER;
   }, [form.lat, form.lng]);
 
@@ -221,7 +242,6 @@ export default function PlacesAdmin() {
 
       <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-6 pt-6 h-full flex flex-col">
         
-        {/* Header */}
         <header className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-slate-900 rounded-full border border-slate-800 text-emerald-500">
@@ -236,10 +256,9 @@ export default function PlacesAdmin() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* === COLUMNA IZQUIERDA: LISTA (4 cols) === */}
+          {/* COLUMNA IZQUIERDA: LISTA */}
           <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-140px)] sticky top-24">
             
-            {/* Search Toolbar */}
             <div className="bg-slate-900/80 backdrop-blur border border-slate-800 p-4 rounded-xl flex gap-2 shadow-lg">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
@@ -255,7 +274,6 @@ export default function PlacesAdmin() {
               </button>
             </div>
 
-            {/* Lista */}
             <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2 pb-10">
               {loading ? (
                 <div className="flex justify-center py-10"><Loader2 className="animate-spin text-emerald-500" /></div>
@@ -272,11 +290,9 @@ export default function PlacesAdmin() {
                           : "bg-slate-900/50 border-slate-800 hover:border-slate-600 hover:bg-slate-900"
                         }`}
                     >
-                      {/* Icono Categoría */}
                       <div className={`h-10 w-10 rounded-lg flex items-center justify-center border ${catInfo.color}`}>
                         {catInfo.icon}
                       </div>
-                      
                       <div className="flex-1 min-w-0">
                         <h3 className={`font-semibold text-sm truncate ${selectedSlug === p.slug ? "text-white" : "text-slate-300 group-hover:text-white"}`}>
                           {p.name}
@@ -293,10 +309,9 @@ export default function PlacesAdmin() {
             </div>
           </div>
 
-          {/* === COLUMNA DERECHA: EDITOR (8 cols) === */}
+          {/* COLUMNA DERECHA: EDITOR */}
           <div className="lg:col-span-8 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full min-h-[600px]">
             
-            {/* Header Editor */}
             <div className="border-b border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80">
               <div>
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -305,160 +320,162 @@ export default function PlacesAdmin() {
                 </h2>
               </div>
               
-              {/* Tabs */}
               <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
-                <button onClick={() => setActiveTab("info")} className={`px-4 py-1.5 rounded text-xs font-bold transition-all ${activeTab === 'info' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                <button type="button" onClick={() => setActiveTab("info")} className={`px-4 py-1.5 rounded text-xs font-bold transition-all ${activeTab === 'info' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
                     <div className="flex items-center gap-2"><Info className="h-3 w-3" /> Info</div>
                 </button>
-                <button onClick={() => setActiveTab("map")} className={`px-4 py-1.5 rounded text-xs font-bold transition-all ${activeTab === 'map' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                <button type="button" onClick={() => setActiveTab("map")} className={`px-4 py-1.5 rounded text-xs font-bold transition-all ${activeTab === 'map' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
                     <div className="flex items-center gap-2"><Navigation className="h-3 w-3" /> Mapa</div>
                 </button>
                 {mode === 'edit' && (
-                    <button onClick={() => setActiveTab("media")} className={`px-4 py-1.5 rounded text-xs font-bold transition-all ${activeTab === 'media' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                    <button type="button" onClick={() => setActiveTab("media")} className={`px-4 py-1.5 rounded text-xs font-bold transition-all ${activeTab === 'media' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
                         <div className="flex items-center gap-2"><ImageIcon className="h-3 w-3" /> Galería</div>
                     </button>
                 )}
               </div>
             </div>
 
-            {/* Mensajes */}
             {(error || successMsg) && (
                 <div className={`px-6 py-2 text-sm font-medium text-center ${error ? "bg-red-500/10 text-red-400" : "bg-emerald-500/10 text-emerald-400"}`}>
                     {error || successMsg}
                 </div>
             )}
 
-            {/* Contenido Tab */}
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar relative">
                 <form id="placeForm" onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
                     
-                    {/* --- TAB 1: INFORMACIÓN --- */}
+                    {/* TAB 1: INFO */}
                     {activeTab === 'info' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-400 uppercase">Nombre del Lugar</label>
-                                    <input 
-                                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none"
-                                        value={form.name}
-                                        onChange={e => setForm({...form, name: e.target.value, slug: slugify(e.target.value)})}
-                                        placeholder="Ej. Mirador El Cielo"
-                                        required
-                                    />
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Nombre</label>
+                                    <input className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" value={form.name} onChange={e => setForm({...form, name: e.target.value, slug: slugify(e.target.value)})} placeholder="Ej. Mirador El Cielo" required />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-400 uppercase">Slug (URL)</label>
-                                    <input 
-                                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-400 focus:border-emerald-500 outline-none font-mono text-sm"
-                                        value={form.slug}
-                                        onChange={e => setForm({...form, slug: e.target.value})}
-                                        required
-                                    />
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Slug</label>
+                                    <input className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-400 focus:border-emerald-500 outline-none font-mono text-sm" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} required />
                                 </div>
                             </div>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-400 uppercase">Categoría</label>
-                                    <select 
-                                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none appearance-none"
-                                        value={form.category}
-                                        onChange={e => setForm({...form, category: e.target.value})}
-                                    >
+                                    <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none appearance-none" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
                                         {Object.entries(CATEGORIES).map(([key, val]) => (
                                             <option key={key} value={key}>{val.label}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-400 uppercase">Dirección (Texto)</label>
-                                    <input 
-                                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none"
-                                        value={form.address}
-                                        onChange={e => setForm({...form, address: e.target.value})}
-                                        placeholder="Ej. A 5km del pueblo..."
-                                    />
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Dirección</label>
+                                    <input className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
                                 </div>
                             </div>
-
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-slate-400 uppercase">Descripción</label>
-                                <textarea 
-                                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-300 focus:border-emerald-500 outline-none min-h-[150px]"
-                                    value={form.description}
-                                    onChange={e => setForm({...form, description: e.target.value})}
-                                    placeholder="Describe qué hace especial a este lugar..."
-                                />
+                                <textarea className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-300 focus:border-emerald-500 outline-none min-h-[150px]" value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
                             </div>
-
                             <div className="flex items-center gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800">
-                                <input 
-                                    type="checkbox" 
-                                    checked={form.is_active} 
-                                    onChange={e => setForm({...form, is_active: e.target.checked})}
-                                    className="w-5 h-5 accent-emerald-500"
-                                />
-                                <span className="text-sm font-bold text-white">Lugar Activo y Visible</span>
+                                <input type="checkbox" checked={form.is_active} onChange={e => setForm({...form, is_active: e.target.checked})} className="w-5 h-5 accent-emerald-500" />
+                                <span className="text-sm font-bold text-white">Lugar Activo</span>
                             </div>
                         </div>
                     )}
 
-                    {/* --- TAB 2: MAPA --- */}
-                    {activeTab === 'map' && (
-                        <div className="space-y-4 h-full flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="flex gap-4 items-end">
-                                <div className="flex-1 grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase">Latitud</label>
-                                        <input className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono" value={form.lat} onChange={e => setForm({...form, lat: e.target.value})} />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase">Longitud</label>
-                                        <input className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono" value={form.lng} onChange={e => setForm({...form, lng: e.target.value})} />
-                                    </div>
-                                </div>
-                                <button type="button" onClick={handleGPS} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 h-[38px]">
-                                    <Navigation className="h-4 w-4" /> Usar GPS
-                                </button>
-                            </div>
+                    {/* --- TAB 2: MAPA (CORREGIDO) --- */}
+{activeTab === 'map' && (
+    <div className="space-y-4 h-full flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
+        
+        {/* 1. TRUCO CSS PARA FORZAR VISIBILIDAD */}
+        <style>{`
+            .leaflet-container {
+                width: 100% !important;
+                height: 100% !important;
+                background-color: #0f172a; /* bg-slate-900 para que no se vea blanco si tarda */
+                z-index: 1;
+                border-radius: 0.75rem; /* rounded-xl */
+            }
+            /* Asegura que las imágenes del mapa ocupen todo el espacio */
+            .leaflet-layer,
+            .leaflet-control-container,
+            .leaflet-pane {
+                 position: absolute;
+                 top: 0; left: 0; right: 0; bottom: 0;
+            }
+        `}</style>
 
-                            <div className="flex-1 min-h-[400px] bg-slate-950 rounded-xl border border-slate-700 overflow-hidden relative z-0">
-                                <MapContainer center={centerMap} zoom={13} style={{ height: '100%', width: '100%' }}>
-                                    <TileLayer 
-                                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" 
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                                    />
-                                    {form.lat && form.lng && !isNaN(form.lat) && (
-                                        <Marker position={[form.lat, form.lng]} />
-                                    )}
-                                    <MapController center={centerMap} onLocationSelect={handleLocationSelect} />
-                                </MapContainer>
-                                <div className="absolute top-2 right-2 z-[1000] bg-black/70 backdrop-blur p-2 rounded text-xs text-white pointer-events-none">
-                                    Haz clic en el mapa para fijar la ubicación
-                                </div>
-                            </div>
-                        </div>
-                    )}
+        {/* Controles de Latitud/Longitud */}
+        <div className="flex gap-4 items-end">
+            <div className="flex-1 grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase">Latitud</label>
+                    <input 
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-white focus:border-emerald-500 outline-none" 
+                      value={form.lat} 
+                      onChange={e => setForm({...form, lat: e.target.value})} 
+                      placeholder="-17.xxxx"
+                    />
+                </div>
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase">Longitud</label>
+                    <input 
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-white focus:border-emerald-500 outline-none" 
+                      value={form.lng} 
+                      onChange={e => setForm({...form, lng: e.target.value})} 
+                      placeholder="-63.xxxx"
+                    />
+                </div>
+            </div>
+            <button type="button" onClick={handleGPS} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 h-[38px]">
+                <Navigation className="h-4 w-4" /> GPS
+            </button>
+        </div>
 
-                    {/* --- TAB 3: GALERÍA --- */}
+        {/* CONTENEDOR MAPA */}
+        <div className="flex-1 min-h-[400px] h-[400px] bg-slate-950 rounded-xl border border-slate-700 overflow-hidden relative z-0">
+            
+            {/* Usamos MapContainer con key única para forzar re-render si cambian tabs */}
+            <MapContainer 
+                key="admin-map-container" 
+                center={centerMap} 
+                zoom={13} 
+                style={{ height: '100%', width: '100%', minHeight: '400px' }}
+            >
+                <MapResizer /> {/* Vital para corregir el gris */}
+                
+                {/* Usamos OSM estándar porque es el más fiable */}
+                <TileLayer 
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; OpenStreetMap contributors'
+                />
+                
+                {form.lat && form.lng && !isNaN(parseFloat(form.lat)) && (
+                    <Marker 
+                      position={[parseFloat(form.lat), parseFloat(form.lng)]} 
+                      icon={customMarkerIcon} 
+                    />
+                )}
+                <MapController center={centerMap} onLocationSelect={handleLocationSelect} />
+            </MapContainer>
+            
+            <div className="absolute top-2 right-2 z-[1000] bg-black/80 backdrop-blur p-2 rounded text-xs text-white pointer-events-none border border-slate-700">
+                👆 Haz clic en el mapa para poner el pin
+            </div>
+        </div>
+    </div>
+)}
+
+                    {/* TAB 3: GALERÍA */}
                     {activeTab === 'media' && mode === 'edit' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-6 text-center">
                                 <ImageIcon className="h-10 w-10 text-slate-600 mx-auto mb-2" />
                                 <h3 className="text-white font-bold">Galería del Lugar</h3>
-                                <p className="text-slate-400 text-sm mb-4">Gestiona las fotos específicas de {form.name}</p>
-                                
-                                {/* Aquí iría tu componente de subida */}
+                                <p className="text-slate-400 text-sm mb-4">Gestiona las fotos de {form.name}</p>
                                 <div className="border-2 border-dashed border-slate-700 rounded-xl p-8 hover:border-emerald-500 transition-colors cursor-pointer bg-slate-900/30">
-                                    <p className="text-sm text-emerald-400 font-bold">
-                                        + Subir nuevas fotos
-                                    </p>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        (Funcionalidad pendiente de endpoint backend)
-                                    </p>
+                                    <p className="text-sm text-emerald-400 font-bold">+ Subir nuevas fotos</p>
                                 </div>
                             </div>
-
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {detail.media && detail.media.length > 0 ? (
                                     detail.media.map(m => (
@@ -479,23 +496,11 @@ export default function PlacesAdmin() {
                 </form>
             </div>
 
-            {/* Footer Actions */}
             <div className="border-t border-slate-800 p-4 bg-slate-900/80 flex justify-end gap-3">
                 {mode === 'edit' && (
-                    <button 
-                        type="button" 
-                        onClick={handleDelete}
-                        className="mr-auto text-red-400 hover:text-red-300 text-sm font-bold px-4 py-2"
-                    >
-                        Eliminar Lugar
-                    </button>
+                    <button type="button" onClick={handleDelete} className="mr-auto text-red-400 hover:text-red-300 text-sm font-bold px-4 py-2">Eliminar Lugar</button>
                 )}
-                <button 
-                    type="submit" 
-                    form="placeForm"
-                    disabled={saving} 
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
-                >
+                <button type="submit" form="placeForm" disabled={saving} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50">
                     {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                     {mode === 'create' ? "Crear Lugar" : "Guardar Cambios"}
                 </button>

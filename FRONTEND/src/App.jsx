@@ -91,7 +91,7 @@ export default function App() {
             <Route
               path="/admin/reviews"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "editor"]}>
                   <ReviewsAdmin />
                 </ProtectedRoute>
               }
@@ -108,7 +108,7 @@ export default function App() {
             <Route
               path="/admin/contactos"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "editor"]}>
                   <ListContacts />
                 </ProtectedRoute>
               }
@@ -116,7 +116,7 @@ export default function App() {
             <Route
               path="/admin/contactos/nuevo"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "editor"]}>
                   <CreateContact />
                 </ProtectedRoute>
               }
@@ -124,7 +124,7 @@ export default function App() {
             <Route
               path="/admin/contactos/:id/editar"
               element={
-                <ProtectedRoute roles={["admin"]}>
+                <ProtectedRoute roles={["admin", "editor"]}>
                   <EditContact />
                 </ProtectedRoute>
               }
