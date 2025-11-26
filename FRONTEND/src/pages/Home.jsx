@@ -165,7 +165,7 @@ export default function Home() {
           </div>
 
           {/* FLECHA ANIMADA CORREGIDA */}
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
             <a href="#info-rapida" className="text-cyan-700/60 hover:text-cyan-900 transition-colors p-2">
               <ChevronDown className="h-10 w-10" />
             </a>
