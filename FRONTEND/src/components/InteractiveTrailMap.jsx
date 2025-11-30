@@ -78,11 +78,11 @@ const createUserIcon = () => L.divIcon({
       </div>
     </div>
   `,
-  iconSize: [40, 40], // Tamaño del contenedor ajustado para el aura
-  iconAnchor: [20, 20], // Centro exacto
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
 });
 
-// --- ÍCONOS Y BOTONES (Sin cambios mayores) ---
+// --- ÍCONOS Y BOTONES ---
 const DestinationIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconSize: [25, 41],
@@ -241,6 +241,7 @@ export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
   
   useEffect(() => {
     if (map && !didInitialZoom && (userPosition || startPoint)) {
+        // CORRECCIÓN ZOOM: Priorizamos userPosition si existe, si no, el startPoint
         const target = userPosition || startPoint;
         const timer = setTimeout(() => { map.setView(target, 15); setDidInitialZoom(true); }, 100);
         return () => clearTimeout(timer);
@@ -343,15 +344,18 @@ export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
         </LayersControl>
 
         {!isOffline && routeStartPos && (
+          /* --- CORRECCIÓN AQUÍ: Se eliminó 'stopover={startPoint}' --- */
+          /* Ahora la ruta es: Usuario -> Final. Ya no va atrás al inicio */
           <RoutingControl 
             key={`route-${routeStartPos[0].toFixed(4)}-${routeStartPos[1].toFixed(4)}`} 
             start={routeStartPos} 
-            stopover={startPoint} 
+            // stopover={startPoint} <-- ESTA LINEA SE ELIMINÓ
             end={endPoint} 
             onRouteFound={setRouteStats} 
           />
         )}
 
+        {/* Solo dibujamos la ruta estática si estamos Offline o no tenemos ruta dinámica */}
         {(isOffline || !routeStats) && trailData && trailData.length > 0 && (
             <>
                 <Polyline positions={trailData} pathOptions={offlineRouteCasing} />
