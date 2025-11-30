@@ -34,6 +34,8 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
     "https://jardin-frontend.onrender.com",
+    "https://jardindelasdelicias.com",        # TU NUEVO DOMINIO (sin www)
+    "https://www.jardindelasdelicias.com",
 ]
 CORS_ALLOW_CREDENTIALS = False
 CORS_EXPOSE_HEADERS = ["Authorization", "Content-Type"]
@@ -41,6 +43,8 @@ CORS_EXPOSE_HEADERS = ["Authorization", "Content-Type"]
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://jardin-frontend.onrender.com",
+    "https://jardindelasdelicias.com",        # TU NUEVO DOMINIO (sin www)
+    "https://www.jardindelasdelicias.com",
 ]
 if FRONTEND_URL.startswith("http://"):
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
