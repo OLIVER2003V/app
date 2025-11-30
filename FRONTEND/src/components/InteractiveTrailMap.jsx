@@ -280,8 +280,8 @@ export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
       return `~ ${hours}h ${mins}`;
   };
 
-  const offlineRouteCasing = { color: '#1E8449', weight: 8, opacity: 0.8 }; 
-  const offlineRouteFill = { color: '#7CFC00', weight: 5, opacity: 1, dashArray: '10, 15' }; 
+  // --- NUEVO ESTILO: LÍNEA SÓLIDA ELEGANTE ---
+  const staticPathOptions = { color: '#4285F4', weight: 6, opacity: 0.8 }; 
 
   return (
     <div ref={mapContainerRef} className={`relative w-full bg-slate-800 overflow-hidden rounded-xl shadow-inner transition-all duration-300 ${isFullscreen ? 'fixed inset-0 h-screen z-[9999] rounded-none' : 'h-full'}`}>
@@ -294,7 +294,7 @@ export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
                  <div className="bg-yellow-500 p-1 rounded-full animate-pulse"><Icons.Offline /></div>
                  <div className="flex flex-col items-start leading-tight">
                     <span className="font-bold text-yellow-400">Estás desconectado</span>
-                    <span className="text-xs text-slate-300">Sigue la ruta verde punteada</span>
+                    <span className="text-xs text-slate-300">Mapa en modo sin conexión</span>
                  </div>
              </div>
           )}
@@ -344,23 +344,17 @@ export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
         </LayersControl>
 
         {!isOffline && routeStartPos && (
-          /* --- CORRECCIÓN AQUÍ: Se eliminó 'stopover={startPoint}' --- */
-          /* Ahora la ruta es: Usuario -> Final. Ya no va atrás al inicio */
           <RoutingControl 
             key={`route-${routeStartPos[0].toFixed(4)}-${routeStartPos[1].toFixed(4)}`} 
             start={routeStartPos} 
-            // stopover={startPoint} <-- ESTA LINEA SE ELIMINÓ
             end={endPoint} 
             onRouteFound={setRouteStats} 
           />
         )}
 
-        {/* Solo dibujamos la ruta estática si estamos Offline o no tenemos ruta dinámica */}
+        {/* CAMBIO AQUÍ: Una sola línea sólida y elegante */}
         {(isOffline || !routeStats) && trailData && trailData.length > 0 && (
-            <>
-                <Polyline positions={trailData} pathOptions={offlineRouteCasing} />
-                <Polyline positions={trailData} pathOptions={offlineRouteFill} />
-            </>
+            <Polyline positions={trailData} pathOptions={staticPathOptions} />
         )}
         
         <Marker position={endPoint} icon={DestinationIcon}><Popup>Punto Final</Popup></Marker>
@@ -427,7 +421,7 @@ export default function InteractiveTrailMap({ trailData, onGpsErrorChange}) {
                           </span>
                           <span className="text-xs text-slate-500 font-medium">
                               {isOffline 
-                                ? "Sigue la ruta verde punteada en el mapa." 
+                                ? "La ruta estática se muestra en el mapa." 
                                 : gpsError ? "Esperando señal GPS..." : "Obteniendo ruta óptima..."}
                           </span>
                       </div>
