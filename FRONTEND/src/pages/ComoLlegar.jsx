@@ -144,7 +144,7 @@ export default function ComoLlegar() {
             </div>
 
             {/* --- EL MAPA (GIGANTE) --- */}
-            <div className="relative w-full h-[60vh] md:h-[65vh] bg-slate-200">
+            <div className="relative w-full h-[42vh] md:h-[65vh] bg-slate-200">
                 {error ? (
                   <div className="flex h-full items-center justify-center bg-red-50 p-6 text-center text-red-600 font-medium">
                     {error}
