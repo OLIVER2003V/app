@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import { useMap } from 'react-leaflet';
 
-// Fix para iconos por defecto de Leaflet que a veces desaparecen
+// Fix para iconos por defecto de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -14,38 +14,29 @@ L.Icon.Default.mergeOptions({
 
 export default function RoutingControl({ start, stopover, end, onRouteFound }) {
   const map = useMap();
-  // Usamos una referencia para guardar el control y NO recrearlo en cada render
-  const routingControlRef = useRef(null);
 
   useEffect(() => {
     if (!map || !start || !end) return;
 
-    // Puntos: Inicio -> (Parada) -> Fin
+    // 1. Definimos los puntos (Waypoints)
     const waypoints = [
       L.latLng(start[0], start[1]),
       ...(stopover ? [L.latLng(stopover[0], stopover[1])] : []),
       L.latLng(end[0], end[1])
     ];
 
-    // LÓGICA CLAVE: Si ya existe el control, solo actualizamos los puntos.
-    // Esto evita el error "removeLayer of null" y el parpadeo.
-    if (routingControlRef.current) {
-      routingControlRef.current.setWaypoints(waypoints);
-      return;
-    }
-
-    // Si no existe, lo creamos (solo la primera vez)
+    // 2. Creamos el control de ruta
     const routingControl = L.Routing.control({
       waypoints: waypoints,
       routeWhileDragging: false,
-      fitSelectedRoutes: false, // IMPORTANTE: Evita que el mapa haga zoom loco
+      fitSelectedRoutes: false, // IMPORTANTE: Evita el zoom loco
       showAlternatives: false,
       addWaypoints: false,
       draggableWaypoints: false,
-      show: false, 
+      show: false, // Ocultar panel de texto
       router: L.Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1',
-          profile: 'foot' // Perfil peatonal
+          profile: 'foot'
       }),
       createMarker: () => null, // Sin marcadores extraños
       lineOptions: {
@@ -56,9 +47,10 @@ export default function RoutingControl({ start, stopover, end, onRouteFound }) {
       }
     });
 
+    // 3. Lo añadimos al mapa
     routingControl.addTo(map);
-    routingControlRef.current = routingControl;
 
+    // 4. Escuchamos cuando encuentra la ruta para actualizar datos
     routingControl.on('routesfound', (e) => {
       if (e.routes && e.routes[0] && onRouteFound) {
         const summary = e.routes[0].summary;
@@ -69,20 +61,24 @@ export default function RoutingControl({ start, stopover, end, onRouteFound }) {
       }
     });
 
-    // Limpieza segura
+    // 5. LIMPIEZA CRÍTICA (Aquí estaba el error)
     return () => {
-      // Solo removemos si el mapa sigue vivo para evitar el crash
-      if (map && routingControlRef.current) {
-        try {
-            // Verificamos si el control sigue en el mapa antes de quitarlo
-            if (map.hasLayer && map.hasLayer(routingControlRef.current)) {
-                map.removeControl(routingControlRef.current);
-            }
-        } catch (e) {
-            console.warn("Limpieza de ruta ignorada para evitar crash visual");
-        }
-        routingControlRef.current = null;
+      // No usamos map.hasLayer porque es un Control, no una Layer.
+      // Lo removemos directamente sin preguntar.
+      try {
+          map.removeControl(routingControl);
+      } catch (e) {
+          console.warn("Error limpiando ruta:", e);
       }
+
+      // LIMPIEZA EXTRA DE SEGURIDAD
+      // A veces Leaflet deja líneas "fantasmas", esto las busca y destruye
+      map.eachLayer((layer) => {
+        // Si la capa tiene opciones de línea de ruta, es un residuo -> borrar
+        if (layer.options && layer.options.styles && layer.options.styles[0]?.color === '#0D3B66') {
+            map.removeLayer(layer);
+        }
+      });
     };
   }, [map, start, stopover, end, onRouteFound]);
 
