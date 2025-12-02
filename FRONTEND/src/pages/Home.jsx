@@ -149,7 +149,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-sky-600 transition-transform group-hover:scale-105"></div>
                 <span className="relative flex h-full w-full items-center justify-center gap-3 px-8 py-4 text-lg font-bold text-white">
                   <Compass className="h-6 w-6" />
-                  Ubicación
+                  Nuestra Ubicación
                   <ArrowRight className="h-5 w-5 opacity-70 group-hover:translate-x-2 transition-transform" />
                 </span>
               </Link>
