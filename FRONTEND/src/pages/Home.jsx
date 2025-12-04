@@ -192,32 +192,33 @@ export default function Home() {
               <span>Sitio Oficial</span>
             </motion.div>
             
-            {/* --- AQUÍ ESTÁ EL CAMBIO PRINCIPAL --- */}
-            <div className="flex flex-col items-center justify-center">
-                {/* 1. "Bienvenidos al" animado en negro */}
-                <AnimatedText 
-                  text="Bienvenidos al" 
-                  className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.05]"
-                  delay={0.2}
-                />
-                
-                {/* 2. "Jardín de las Delicias" animado con gradiente */}
-                <AnimatedText 
-                  text="Jardín de las Delicias" 
-                  className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600 drop-shadow-sm tracking-tight leading-[1.05] mt-2"
-                  delay={0.8} // Empieza un poco después del título
-                />
-            </div>
-            {/* ------------------------------------- */}
-            
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5, duration: 1 }}
-              className="text-xl md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed"
-            >
-              Un Paraíso por Descubrir ✨
-            </motion.p>
+            {/* --- AQUÍ ESTÁ EL CAMBIO DE TIEMPOS --- */}
+<div className="flex flex-col items-center justify-center">
+    {/* 1. "Bienvenidos al" - Empieza casi de inmediato */}
+    <AnimatedText 
+      text="Bienvenidos al" 
+      className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.05]"
+      delay={0.1} 
+    />
+    
+    {/* 2. "Jardín de las Delicias" - Empieza justo después */}
+    <AnimatedText 
+      text="Jardín de las Delicias" 
+      className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600 drop-shadow-sm tracking-tight leading-[1.05] mt-2"
+      delay={0.2} 
+    />
+</div>
+{/* ------------------------------------- */}
+
+{/* 3. Subtítulo - AHORA ESPERA (delay: 2.5) a que termine de escribirse el título */}
+<motion.p 
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 2.5, duration: 0.8 }} // <--- AUMENTADO A 2.5 SEGUNDOS
+  className="text-xl md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed mt-6"
+>
+  Un Paraíso por Descubrir ✨
+</motion.p>
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -329,13 +330,26 @@ export default function Home() {
           </div>
         </section>
 
-   {/* --- CARRUSEL --- */}
+  {/* --- CARRUSEL --- */}
 {galleryItems.length > 0 && (
-  <section className="py-16 relative z-10">
+  <section className="py-20 relative z-10 bg-slate-50/50"> {/* Agregué un fondo sutil */}
     <div className="max-w-[1400px] mx-auto px-4">
       
-      {/* CAMBIO AQUÍ: Quitamos el div contenedor blanco y aplicamos sombra directa a la imagen */}
-      <div className="relative rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.5)] border border-cyan-500/30 group hover:shadow-[0_0_70px_rgba(6,182,212,0.7)] transition-all duration-500">
+      {/* --- NUEVO TÍTULO AGREGADO --- */}
+      <div className="text-center mb-12 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold uppercase tracking-widest mb-4">
+            <Camera className="h-4 w-4" />
+            <span>Galería Multimedia</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4">
+             Explora la Magia Visual
+          </h2>
+          <div className="w-24 h-1.5 bg-gradient-to-r from-cyan-400 to-emerald-400 mx-auto rounded-full"></div>
+      </div>
+      {/* ----------------------------- */}
+
+      {/* ESTILO DEL CARRUSEL (Mantenemos el estilo cinematográfico que elegimos antes) */}
+      <div className="relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(6,182,212,0.3)] border border-white/20 ring-1 ring-black/5 group hover:shadow-[0_30px_70px_-15px_rgba(6,182,212,0.4)] transition-all duration-500">
           
           <div className="aspect-video md:aspect-[21/9]">
             <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-cyan-600"><LoadingSpinner /></div>}>
@@ -343,17 +357,8 @@ export default function Home() {
             </Suspense>
           </div>
 
-          {/* Degradado oscuro abajo para resaltar textos */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-black/10"></div>
-          
-          <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full pointer-events-none">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm text-cyan-300 font-bold text-xs mb-3 uppercase tracking-wider border border-white/10">
-                  <Camera className="w-3 h-3" /> Galería Oficial
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black text-white mb-2 leading-tight drop-shadow-xl">
-                  Vistas que te dejarán sin aliento
-              </h2>
-          </div>
+          {/* Sutil overlay inferior para unificar */}
+          <div className="absolute inset-0 pointer-events-none border-[6px] border-white/10 rounded-3xl z-20"></div>
       </div>
 
     </div>
