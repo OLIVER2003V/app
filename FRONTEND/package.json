@@ -13,6 +13,7 @@
     "axios": "^1.7.7",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.25",
     "leaflet": "^1.9.4",
     "leaflet-rotate": "^0.2.8",
     "leaflet-routing-machine": "^3.2.12",

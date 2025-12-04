@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { motion } from "framer-motion"; // <--- 1. IMPORTAMOS FRAMER MOTION
 
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { GuidedTour } from "../components/GuidedTour";
@@ -25,6 +26,61 @@ import {
 const HeroCarousel = lazy(() => 
   import("../components/HeroCarousel").then(module => ({ default: module.HeroCarousel }))
 );
+
+// --- COMPONENTE DE ANIMACIÓN DE TEXTO ---
+// Este componente divide el texto en letras y las anima tipo "cortina/escribiendo"
+const AnimatedText = ({ text, className, delay = 0 }) => {
+  // Configuración de la animación del contenedor (la frase completa)
+  const container = {
+    hidden: { opacity: 0 },
+    visible: (i = 1) => ({
+      opacity: 1,
+      transition: { staggerChildren: 0.05, delayChildren: 0.04 * i + delay }, // Controla la velocidad de escritura
+    }),
+  };
+
+  // Configuración de la animación de cada letra
+  const child = {
+    visible: {
+      opacity: 1,
+      y: 0, // Posición final (normal)
+      transition: {
+        type: "spring",
+        damping: 12,
+        stiffness: 100,
+      },
+    },
+    hidden: {
+      opacity: 0,
+      y: 20, // Empieza 20px más abajo (efecto cortina)
+      transition: {
+        type: "spring",
+        damping: 12,
+        stiffness: 100,
+      },
+    },
+  };
+
+  return (
+    <motion.div
+      style={{ overflow: "hidden", display: "flex", flexWrap: "wrap", justifyContent: "center" }}
+      variants={container}
+      initial="hidden"
+      animate="visible"
+      className={className}
+    >
+      {text.split(" ").map((word, index) => (
+        <div key={index} style={{ display: "inline-block", marginRight: "0.25em", whiteSpace: "nowrap" }}> {/* Mantiene palabras juntas */}
+          {Array.from(word).map((letter, idx) => (
+            <motion.span variants={child} key={idx} style={{ display: "inline-block" }}>
+              {letter}
+            </motion.span>
+          ))}
+        </div>
+      ))}
+    </motion.div>
+  );
+};
 
 // --- Funciones de Utilidad ---
 function unwrapResults(data) {
@@ -122,26 +178,53 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* --- HERO SECTION --- */}
-<section className="relative min-h-[90vh] flex flex-col items-center justify-start px-4 sm:px-6 text-center pt-6 md:pt-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-800/80 via-white/90 to-transparent text-slate-900 overflow-hidden">
+        <section className="relative min-h-[90vh] flex flex-col items-center justify-start px-4 sm:px-6 text-center pt-6 md:pt-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-800/80 via-white/90 to-transparent text-slate-900 overflow-hidden">
           
           <div className="max-w-5xl mx-auto space-y-8 animate-fade-in-up relative z-10">
             
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/70 border border-cyan-300 text-cyan-800 text-xs font-bold uppercase tracking-widest shadow-sm backdrop-blur-md">
-  <Trees className="h-4 w-4" /> 
-  <span>Sitio Oficial</span>
-</div>
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/70 border border-cyan-300 text-cyan-800 text-xs font-bold uppercase tracking-widest shadow-sm backdrop-blur-md"
+            >
+              <Trees className="h-4 w-4" /> 
+              <span>Sitio Oficial</span>
+            </motion.div>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.05]">
-              Bienvenidos al  <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600 drop-shadow-sm">
-                Jardín de las Delicias
-              </span>
-            </h1>
+            {/* --- AQUÍ ESTÁ EL CAMBIO PRINCIPAL --- */}
+            <div className="flex flex-col items-center justify-center">
+                {/* 1. "Bienvenidos al" animado en negro */}
+                <AnimatedText 
+                  text="Bienvenidos al" 
+                  className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight leading-[1.05]"
+                  delay={0.2}
+                />
+                
+                {/* 2. "Jardín de las Delicias" animado con gradiente */}
+                <AnimatedText 
+                  text="Jardín de las Delicias" 
+                  className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-emerald-600 drop-shadow-sm tracking-tight leading-[1.05] mt-2"
+                  delay={0.8} // Empieza un poco después del título
+                />
+            </div>
+            {/* ------------------------------------- */}
             
-           <p className="text-xl md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed">
-   Un Paraíso por Descubrir ✨
-</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-10">
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 1 }}
+              className="text-xl md:text-2xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed"
+            >
+              Un Paraíso por Descubrir ✨
+            </motion.p>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.8, duration: 0.8 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-10"
+            >
               <Link 
                 to="/como-llegar"
                 className="group relative w-full sm:w-auto overflow-hidden rounded-xl shadow-lg shadow-cyan-600/20 transition-all hover:-translate-y-1"
@@ -161,7 +244,7 @@ export default function Home() {
                 <Newspaper className="h-5 w-5 text-cyan-600" />
                 Guías y Tips
               </Link>
-            </div>
+            </motion.div>
           </div>
 
           {/* FLECHA ANIMADA CORREGIDA */}
@@ -246,29 +329,36 @@ export default function Home() {
           </div>
         </section>
 
-        {/* --- CARRUSEL --- */}
-        {galleryItems.length > 0 && (
-          <section className="py-16 relative z-10">
-            <div className="max-w-[1400px] mx-auto px-4">
-              <div className="relative rounded-3xl p-3 bg-white shadow-[0_20px_50px_rgba(6,182,212,0.1)] border border-cyan-100">
-                <div className="relative rounded-2xl overflow-hidden bg-slate-100 aspect-video md:aspect-[21/9] group">
-                  <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-cyan-600"><LoadingSpinner /></div>}>
-                    <HeroCarousel items={galleryItems} />
-                  </Suspense>
-                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-900/60 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full pointer-events-none">
-                     <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm mb-2 uppercase tracking-wider">
-                        <Camera className="w-4 h-4" /> Galería
-                    </div>
-                    <h2 className="text-2xl md:text-4xl font-black text-white mb-2 leading-tight drop-shadow-md">
-                        Vistas que te dejarán sin aliento
-                    </h2>
-                  </div>
-                </div>
+   {/* --- CARRUSEL --- */}
+{galleryItems.length > 0 && (
+  <section className="py-16 relative z-10">
+    <div className="max-w-[1400px] mx-auto px-4">
+      
+      {/* CAMBIO AQUÍ: Quitamos el div contenedor blanco y aplicamos sombra directa a la imagen */}
+      <div className="relative rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.5)] border border-cyan-500/30 group hover:shadow-[0_0_70px_rgba(6,182,212,0.7)] transition-all duration-500">
+          
+          <div className="aspect-video md:aspect-[21/9]">
+            <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-cyan-600"><LoadingSpinner /></div>}>
+              <HeroCarousel items={galleryItems} />
+            </Suspense>
+          </div>
+
+          {/* Degradado oscuro abajo para resaltar textos */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-black/10"></div>
+          
+          <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full pointer-events-none">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm text-cyan-300 font-bold text-xs mb-3 uppercase tracking-wider border border-white/10">
+                  <Camera className="w-3 h-3" /> Galería Oficial
               </div>
-            </div>
-          </section>
-        )}
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-2 leading-tight drop-shadow-xl">
+                  Vistas que te dejarán sin aliento
+              </h2>
+          </div>
+      </div>
+
+    </div>
+  </section>
+)}
         
         {/* --- OPINIONES --- */}
         {reviews.length > 0 && (
@@ -319,13 +409,12 @@ export default function Home() {
           </section>
         )}
 
-        {/* --- FOOTER CTA (RECUPERADO) --- */}
-        {/* Aquí es donde están los botones de WhatsApp e Información */}
+        {/* --- FOOTER CTA --- */}
         <section className="py-24 text-center relative overflow-hidden bg-gradient-to-r from-cyan-800 to-slate-900 text-white">
            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/20 to-transparent opacity-40 pointer-events-none"></div>
            <div className="relative max-w-3xl mx-auto px-4 z-10 space-y-8">
              <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
-                 ¿Listo para refrescar tus ideas?
+                  ¿Listo para refrescar tus ideas?
              </h2>
              <p className="text-cyan-100 text-lg md:text-xl mx-auto font-medium leading-relaxed max-w-lg">
                  Únete a nuestro grupo y planifica tu escapada perfecta.
