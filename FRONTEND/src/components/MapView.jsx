@@ -12,66 +12,105 @@ const styles = `
     70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); }
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
   }
-  .glass-panel {
+  
+  /* Tarjeta flotante moderna */
+  .info-pill {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.8);
   }
-  .custom-popup .leaflet-popup-content-wrapper {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
-    padding: 0;
+
+  /* Botones circulares */
+  .action-btn {
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(0,0,0,0.05);
   }
-  .custom-popup .leaflet-popup-tip { background: rgba(255, 255, 255, 0.95); }
+  .action-btn:active { transform: scale(0.9); }
+
+  /* Popup Limpio */
+  .clean-popup .leaflet-popup-content-wrapper {
+    border-radius: 14px; padding: 0; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .clean-popup .leaflet-popup-content { margin: 0; }
+  .clean-popup .leaflet-popup-tip { background: white; }
+
+  /* Etiqueta de texto (Tooltip) */
   .map-label {
-    background-color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.9) !important; /* Fondo blanco para contraste */
     border: 1px solid rgba(0,0,0,0.1) !important;
     border-radius: 6px !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    color: #1e293b !important;
-    font-weight: 700 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
     font-size: 11px !important;
     padding: 2px 6px !important;
     white-space: nowrap !important;
-    margin-top: 2px !important;
+    margin-top: 4px !important;
   }
   .map-label:before { display: none; }
 `;
 
-// --- ICONOS ---
+// --- 1. ICONO DE USUARIO (GPS) ---
 const createUserIcon = () => L.divIcon({
   className: 'bg-transparent border-none',
   html: `
     <div style="position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
       <style>${styles}</style>
-      <div style="width: 16px; height: 16px; background-color: #06b6d4; border: 2px solid white; border-radius: 50%; animation: user-pulse 2s infinite; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>
+      <div style="width: 14px; height: 14px; background-color: #06b6d4; border: 3px solid white; border-radius: 50%; animation: user-pulse 2s infinite; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
     </div>`,
   iconSize: [24, 24], iconAnchor: [12, 12],
 });
 
+// --- 2. ICONO DE DESTINO (MEJORADO: CON FONDO BLANCO) ---
+// Ahora tiene un círculo blanco detrás para resaltar sobre el mapa de Google
 const createDestinationIcon = (isSelected) => L.divIcon({
   className: 'bg-transparent border-none',
   html: `
-    <div style="position: relative; width: 40px; height: 40px; display: flex; justify-content: center; transition: transform 0.3s ease; ${isSelected ? 'transform scale-125' : ''}">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 4px 4px rgba(0,0,0,0.25));">
-        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="${isSelected ? '#f97316' : '#10b981'}"/>
+    <div style="
+        position: relative; 
+        width: 48px; 
+        height: 48px; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center;
+        transition: transform 0.3s ease; 
+        ${isSelected ? 'transform scale-110 -translate-y-2' : ''}
+    ">
+      <div style="
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        top: 2px;
+      "></div>
+
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));">
+        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="${isSelected ? '#f97316' : '#059669'}"/>
         <circle cx="12" cy="9" r="3.5" fill="white"/>
       </svg>
     </div>`,
-  iconSize: [40, 40], iconAnchor: [20, 36], popupAnchor: [0, -38]
+  iconSize: [48, 48], iconAnchor: [24, 42], popupAnchor: [0, -40]
 });
 
 // --- ICONOS SVG ---
 const SvgIcons = {
-    North: () => <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 9H9L12 2Z" fill="#EF4444"/><path d="M12 22L9 15H15L12 22Z" fill="#94A3B8"/></svg>,
+    North: () => <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 9H9L12 2Z" fill="#EF4444"/><path d="M12 22L9 15H15L12 22Z" fill="#94A3B8"/></svg>,
     Center: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>,
-    Expand: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>,
-    Collapse: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 10L4 15m0 0v-4m0 4h4m5-5l5 5m0 0v-4m0 4h-4M9 14l-5-5m0 0h4m-4 0v4m16-4v4m0-4h-4m-5 5l5-5" /></svg>,
+    Maximize: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>,
+    // --- ICONO CORREGIDO: MINIMIZAR (Flechas hacia adentro) ---
+    Minimize: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" /></svg>,
     WifiOff: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M4.5 16.5c-1.5-1.5-2.25-3.5-2.25-5.625 0-1.5.56-2.905 1.5-4.075M21 12c0 2.125-.75 4.125-2.25 5.625M16.5 7.5c1.1.6 1.95 1.65 2.25 2.925M9 9c-.6 1.1-.6 2.35 0 3.45" /></svg>,
-    ChevronUp: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>,
-    ChevronDown: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+    Car: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
 };
 
 const CompassController = ({ onRotate }) => {
@@ -85,15 +124,12 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
   const [routeStats, setRouteStats] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  
-  // Estados de control
   const [hasCenteredRoute, setHasCenteredRoute] = useState(false);
-  const [isPanelOpen, setIsPanelOpen] = useState(true); // Panel empieza abierto
 
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
 
-  // Conexión y GPS
+  // --- LÓGICA (Sin cambios) ---
   useEffect(() => {
       const handleStatus = () => setIsOffline(!navigator.onLine);
       window.addEventListener('online', handleStatus);
@@ -111,32 +147,22 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
     return () => navigator.geolocation.clearWatch(watcher);
   }, []);
 
-  // Reset del centrado si cambiamos de destino
-  useEffect(() => {
-      setHasCenteredRoute(false);
-      setIsPanelOpen(true); // Abrir panel al seleccionar nuevo lugar
-  }, [selectedPoint?.id]);
+  useEffect(() => { setHasCenteredRoute(false); }, [selectedPoint?.id]);
 
-  // Centrado Inteligente (Solo UNA vez cuando hay ruta)
   useEffect(() => {
     if (mapRef.current && selectedPoint && userPos && !hasCenteredRoute) {
-        // Tenemos usuario y destino -> Encuadrar toda la ruta
         const bounds = L.latLngBounds([userPos, [selectedPoint.lat, selectedPoint.lng]]);
-        mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        mapRef.current.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
         setHasCenteredRoute(true);
     } else if (mapRef.current && selectedPoint && !userPos) {
-        // Solo tenemos destino (modo ver)
         mapRef.current.flyTo([selectedPoint.lat, selectedPoint.lng], 15);
     }
   }, [selectedPoint, userPos, hasCenteredRoute]);
 
   const toggleFullscreen = () => {
     if (!mapContainerRef.current) return;
-    if (!document.fullscreenElement) {
-        mapContainerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(console.error);
-    } else {
-        document.exitFullscreen().then(() => setIsFullscreen(false));
-    }
+    if (!document.fullscreenElement) mapContainerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(console.error);
+    else document.exitFullscreen().then(() => setIsFullscreen(false));
   };
 
   const handleResetNorth = () => mapRef.current?.setBearing(0);
@@ -151,18 +177,21 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
   return (
     <div ref={mapContainerRef} className={`relative w-full bg-slate-100 overflow-hidden rounded-3xl shadow-xl transition-all duration-300 ${isFullscreen ? 'fixed inset-0 h-screen z-[9999] rounded-none' : 'h-full'}`}>
       
+      {/* 1. AVISO OFFLINE */}
       {isOffline && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] glass-panel px-4 py-2 rounded-full flex items-center gap-2 text-amber-600 animate-in fade-in slide-in-from-top-4">
-              <SvgIcons.WifiOff /> <span className="text-xs font-bold">Sin Conexión</span>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] info-pill px-4 py-2 flex items-center gap-2 text-amber-600 animate-pulse">
+              <SvgIcons.WifiOff /> <span className="text-xs font-bold uppercase">Sin Conexión</span>
           </div>
       )}
 
-      <div className="absolute top-4 right-3 flex flex-col gap-3 z-[400]">
-        <button onClick={handleResetNorth} className="glass-panel w-10 h-10 rounded-full flex items-center justify-center shadow-lg" style={{ transform: `rotate(${-mapBearing}deg)` }}><SvgIcons.North /></button>
-        <button onClick={handleCenterUser} disabled={!userPos} className={`glass-panel w-10 h-10 rounded-full flex items-center justify-center text-cyan-600 shadow-lg ${!userPos && 'opacity-50'}`}><SvgIcons.Center /></button>
-        <button onClick={toggleFullscreen} className="glass-panel w-10 h-10 rounded-full flex items-center justify-center text-slate-600 shadow-lg">{isFullscreen ? <SvgIcons.Collapse /> : <SvgIcons.Expand />}</button>
+      {/* 2. BRÚJULA */}
+      <div className="absolute top-4 right-3 z-[400]">
+        <button onClick={handleResetNorth} className="action-btn w-10 h-10 text-slate-700" style={{ transform: `rotate(${-mapBearing}deg)` }}>
+            <SvgIcons.North />
+        </button>
       </div>
 
+      {/* 3. MAPA */}
       <MapContainer
         center={[-17.7833, -63.1821]}
         zoom={13}
@@ -182,13 +211,14 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
             const isSelected = selectedPoint?.id === p.id;
             return (
                 <Marker key={p.id} position={[p.lat, p.lng]} icon={createDestinationIcon(isSelected)} eventHandlers={{ click: () => onSelectPoint(p) }} zIndexOffset={isSelected ? 1000 : 0}>
-                    <Popup className="custom-popup">
-                        <div className="p-3 text-center min-w-[150px]">
-                            <h3 className="font-bold text-slate-800 text-base mb-1">{p.name}</h3>
-                            <span className="inline-block px-2 py-0.5 bg-cyan-100 text-cyan-800 text-[10px] font-bold uppercase rounded-full">{p.category}</span>
+                    <Popup className="clean-popup">
+                        <div className="p-3 bg-white min-w-[140px] text-center">
+                            <h3 className="font-bold text-slate-800 text-sm">{p.name}</h3>
+                            <span className="text-[10px] text-cyan-600 font-bold uppercase tracking-wide">{p.category}</span>
                         </div>
                     </Popup>
-                    <Tooltip permanent direction="bottom" offset={[0, 10]} opacity={1} className="map-label">{p.name}</Tooltip>
+                    {/* Tooltip con fondo blanco */}
+                    <Tooltip permanent direction="bottom" offset={[0, 5]} opacity={1} className="map-label">{p.name}</Tooltip>
                 </Marker>
             );
         })}
@@ -198,42 +228,38 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
         )}
       </MapContainer>
 
-      {/* --- PANEL DESPLEGABLE (BOTTOM SHEET) --- */}
-      <div 
-        className={`absolute bottom-0 left-0 right-0 z-[1000] glass-panel rounded-t-3xl transition-transform duration-500 ease-in-out
-        ${selectedPoint ? 'translate-y-0' : 'translate-y-[110%]'}`}
-      >
-          {/* Handle para arrastrar/clickear */}
-          <div 
-            className="w-full flex items-center justify-center py-2 cursor-pointer active:opacity-70"
-            onClick={() => setIsPanelOpen(!isPanelOpen)}
-          >
-             {isPanelOpen ? <div className="text-slate-400"><SvgIcons.ChevronDown /></div> : <div className="text-slate-400"><SvgIcons.ChevronUp /></div>}
-          </div>
+      {/* 3. BOTONES ACCIÓN (GPS + FULLSCREEN) */}
+      <div className="absolute bottom-36 right-4 z-[400] flex flex-col gap-3">
+        <button onClick={handleCenterUser} disabled={!userPos} className={`action-btn w-12 h-12 text-blue-600 ${!userPos && 'opacity-50 grayscale'}`}>
+            <SvgIcons.Center />
+        </button>
+        <button onClick={toggleFullscreen} className="action-btn w-12 h-12 text-slate-700">
+            {isFullscreen ? <SvgIcons.Minimize /> : <SvgIcons.Maximize />}
+        </button>
+      </div>
 
-          {/* Contenido del panel */}
-          <div className={`px-6 pb-6 transition-all duration-500 ${isPanelOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-              <div className="flex justify-between items-center mb-4">
-                  <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Destino</span>
-                      <span className="text-lg font-bold text-slate-900 line-clamp-1">{selectedPoint?.name}</span>
-                  </div>
+      {/* 4. TARJETA FLOTANTE */}
+      <div className={`absolute bottom-6 left-4 right-4 z-[1000] transition-all duration-500 ease-out transform ${selectedPoint ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
+          <div className="info-pill p-4 flex items-center justify-between">
+              <div className="flex-1 pr-4 min-w-0">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-0.5">Destino</span>
+                  <h3 className="text-base font-bold text-slate-900 truncate leading-tight">{selectedPoint?.name}</h3>
               </div>
-
               {routeStats ? (
-                  <div className="flex gap-4">
-                      <div className="flex-1 bg-cyan-50 rounded-xl p-3 flex flex-col items-center">
-                          <span className="text-2xl font-black text-cyan-600">{formatTime(routeStats.time)}</span>
-                          <span className="text-[10px] text-cyan-800 font-bold uppercase">Tiempo</span>
+                  <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                      <div className="text-right">
+                          <div className="text-xl font-black text-cyan-600 leading-none">{formatTime(routeStats.time)}</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{formatDistance(routeStats.distance)}</div>
                       </div>
-                      <div className="flex-1 bg-slate-50 rounded-xl p-3 flex flex-col items-center">
-                          <span className="text-2xl font-black text-slate-700">{formatDistance(routeStats.distance)}</span>
-                          <span className="text-[10px] text-slate-500 font-bold uppercase">Distancia</span>
+                      <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-700">
+                          <SvgIcons.Car />
                       </div>
                   </div>
               ) : (
-                  <div className="text-center py-2 text-slate-500 text-sm font-medium animate-pulse">
-                      {userPos ? "Calculando ruta óptima..." : "Esperando señal GPS..."}
+                  <div className="flex items-center gap-2 pl-4 border-l border-slate-200">
+                      <div className="text-xs text-slate-400 italic text-right">
+                          {userPos ? "Calculando..." : "Sin GPS"}
+                      </div>
                   </div>
               )}
           </div>
