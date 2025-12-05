@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, LayersControl, useMapEvents, Tooltip } from 'react-leaflet';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, LayersControl, useMapEvents, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-rotate'; 
@@ -13,7 +13,6 @@ const styles = `
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
   }
   
-  /* Tarjeta flotante moderna */
   .info-pill {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
@@ -23,7 +22,6 @@ const styles = `
     border: 1px solid rgba(255, 255, 255, 0.8);
   }
 
-  /* Botones circulares */
   .action-btn {
     background: white;
     border-radius: 50%;
@@ -34,26 +32,19 @@ const styles = `
   }
   .action-btn:active { transform: scale(0.9); }
 
-  /* Popup Limpio */
-  .clean-popup .leaflet-popup-content-wrapper {
-    border-radius: 14px; padding: 0; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  }
-  .clean-popup .leaflet-popup-content { margin: 0; }
-  .clean-popup .leaflet-popup-tip { background: white; }
-
-  /* Etiqueta de texto (Tooltip) */
+  /* Etiqueta de texto (Tooltip) mejorada */
   .map-label {
-    background: rgba(255, 255, 255, 0.9) !important; /* Fondo blanco para contraste */
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    border-radius: 6px !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
     color: #0f172a !important;
     font-weight: 800 !important;
-    font-size: 11px !important;
-    padding: 2px 6px !important;
+    font-size: 12px !important;
+    padding: 4px 8px !important;
     white-space: nowrap !important;
-    margin-top: 4px !important;
+    margin-top: 6px !important;
+    transition: opacity 0.2s;
   }
   .map-label:before { display: none; }
 `;
@@ -69,37 +60,24 @@ const createUserIcon = () => L.divIcon({
   iconSize: [24, 24], iconAnchor: [12, 12],
 });
 
-// --- 2. ICONO DE DESTINO (MEJORADO: CON FONDO BLANCO) ---
-// Ahora tiene un círculo blanco detrás para resaltar sobre el mapa de Google
+// --- 2. ICONO DE DESTINO ---
 const createDestinationIcon = (isSelected) => L.divIcon({
   className: 'bg-transparent border-none',
   html: `
     <div style="
         position: relative; 
-        width: 48px; 
-        height: 48px; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center;
-        transition: transform 0.3s ease; 
-        ${isSelected ? 'transform scale-110 -translate-y-2' : ''}
+        width: 48px; height: 48px; 
+        display: flex; justify-content: center; align-items: center;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        ${isSelected ? 'transform scale-125 -translate-y-2' : ''}
     ">
-      <div style="
-        position: absolute;
-        width: 36px;
-        height: 36px;
-        background: white;
-        border-radius: 50%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        top: 2px;
-      "></div>
-
+      <div style="position: absolute; width: 36px; height: 36px; background: white; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); top: 2px;"></div>
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));">
         <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="${isSelected ? '#f97316' : '#059669'}"/>
         <circle cx="12" cy="9" r="3.5" fill="white"/>
       </svg>
     </div>`,
-  iconSize: [48, 48], iconAnchor: [24, 42], popupAnchor: [0, -40]
+  iconSize: [48, 48], iconAnchor: [24, 42],
 });
 
 // --- ICONOS SVG ---
@@ -107,7 +85,6 @@ const SvgIcons = {
     North: () => <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 9H9L12 2Z" fill="#EF4444"/><path d="M12 22L9 15H15L12 22Z" fill="#94A3B8"/></svg>,
     Center: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>,
     Maximize: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>,
-    // --- ICONO CORREGIDO: MINIMIZAR (Flechas hacia adentro) ---
     Minimize: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" /></svg>,
     WifiOff: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M4.5 16.5c-1.5-1.5-2.25-3.5-2.25-5.625 0-1.5.56-2.905 1.5-4.075M21 12c0 2.125-.75 4.125-2.25 5.625M16.5 7.5c1.1.6 1.95 1.65 2.25 2.925M9 9c-.6 1.1-.6 2.35 0 3.45" /></svg>,
     Car: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
@@ -129,7 +106,7 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
 
-  // --- LÓGICA (Sin cambios) ---
+  // --- LÓGICA ---
   useEffect(() => {
       const handleStatus = () => setIsOffline(!navigator.onLine);
       window.addEventListener('online', handleStatus);
@@ -177,27 +154,30 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
   return (
     <div ref={mapContainerRef} className={`relative w-full bg-slate-100 overflow-hidden rounded-3xl shadow-xl transition-all duration-300 ${isFullscreen ? 'fixed inset-0 h-screen z-[9999] rounded-none' : 'h-full'}`}>
       
-      {/* 1. AVISO OFFLINE */}
       {isOffline && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] info-pill px-4 py-2 flex items-center gap-2 text-amber-600 animate-pulse">
               <SvgIcons.WifiOff /> <span className="text-xs font-bold uppercase">Sin Conexión</span>
           </div>
       )}
 
-      {/* 2. BRÚJULA */}
       <div className="absolute top-4 right-3 z-[400]">
         <button onClick={handleResetNorth} className="action-btn w-10 h-10 text-slate-700" style={{ transform: `rotate(${-mapBearing}deg)` }}>
             <SvgIcons.North />
         </button>
       </div>
 
-      {/* 3. MAPA */}
       <MapContainer
         center={[-17.7833, -63.1821]}
         zoom={13}
         className="h-full w-full z-0"
         ref={mapRef}
-        rotate={true} touchRotate={true} rotateControl={false} zoomControl={false} attributionControl={false}
+        rotate={true} 
+        touchRotate={true} 
+        rotateControl={false} 
+        zoomControl={false} 
+        attributionControl={false}
+        // SOLUCIÓN BUG CORTES: Aumentamos padding del renderer para que dibuje más allá de la pantalla
+        renderer={L.canvas({ padding: 0.5 })} 
       >
         <CompassController onRotate={setMapBearing} />
         <LayersControl position="topleft">
@@ -210,15 +190,24 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
         {points.map((p) => {
             const isSelected = selectedPoint?.id === p.id;
             return (
-                <Marker key={p.id} position={[p.lat, p.lng]} icon={createDestinationIcon(isSelected)} eventHandlers={{ click: () => onSelectPoint(p) }} zIndexOffset={isSelected ? 1000 : 0}>
-                    <Popup className="clean-popup">
-                        <div className="p-3 bg-white min-w-[140px] text-center">
-                            <h3 className="font-bold text-slate-800 text-sm">{p.name}</h3>
-                            <span className="text-[10px] text-cyan-600 font-bold uppercase tracking-wide">{p.category}</span>
-                        </div>
-                    </Popup>
-                    {/* Tooltip con fondo blanco */}
-                    <Tooltip permanent direction="bottom" offset={[0, 5]} opacity={1} className="map-label">{p.name}</Tooltip>
+                <Marker 
+                    key={p.id} 
+                    position={[p.lat, p.lng]} 
+                    icon={createDestinationIcon(isSelected)} 
+                    // SOLUCIÓN: Quitamos Popup, solo selecciona y traza ruta
+                    eventHandlers={{ click: () => onSelectPoint(p) }} 
+                    zIndexOffset={isSelected ? 1000 : 0}
+                >
+                    {/* Tooltip Permanente. Si está seleccionado, ocultamos el título para que no estorbe (opcional, o dejarlo siempre) */}
+                    <Tooltip 
+                        permanent 
+                        direction="bottom" 
+                        offset={[0, 5]} 
+                        opacity={1} 
+                        className="map-label"
+                    >
+                        {p.name}
+                    </Tooltip>
                 </Marker>
             );
         })}
@@ -228,7 +217,7 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
         )}
       </MapContainer>
 
-      {/* 3. BOTONES ACCIÓN (GPS + FULLSCREEN) */}
+      {/* BOTONES ACCIÓN */}
       <div className="absolute bottom-36 right-4 z-[400] flex flex-col gap-3">
         <button onClick={handleCenterUser} disabled={!userPos} className={`action-btn w-12 h-12 text-blue-600 ${!userPos && 'opacity-50 grayscale'}`}>
             <SvgIcons.Center />
@@ -238,7 +227,7 @@ export default function MapView({ points, selectedPoint, onSelectPoint }) {
         </button>
       </div>
 
-      {/* 4. TARJETA FLOTANTE */}
+      {/* TARJETA INFO */}
       <div className={`absolute bottom-6 left-4 right-4 z-[1000] transition-all duration-500 ease-out transform ${selectedPoint ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
           <div className="info-pill p-4 flex items-center justify-between">
               <div className="flex-1 pr-4 min-w-0">
