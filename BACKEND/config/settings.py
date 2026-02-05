@@ -24,7 +24,7 @@ DEBUG = "RENDER" not in os.environ  # En Render, DEBUG=False
 # -----------------------------
 # Hosts / CORS / CSRF
 # -----------------------------
-ALLOWED_HOSTS = ["jardinbackend-a5p0.onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["jardinbackend-a5p0.onrender.com", "localhost", "127.0.0.1", "grieving-elene-jardindelasdelicias-354ed852.koyeb.app"]
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -45,6 +45,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://jardin-frontend.onrender.com",
     "https://jardindelasdelicias.com",        # TU NUEVO DOMINIO (sin www)
     "https://www.jardindelasdelicias.com",
+    "https://grieving-elene-jardindelasdelicias-354ed852.koyeb.app",
 ]
 if FRONTEND_URL.startswith("http://"):
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
