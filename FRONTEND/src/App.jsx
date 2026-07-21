@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@context/AuthContext";
 import ProtectedRoute from "@components/ProtectedRoute";
 import Layout from "@components/Layout";
@@ -10,6 +11,7 @@ import usePageTracking from "./hooks/usePageTracking";
 import Login from "@pages/Login";
 import Places from "@pages/Places";
 import PlaceDetail from "@pages/PlaceDetail";
+import Favorites from "@pages/Favorites";
 import Events from "@pages/Events";
 import Dashboard from "@/pages/Dashboard/Dashboard";
 import Home from "./pages/Home";
@@ -23,7 +25,10 @@ import ComoLlegar from "./pages/ComoLlegar";
 import Informacion from "./pages/Informacion";
 import CreateEvent from "./pages/CreateEvent";
 import GalleryAdmin from "./pages/GalleryAdmin";
+import UsersAdmin from "./pages/UsersAdmin";
+import SiteSettingsAdmin from "./pages/SiteSettingsAdmin";
 import GASetup from "./components/GASetup";
+import NotFound from "./pages/NotFound";
 
 
 // 👇 CRUD unificado de contactos
@@ -37,6 +42,7 @@ export default function App() {
 
 
   return (
+    <HelmetProvider>
     <AuthProvider>
       <BrowserRouter>
       <GASetup />
@@ -47,6 +53,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/places" element={<Places />} />
             <Route path="/places/:slug" element={<PlaceDetail />} />
+            <Route path="/favoritos" element={<Favorites />} />
             <Route path="/events" element={<Events />} />
             <Route path="/posts" element={<Posts />} />
             <Route path="/posts/:id" element={<PostDetail />} />
@@ -141,15 +148,29 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-          </Route>
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <UsersAdmin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/site-info"
+              element={
+                <ProtectedRoute roles={["admin", "editor"]}>
+                  <SiteSettingsAdmin />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 404 */}
-          <Route
-            path="*"
-            element={<div style={{ padding: 20 }}>Página no encontrada</div>}
-          />
+            {/* 404: dentro del Layout para que conserve el Navbar */}
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </HelmetProvider>
   );
 }

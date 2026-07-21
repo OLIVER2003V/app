@@ -1,6 +1,150 @@
 @import "tailwindcss";
 
+/* Tema de marca. Antes vivía en tailwind.config.js (formato de Tailwind 3),
+   pero este proyecto usa Tailwind 4, que ya no lee ese archivo sin un
+   "@config" explícito que nunca se agregó — o sea que Montserrat y esta
+   paleta nunca se estaban aplicando de verdad; el sitio corría con la
+   tipografía por defecto del sistema. Los radios (rounded-lg/md/sm) del
+   config viejo NO se migraron a propósito: redefinirlos cambiaría la forma
+   de "rounded-lg/md/sm" en todo el sitio, que hoy ya se ve diseñado contra
+   los valores por defecto de Tailwind. */
+@theme {
+  --font-sans: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Paleta primaria (verde eco) */
+  --color-primary: #2e7d32;
+  --color-primary-100: #e8f5e9;
+  --color-primary-200: #a5d6a7;
+  --color-primary-600: #1b5e20;
+
+  /* Acentos */
+  --color-accent: #ff8a00;
+  --color-accent-600: #ef6c00;
+  --color-accent-blue: #60a5fa;
+  --color-accent-violet: #a78bfa;
+  --color-accent-green: #34d399;
+  --color-accent-amber: #fbbf24;
+  --color-accent-red: #f87171;
+
+  /* Colores por categoría de lugar */
+  --color-category-mirador: #8e44ad;
+  --color-category-cascada: #3498db;
+  --color-category-ruta: #e67e22;
+  --color-category-gastronomia: #e74c3c;
+  --color-category-hospedaje: #1abc9c;
+  --color-category-otro: #7f8c8d;
+
+  /* Tema oscuro (admin) */
+  --color-dark-bg: #0b1220;
+  --color-dark-panel: #0f172a;
+  --color-dark-panel2: #111827;
+  --color-dark-border: #243047;
+  --color-dark-surface: #141518;
+
+  /* Texto (tema oscuro) */
+  --color-text: #f5f7fa;
+  --color-text-light: #e5e7eb;
+  --color-text-dim: #9ca3af;
+  --color-text-muted: #9aa0a6;
+
+  /* Tema claro (Home) */
+  --color-background: #f7fbf8;
+  --color-alt-bg: #e8f5e9;
+
+  /* Borde translúcido reutilizable */
+  --color-border: #ffffff18;
+
+  /* Sombras nombradas */
+  --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.07);
+  --shadow-focus-ring: 0 0 0 3px rgba(46,125,50,.3);
+  --shadow-admin: 0 10px 30px rgba(3, 7, 18, 0.45);
+
+  /* Degradado nombrado para fondos de admin */
+  --background-image-admin-gradient: radial-gradient(1200px 800px at 10% -10%, #1e293b 0%, transparent 50%), radial-gradient(900px 600px at 110% 10%, #3730a3 0%, transparent 50%);
+}
+
 /* Oculta el contenedor de UI fantasma de leaflet-routing-machine */
 .leaflet-routing-container {
   display: none !important;
+}
+
+/* Permite scroll horizontal (ej. chips de navegación rápida) sin mostrar
+   la barra de scroll nativa, que se ve fuera de lugar sobre fondos oscuros. */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
+}
+
+/* --- MapView.jsx: controles y pines del mapa ---
+   Antes estas reglas vivían en un <style> inyectado dentro del HTML del
+   ícono del usuario (createUserIcon en MapView.jsx), así que solo existían
+   en la página si Leaflet llegaba a renderizar ese marcador — es decir, si
+   el navegador tenía permiso de geolocalización. Sin GPS, los botones y
+   tooltips del mapa quedaban sin estilos. Viven acá para que apliquen
+   siempre. */
+@keyframes user-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+}
+
+.map-info-pill {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.map-action-btn {
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.map-action-btn:active {
+  transform: scale(0.9);
+}
+
+/* Celda dentro del panel de controles agrupado (zoom, ubicación, pantalla
+   completa): antes cada botón era su propio círculo flotante por separado,
+   lo que se sentía como una "torre" de botones sobre el mapa. */
+.map-control-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.map-control-cell:hover {
+  background: #f8fafc;
+}
+.map-control-cell:active {
+  transform: scale(0.92);
+}
+
+.map-label {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  white-space: nowrap !important;
+  margin-top: 6px !important;
+  transition: opacity 0.2s;
+}
+.map-label:before {
+  display: none;
 }

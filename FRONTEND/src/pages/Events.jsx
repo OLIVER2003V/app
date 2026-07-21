@@ -3,8 +3,10 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, addDays, subDays } from 'date-fns';
 import es from 'date-fns/locale/es';
 import Modal from 'react-modal';
-import { X, Calendar as CalendarIcon, Clock, AlignLeft } from 'lucide-react'; // Usamos Lucide para iconos
+import { X, Calendar as CalendarIcon, Clock, AlignLeft, MessageCircle } from 'lucide-react'; // Usamos Lucide para iconos
+import { useTranslation } from 'react-i18next';
 import api from '../lib/api';
+import Seo from '../components/Seo';
 
 // Estilos base de la librería
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -14,7 +16,12 @@ const locales = { 'es': es };
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // Lunes
+  // Antes ignoraba la fecha que le pasaba el calendario y siempre devolvía
+  // el inicio de ESTA semana (la de hoy), sin importar qué mes/fecha se
+  // estuviera dibujando. Eso corrompía el cálculo de filas del mes entero,
+  // haciendo que eventos de meses lejanos (nov/dic/ene) se amontonaran en
+  // la celda equivocada de julio. Tiene que respetar el parámetro `date`.
+  startOfWeek: (date) => startOfWeek(date, { weekStartsOn: 1 }), // Lunes
   getDay,
   locales,
 });
@@ -74,8 +81,11 @@ const generateHolidaysRange = () => {
 Modal.setAppElement('#root');
 
 export default function Events() {
+  const { t } = useTranslation();
   const [allEvents, setAllEvents] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -105,12 +115,22 @@ export default function Events() {
         const now = new Date();
         // Reseteamos horas para comparar solo fecha
         now.setHours(0, 0, 0, 0);
-        
+
         const future = combined
           .filter(e => e.start >= now)
           .slice(0, 6); // Mostrar los próximos 6
-        
+
         setUpcomingEvents(future);
+
+        // 5. Historial: solo eventos reales (no feriados) que ya pasaron,
+        // más recientes primero — para que el evento no desaparezca del
+        // sitio sin más al vencer, sino que quede como registro.
+        const past = apiEvents
+          .filter(e => e.type === 'event' && e.start < now)
+          .sort((a, b) => b.start - a.start)
+          .slice(0, 6);
+
+        setPastEvents(past);
 
       } catch (err) {
         console.error(err);
@@ -142,18 +162,23 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-      
+      <Seo
+        title="Eventos y Actividades"
+        description="Calendario de eventos, ferias y actividades culturales en Jardín de las Delicias, El Torno."
+        path="/events"
+      />
+
       {/* --- HEADER --- */}
       <header className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 text-center">
           <span className="inline-block px-3 py-1 mb-3 text-xs font-bold tracking-wider text-emerald-600 uppercase bg-emerald-100 rounded-full">
-            Agenda & Cultura
+            {t('events.badge')}
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-3">
-            Calendario de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-500">Actividades</span>
+            {t('events.title_pre')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-500">{t('events.title_accent')}</span>
           </h1>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-            Mantente al día con los eventos comunitarios y feriados oficiales en el Jardín de las Delicias.
+            {t('events.subtitle')}
           </p>
         </div>
       </header>
@@ -165,26 +190,42 @@ export default function Events() {
           <aside className="lg:sticky lg:top-8 space-y-6">
             
             <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-              <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
+              <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-emerald-500" /> 
-                  Próximos Eventos
+                  <CalendarIcon className="h-5 w-5 text-emerald-500" />
+                  {showHistory ? 'Historial' : 'Próximos Eventos'}
                 </h2>
+                <div className="flex rounded-full bg-slate-200/70 p-0.5 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setShowHistory(false)}
+                    className={`px-2.5 py-1 rounded-full transition-colors ${!showHistory ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Próximos
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowHistory(true)}
+                    className={`px-2.5 py-1 rounded-full transition-colors ${showHistory ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Historial
+                  </button>
+                </div>
               </div>
-              
+
               <div className="p-4 space-y-3">
                 {loading ? (
                   <div className="text-center py-8 text-slate-400">Cargando agenda...</div>
-                ) : upcomingEvents.length > 0 ? (
-                  upcomingEvents.map((evt, idx) => (
-                    <div 
+                ) : (showHistory ? pastEvents : upcomingEvents).length > 0 ? (
+                  (showHistory ? pastEvents : upcomingEvents).map((evt, idx) => (
+                    <div
                       key={idx}
                       onClick={() => setSelectedEvent(evt)}
-                      className="group flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                      className={`group flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-200 ${showHistory ? 'opacity-80' : ''}`}
                     >
                       {/* Fecha Badge */}
                       <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white shadow-md
-                        ${evt.type === 'holiday' ? 'bg-red-500' : 'bg-emerald-500'}`}>
+                        ${showHistory ? 'bg-slate-400' : evt.type === 'holiday' ? 'bg-red-500' : 'bg-emerald-500'}`}>
                         <span className="text-[10px] uppercase font-bold leading-none opacity-80">
                           {format(evt.start, 'MMM', { locale: es })}
                         </span>
@@ -192,7 +233,7 @@ export default function Events() {
                           {format(evt.start, 'd')}
                         </span>
                       </div>
-                      
+
                       {/* Info */}
                       <div className="flex-1 min-w-0 pt-1">
                         <h3 className="font-bold text-slate-800 text-sm truncate group-hover:text-emerald-600 transition-colors">
@@ -206,7 +247,9 @@ export default function Events() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-slate-500 text-sm py-4">No hay eventos próximos.</p>
+                  <p className="text-center text-slate-500 text-sm py-4">
+                    {showHistory ? 'Todavía no hay eventos pasados.' : 'No hay eventos próximos.'}
+                  </p>
                 )}
               </div>
             </div>
@@ -274,24 +317,51 @@ export default function Events() {
         overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
       >
         {selectedEvent && (
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                
-                {/* Header Modal */}
-                <div className={`p-6 text-white relative ${selectedEvent.type === 'holiday' ? 'bg-red-500' : 'bg-emerald-500'}`}>
-                    <button 
-                        onClick={() => setSelectedEvent(null)}
-                        className="absolute top-4 right-4 p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors text-white"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
-                    <span className="text-xs font-bold uppercase tracking-wider bg-black/20 px-2 py-1 rounded inline-block mb-2">
-                        {selectedEvent.type === 'holiday' ? 'Feriado' : 'Evento'}
-                    </span>
-                    <h2 className="text-2xl font-black leading-tight">{selectedEvent.title}</h2>
-                </div>
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+
+                {/* Header Modal: foto del evento completa (sin recortar, son
+                    afiches con texto propio pegado a los bordes) si hay, si
+                    no el bloque de color de siempre. El título vive siempre
+                    en la franja de abajo, nunca superpuesto a la imagen, así
+                    no depende del contraste de la foto ni se corta. */}
+                {selectedEvent.image ? (
+                    <div className="relative flex max-h-64 shrink-0 items-center justify-center bg-slate-900">
+                        <img src={selectedEvent.image} alt={selectedEvent.title} className="max-h-64 w-full object-contain" />
+                        <button
+                            onClick={() => setSelectedEvent(null)}
+                            className="absolute top-4 right-4 p-1 rounded-full bg-black/40 hover:bg-black/60 transition-colors text-white"
+                            aria-label="Cerrar"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                    </div>
+                ) : (
+                    <div className={`p-6 text-white relative shrink-0 ${selectedEvent.type === 'holiday' ? 'bg-red-500' : 'bg-emerald-500'}`}>
+                        <button
+                            onClick={() => setSelectedEvent(null)}
+                            className="absolute top-4 right-4 p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors text-white"
+                            aria-label="Cerrar"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                        <span className="text-xs font-bold uppercase tracking-wider bg-black/20 px-2 py-1 rounded inline-block mb-2">
+                            {selectedEvent.type === 'holiday' ? 'Feriado' : selectedEvent.start < new Date() ? 'Evento finalizado' : 'Evento'}
+                        </span>
+                        <h2 className="text-2xl font-black leading-tight">{selectedEvent.title}</h2>
+                    </div>
+                )}
 
                 {/* Body Modal */}
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 overflow-y-auto">
+                    {selectedEvent.image && (
+                        <div>
+                            <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded inline-block mb-2 text-white ${selectedEvent.type === 'holiday' ? 'bg-red-500' : 'bg-emerald-500'}`}>
+                                {selectedEvent.type === 'holiday' ? 'Feriado' : selectedEvent.start < new Date() ? 'Evento finalizado' : 'Evento'}
+                            </span>
+                            <h2 className="text-2xl font-black leading-tight text-slate-900">{selectedEvent.title}</h2>
+                        </div>
+                    )}
+
                     <div className="flex items-start gap-3">
                         <CalendarIcon className="h-5 w-5 text-slate-400 mt-0.5" />
                         <div>
@@ -326,9 +396,20 @@ export default function Events() {
                         </div>
                     )}
 
-                    <button 
+                    {selectedEvent.whatsapp_url && (
+                        <a
+                            href={selectedEvent.whatsapp_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex w-full items-center justify-center gap-2 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-colors"
+                        >
+                            <MessageCircle className="h-5 w-5" /> Consultar por WhatsApp
+                        </a>
+                    )}
+
+                    <button
                         onClick={() => setSelectedEvent(null)}
-                        className="w-full mt-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+                        className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
                     >
                         Cerrar
                     </button>

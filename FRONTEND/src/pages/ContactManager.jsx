@@ -164,6 +164,7 @@ export function ListContacts() {
                             to={`/admin/contactos/${c.id}/editar`}
                             className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Editar"
+                            aria-label={`Editar contacto ${c.name || c.id}`}
                           >
                             <Edit2 className="h-4 w-4" />
                           </Link>
@@ -171,6 +172,7 @@ export function ListContacts() {
                             onClick={() => handleDelete(c.id)}
                             className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Eliminar"
+                            aria-label={`Eliminar contacto ${c.name || c.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>

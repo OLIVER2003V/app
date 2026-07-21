@@ -1,21 +1,28 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../lib/api";
-import { 
-  Search, 
-  Plus, 
-  CalendarDays, 
-  MapPin, 
-  Clock, 
-  Save, 
-  Trash2, 
-  Filter, 
+import {
+  Search,
+  Plus,
+  CalendarDays,
+  MapPin,
+  Clock,
+  Save,
+  Trash2,
+  Pencil,
+  Filter,
   ArrowLeft,
   MoreHorizontal,
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ImagePlus,
+  X,
+  Star,
+  MessageCircle,
 } from "lucide-react";
+
+const MAX_IMAGE_MB = 8;
 
 export default function CreateEvent() {
   const navigate = useNavigate();
@@ -28,6 +35,12 @@ export default function CreateEvent() {
   const [endDate, setEndDate] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [whatsappUrl, setWhatsappUrl] = useState("");
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
+  const [imageError, setImageError] = useState(null);
 
   const [places, setPlaces] = useState([]);
   const [events, setEvents] = useState([]);
@@ -84,6 +97,12 @@ export default function CreateEvent() {
     setEndDate("");
     setDescription("");
     setIsActive(true);
+    setWhatsappUrl("");
+    setIsFeatured(false);
+    setImageFile(null);
+    setImagePreview(null);
+    setRemoveImage(false);
+    setImageError(null);
     setMsg(null);
   };
 
@@ -100,7 +119,13 @@ export default function CreateEvent() {
       setEndDate(data.end_date ? data.end_date.substring(0, 16) : "");
       setDescription(data.description || "");
       setIsActive(data.is_active);
-      
+      setWhatsappUrl(data.whatsapp_url || "");
+      setIsFeatured(!!data.is_featured);
+      setImageFile(null);
+      setImagePreview(data.image || null);
+      setRemoveImage(false);
+      setImageError(null);
+
       // Scroll suave al formulario en móvil
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -108,28 +133,74 @@ export default function CreateEvent() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+      setImageError(`La imagen supera el máximo permitido (${MAX_IMAGE_MB}MB).`);
+      e.target.value = "";
+      return;
+    }
+    setImageError(null);
+    setImageFile(file);
+    setRemoveImage(false);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setRemoveImage(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMsg(null);
 
-    const payload = {
-      title,
-      start_date: startDate || null,
-      end_date: endDate || null,
-      description,
-      is_active: isActive,
-      place: placeId || null
-    };
+    let payload;
+    let config;
+
+    if (imageFile) {
+      // Con archivo adjunto tiene que viajar como multipart, no JSON.
+      const fd = new FormData();
+      fd.append("title", title);
+      fd.append("start_date", startDate);
+      if (endDate) fd.append("end_date", endDate);
+      fd.append("description", description);
+      fd.append("is_active", String(isActive));
+      fd.append("is_featured", String(isFeatured));
+      if (placeId) fd.append("place", String(placeId));
+      if (whatsappUrl.trim()) fd.append("whatsapp_url", whatsappUrl.trim());
+      fd.append("image", imageFile);
+      payload = fd;
+      config = { headers: { "Content-Type": "multipart/form-data" } };
+    } else {
+      payload = {
+        title,
+        start_date: startDate || null,
+        end_date: endDate || null,
+        description,
+        is_active: isActive,
+        is_featured: isFeatured,
+        place: placeId || null,
+        whatsapp_url: whatsappUrl.trim(),
+        ...(removeImage ? { image: null } : {}),
+      };
+      config = undefined;
+    }
 
     try {
       let res;
       if (id) {
-        res = await api.patch(`/events/${id}/`, payload);
+        res = await api.patch(`/events/${id}/`, payload, config);
         setEvents(prev => prev.map(ev => ev.id === id ? res.data : ev));
         setMsg({ type: 'success', text: "Evento actualizado correctamente" });
+        setImageFile(null);
+        setRemoveImage(false);
+        setImagePreview(res.data.image || null);
       } else {
-        res = await api.post("/events/", payload);
+        res = await api.post("/events/", payload, config);
         setEvents(prev => [res.data, ...prev]);
         setMsg({ type: 'success', text: "Evento creado exitosamente" });
         resetForm(); // Limpiar tras crear para hacer otro
@@ -142,12 +213,17 @@ export default function CreateEvent() {
     }
   };
 
-  const handleDelete = async () => {
+  // Recibe el id explícito (no toma el "id" seleccionado por defecto) para
+  // poder borrar tanto desde el encabezado del editor como directo desde
+  // cada fila de la lista, sin tener que cargar el evento primero.
+  const handleDelete = async (eventId, e) => {
+    e?.stopPropagation();
+    if (!eventId) return;
     if (!window.confirm("¿Eliminar este evento permanentemente?")) return;
     try {
-      await api.delete(`/events/${id}/`);
-      setEvents(prev => prev.filter(ev => ev.id !== id));
-      resetForm();
+      await api.delete(`/events/${eventId}/`);
+      setEvents(prev => prev.filter(ev => ev.id !== eventId));
+      if (eventId === id) resetForm();
       setMsg({ type: 'success', text: "Evento eliminado" });
     } catch (err) {
       setMsg({ type: 'error', text: "No se pudo eliminar." });
@@ -195,7 +271,7 @@ export default function CreateEvent() {
                     onChange={(e) => setQuery(e.target.value)} 
                   />
                 </div>
-                <button onClick={resetForm} className="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-orange-500/20" title="Nuevo Evento">
+                <button onClick={resetForm} className="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-orange-500/20" title="Nuevo Evento" aria-label="Nuevo Evento">
                   <Plus className="h-5 w-5" />
                 </button>
               </div>
@@ -235,26 +311,55 @@ export default function CreateEvent() {
                         : "bg-slate-900/50 border-slate-800 hover:border-slate-600 hover:bg-slate-900"
                       }`}
                   >
-                    <div className="flex justify-between items-start">
-                        <h3 className={`font-bold text-sm ${id === ev.id ? "text-white" : "text-slate-300 group-hover:text-white"}`}>
-                            {ev.title}
+                    <div className="flex justify-between items-start gap-2">
+                        <h3 className={`font-bold text-sm flex items-center gap-1.5 ${id === ev.id ? "text-white" : "text-slate-300 group-hover:text-white"}`}>
+                            {ev.is_featured && <Star className="h-3.5 w-3.5 shrink-0 text-amber-400" fill="currentColor" />}
+                            <span className="truncate">{ev.title}</span>
                         </h3>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${ev.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
+                        <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${ev.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
                             {ev.is_active ? 'Activo' : 'Inactivo'}
                         </span>
                     </div>
                     
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                            <CalendarDays className="h-3 w-3" />
-                            {new Date(ev.start_date).toLocaleDateString()}
-                        </span>
-                        {ev.place && (
-                            <span className="flex items-center gap-1 truncate max-w-[120px]">
-                                <MapPin className="h-3 w-3" />
-                                {places.find(p => p.id === ev.place)?.name || "Lugar ID " + ev.place}
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                            <span className="flex items-center gap-1">
+                                <CalendarDays className="h-3 w-3" />
+                                {new Date(ev.start_date).toLocaleDateString()}
                             </span>
-                        )}
+                            {ev.place && (
+                                <span className="flex items-center gap-1 truncate max-w-[120px]">
+                                    <MapPin className="h-3 w-3" />
+                                    {places.find(p => p.id === ev.place)?.name || "Lugar ID " + ev.place}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Acciones directas: antes había que seleccionar el
+                            evento y buscar el botón de borrar arriba del
+                            editor para darse cuenta de que existía; ahora
+                            "editar" y "eliminar" están a la vista en cada
+                            fila. */}
+                        <div className="flex items-center gap-1 shrink-0">
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleSelectEvent(ev.id); }}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-orange-400 hover:bg-orange-500/10 transition-colors"
+                                title="Editar evento"
+                                aria-label={`Editar ${ev.title}`}
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => handleDelete(ev.id, e)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                title="Eliminar evento"
+                                aria-label={`Eliminar ${ev.title}`}
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
                     </div>
                   </div>
                 ))
@@ -276,7 +381,7 @@ export default function CreateEvent() {
               </div>
               
               {id && (
-                <button onClick={handleDelete} className="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors" title="Eliminar">
+                <button onClick={() => handleDelete(id)} className="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors" title="Eliminar" aria-label="Eliminar evento">
                   <Trash2 className="h-5 w-5" />
                 </button>
               )}
@@ -304,6 +409,35 @@ export default function CreateEvent() {
                             onChange={e => setTitle(e.target.value)}
                             required
                         />
+                    </div>
+
+                    {/* Arte del Evento (opcional) */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                            <ImagePlus className="h-3 w-3" /> Arte / Foto del Evento (Opcional)
+                        </label>
+                        {imageError && (
+                            <p className="text-xs font-medium text-red-400">{imageError}</p>
+                        )}
+                        {imagePreview ? (
+                            <div className="relative w-full max-w-sm overflow-hidden rounded-xl border border-slate-700">
+                                <img src={imagePreview} alt="Vista previa del evento" className="aspect-video w-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveImage}
+                                    className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/80 text-white hover:bg-red-600 transition-colors"
+                                    aria-label="Quitar imagen"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="flex max-w-sm cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-700 bg-slate-950 px-4 py-8 text-slate-500 transition-colors hover:border-orange-500 hover:text-slate-300">
+                                <ImagePlus className="h-6 w-6" />
+                                <span className="text-xs font-semibold">Subir afiche o foto (máx. {MAX_IMAGE_MB}MB)</span>
+                                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                            </label>
+                        )}
                     </div>
 
                     {/* Fechas */}
@@ -362,6 +496,37 @@ export default function CreateEvent() {
                             </label>
                         </div>
                     </div>
+
+                    {/* WhatsApp y Destacado */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                                <MessageCircle className="h-3 w-3" /> Link de WhatsApp (Opcional)
+                            </label>
+                            <input
+                                type="url"
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:border-orange-500 outline-none"
+                                placeholder="https://wa.me/591..."
+                                value={whatsappUrl}
+                                onChange={e => setWhatsappUrl(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="flex items-end pb-2">
+                            <label className="flex items-center justify-between w-full p-3 bg-slate-950 border border-slate-700 rounded-lg cursor-pointer group hover:border-slate-600">
+                                <span className="text-sm font-bold text-slate-300 group-hover:text-white flex items-center gap-1.5">
+                                    <Star className="h-3.5 w-3.5 text-amber-400" /> Destacar como Anuncio
+                                </span>
+                                <div className={`w-10 h-5 flex items-center bg-slate-700 rounded-full p-1 transition-colors shrink-0 ${isFeatured ? 'bg-amber-500' : ''}`}>
+                                    <div className={`bg-white w-3 h-3 rounded-full shadow-md transform transition-transform ${isFeatured ? 'translate-x-5' : ''}`}></div>
+                                    <input type="checkbox" className="hidden" checked={isFeatured} onChange={e => setIsFeatured(e.target.checked)} />
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <p className="-mt-3 text-xs text-slate-500">
+                        El evento destacado aparece como un anuncio emergente al entrar al sitio (solo uno a la vez; si marcás varios, se muestra el más próximo).
+                    </p>
 
                     {/* Descripción */}
                     <div className="space-y-2">

@@ -6,6 +6,7 @@ Django settings for config project (Render + Cloudinary).
 from pathlib import Path
 import os
 from dotenv import load_dotenv  # <-- importar primero
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # <-- definir BASE_DIR
 load_dotenv(BASE_DIR / ".env")  # <-- recién aquí cargar .env
@@ -18,15 +19,37 @@ import cloudinary
 # -----------------------------
 # Seguridad básica
 # -----------------------------
-SECRET_KEY = os.environ.get("SECRET_KEY", "clave-secreta-insegura-para-desarrollo")
-DEBUG = "RENDER" not in os.environ  # En Render, DEBUG=False
+# DEBUG ahora se lee explícitamente del entorno (antes se inferia de si
+# existía la variable "RENDER", lo que dejaba DEBUG=True por accidente en
+# cualquier host que no fuera Render, como Koyeb). Cada host (Render, Koyeb,
+# local) debe fijar DEBUG=True/False explícitamente en su propio entorno.
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-solo-para-desarrollo-local"
+    else:
+        raise ImproperlyConfigured(
+            "SECRET_KEY no está configurada en las variables de entorno de producción."
+        )
 
 # -----------------------------
 # Hosts / CORS / CSRF
 # -----------------------------
-ALLOWED_HOSTS = ["jardinbackend-a5p0.onrender.com", "localhost", "127.0.0.1", "grieving-elene-jardindelasdelicias-354ed852.koyeb.app", ".koyeb.app"]
+_allowed_hosts_env = os.environ.get("ALLOWED_HOSTS")
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
+else:
+    ALLOWED_HOSTS = [
+        "jardinbackend-a5p0.onrender.com",
+        "localhost",
+        "127.0.0.1",
+        "grieving-elene-jardindelasdelicias-354ed852.koyeb.app",
+        ".koyeb.app",
+    ]
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-if RENDER_EXTERNAL_HOSTNAME:
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
@@ -194,9 +217,22 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),
+    # Antes era AllowAny global: cualquier vista nueva quedaba pública por
+    # accidente si alguien olvidaba poner permisos. Todas las vistas actuales
+    # (Place/Event/Post/Review/Contact/Gallery) ya declaran sus propios
+    # permisos explícitos (lectura pública, escritura editor/admin), así que
+    # este cambio no les afecta y solo endurece el default para lo nuevo.
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "30/minute",
+        "user": "120/minute",
+    },
 }
 
 # -----------------------------

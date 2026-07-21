@@ -1,325 +1,469 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import api from "../lib/api"; // Asumiendo que está en ../lib/api
-import MapView from "../components/MapView";
-import { getCategoryStyle } from "../utils/styleUtils"; // Asumiendo esta ruta
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import api from '@/lib/api';
+import Seo from '@/components/Seo';
+import PageLoader from '@/components/PageLoader';
+import MapView from '@/components/MapView';
+import { getCategoryStyle } from '@/utils/styleUtils';
+import { useFavorites } from '@/hooks/useFavorites';
+import HeartIcon from '@/components/icons/HeartIcon';
+import {
+  Star, Loader2, Send, Paperclip, X, AlertCircle, CheckCircle,
+  ArrowLeft, Share2, ExternalLink, Droplets, Mountain, Route,
+  Utensils, Bed, HelpCircle,
+} from 'lucide-react';
 
-// --- Componentes UI y de Iconos ---
-import StarRating from "../components/ui/StarRating";
-import StarIcon from "../components/icons/StarIcon";
-import UserIcon from "../components/icons/UserIcon";
-import ChatBubbleIcon from "../components/icons/ChatBubbleIcon";
-import CheckIcon from "../components/icons/CheckIcon";
+const CATEGORY_ICONS = {
+  cascada: Droplets,
+  mirador: Mountain,
+  ruta: Route,
+  gastronomia: Utensils,
+  hospedaje: Bed,
+  otro: HelpCircle,
+};
 
-// --- Spinner de Carga ---
-const LoadingSpinner = () => (
-  <svg 
-    className="h-12 w-12 animate-spin text-emerald-600" 
-    xmlns="http://www.w3.org/2000/svg" 
-    fill="none" 
-    viewBox="0 0 24 24"
-  >
-    <circle 
-      className="opacity-25" 
-      cx="12" 
-      cy="12" 
-      r="10" 
-      stroke="currentColor" 
-      strokeWidth="4" 
-    />
-    <path 
-      className="opacity-75" 
-      fill="currentColor" 
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" 
-    />
-  </svg>
-);
+const VIDEO_EXTENSIONS = ['mp4', 'mov', 'avi', 'webm'];
+const isVideoUrl = (url = '') => VIDEO_EXTENSIONS.some((ext) => url.toLowerCase().split('?')[0].endsWith(`.${ext}`));
+
+// --- Galería de fotos del lugar ---
+const PlaceGallery = ({ place }) => {
+  const { t } = useTranslation();
+  const media = place.media || [];
+  const [active, setActive] = useState(0);
+  const categoryKey = (place.category || 'otro').toLowerCase();
+  const CategoryIcon = CATEGORY_ICONS[categoryKey] || HelpCircle;
+
+  if (media.length === 0) {
+    return (
+      <div className={`flex aspect-video w-full items-center justify-center rounded-2xl ${getCategoryStyle(place.category)}`}>
+        <CategoryIcon className="h-16 w-16 opacity-40" strokeWidth={1.5} />
+      </div>
+    );
+  }
+
+  const current = media[Math.min(active, media.length - 1)];
+
+  return (
+    <div className="space-y-3">
+      <div className="aspect-video w-full overflow-hidden rounded-2xl border border-cyan-500/20 bg-cyan-950">
+        <img
+          src={current.image}
+          alt={current.caption || t('placeDetail.photo_alt', { name: place.name })}
+          className="h-full w-full object-cover"
+        />
+      </div>
+      {media.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {media.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActive(i)}
+              className={`h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                i === active ? 'border-cyan-400' : 'border-transparent opacity-70 hover:opacity-100'
+              }`}
+            >
+              <img src={item.image} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Lista de opiniones existentes ---
+const ReviewsList = ({ reviews, loading }) => {
+  const { t, i18n } = useTranslation();
+
+  const formatDate = (iso) => iso
+    ? new Date(iso).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'es-BO', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      })
+    : '';
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return <p className="text-slate-400">{t('placeDetail.no_reviews')}</p>;
+  }
+
+  return (
+    <div className="divide-y divide-cyan-500/10">
+      {reviews.map((r) => (
+        <article key={r.id} className="py-6 first:pt-0">
+          <header className="mb-2 flex items-center justify-between gap-2">
+            <span className="font-semibold text-white">{r.author_name}</span>
+            <div className="flex" title={`${r.rating} / 5`}>
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${i < r.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-600'}`}
+                />
+              ))}
+            </div>
+          </header>
+          {r.comment && <p className="text-cyan-100/90">{r.comment}</p>}
+          {r.attachment && (
+            <div className="mt-3 max-w-xs overflow-hidden rounded-xl border border-cyan-500/20">
+              {isVideoUrl(r.attachment) ? (
+                <video src={r.attachment} controls className="w-full" />
+              ) : (
+                <img src={r.attachment} alt="" className="w-full object-cover" />
+              )}
+            </div>
+          )}
+          <time className="mt-2 block text-xs text-slate-500">{formatDate(r.created_at)}</time>
+        </article>
+      ))}
+    </div>
+  );
+};
+
+// --- Formulario de Opinión ---
+const ReviewForm = ({ placeId, onReviewSubmitted }) => {
+  const { t } = useTranslation();
+  const [rating, setRating] = useState(5);
+  const [authorName, setAuthorName] = useState('');
+  const [comment, setComment] = useState('');
+  const [attachment, setAttachment] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        setError(t('placeDetail.file_too_large', { size: 50 }));
+        setAttachment(null);
+        e.target.value = null;
+        return;
+      }
+      setError('');
+      setAttachment(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!authorName.trim() || !comment.trim()) {
+      setError(t('placeDetail.validation_required'));
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    const formData = new FormData();
+    formData.append('place', placeId);
+    formData.append('rating', rating);
+    formData.append('author_name', authorName);
+    formData.append('comment', comment);
+    if (attachment) {
+      formData.append('attachment', attachment);
+    }
+
+    try {
+      const response = await api.post('/reviews/', formData);
+      setSuccess(t('placeDetail.thanks_sub'));
+      setRating(5);
+      setAuthorName('');
+      setComment('');
+      setAttachment(null);
+      document.querySelector('input[type="file"]').value = null;
+      if (onReviewSubmitted) onReviewSubmitted(response.data);
+    } catch (err) {
+      console.error('Error submitting review:', err);
+      setError(err.response?.data?.detail || t('placeDetail.submit_error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-cyan-900/30 border border-cyan-500/20 rounded-2xl p-6">
+      <h3 className="text-2xl font-bold text-white mb-4">{t('placeDetail.leave_review')}</h3>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="flex items-center gap-3 p-3 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <AlertCircle className="h-5 w-5" /> {error}
+          </div>
+        )}
+        {success && (
+          <div className="flex items-center gap-3 p-3 text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+            <CheckCircle className="h-5 w-5" /> {success}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-cyan-200 mb-2">{t('placeDetail.your_rating')}</label>
+          <div className="flex">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={`h-8 w-8 cursor-pointer transition-colors ${
+                  rating >= star ? 'text-amber-400 fill-amber-400' : 'text-slate-600'
+                }`}
+                onClick={() => setRating(star)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <input
+          type="text"
+          placeholder={t('placeDetail.name_placeholder')}
+          value={authorName}
+          onChange={(e) => setAuthorName(e.target.value)}
+          className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+        />
+
+        <textarea
+          placeholder={t('placeDetail.comment_placeholder')}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows="4"
+          className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+        />
+
+        <div className="space-y-2">
+          <label className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800/50 border-2 border-dashed border-slate-700 rounded-xl text-slate-400 hover:text-white hover:border-cyan-600 cursor-pointer transition-colors">
+            <Paperclip className="h-5 w-5" />
+            <span className="text-sm font-medium">{t('placeDetail.upload_prompt')}</span>
+            <input type="file" onChange={handleFileChange} accept="image/*,video/*" className="hidden" />
+          </label>
+          {attachment && (
+            <div className="flex items-center justify-between p-2 pl-4 bg-slate-800 rounded-lg text-sm">
+              <span className="text-slate-300 truncate">{attachment.name}</span>
+              <button
+                type="button"
+                onClick={() => { setAttachment(null); document.querySelector('input[type="file"]').value = null; }}
+                className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading || !!success}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:scale-105"
+        >
+          {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+          {loading ? t('placeDetail.submitting') : t('placeDetail.submit')}
+        </button>
+      </form>
+    </div>
+  );
+};
 
 export default function PlaceDetail() {
   const { slug } = useParams();
+  const { t } = useTranslation();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const initialReviewState = { rating: 5, comment: "", author_name: "" };
-  const [review, setReview] = useState(initialReviewState);
-  
-  // [MODIFICADO] 'photoFile' eliminado
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState(null);
-  const [formSuccess, setFormSuccess] = useState(false);
-
-  const fetchPlace = () => {
-    setLoading(true);
-    setFormSuccess(false);
-    setFormError(null);
-
-    api
-      .get(`/places/${slug}/`)
-      .then(({ data }) => setPlace(data))
-      .catch(() => setError("No se pudo encontrar el lugar solicitado."))
-      .finally(() => setLoading(false));
-  };
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchPlace();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+    setLoading(true);
+    api.get(`/places/${slug}/`)
+      .then(({ data }) => setPlace(data))
+      .catch((err) => {
+        console.error('Error fetching place details:', err);
+        setError(t('placeDetail.not_found'));
+      })
+      .finally(() => setLoading(false));
+  }, [slug, t]);
 
-  const handleSendReview = async (e) => {
-    e.preventDefault();
-    setFormError(null);
-    
-    if (!review.comment.trim() || !review.author_name.trim()) {
-      setFormError("Por favor, completa tu nombre y comentario.");
-      return;
-    }
-    setIsSubmitting(true);
+  useEffect(() => {
+    if (!place?.id) return;
+    setReviewsLoading(true);
+    api.get('/reviews/', { params: { place: place.id } })
+      .then(({ data }) => setReviews(Array.isArray(data) ? data : (data.results || [])))
+      .catch((err) => console.error('Error fetching reviews:', err))
+      .finally(() => setReviewsLoading(false));
+  }, [place?.id]);
 
-    const formData = new FormData();
-    formData.append("place", place.id);
-    formData.append("rating", review.rating);
-    formData.append("comment", review.comment);
-    formData.append("author_name", review.author_name);
-    // [MODIFICADO] Lógica de 'photoFile' eliminada
-
-    try {
-      await api.post("/reviews/", formData);
-      setReview(initialReviewState);
-      // [MODIFICADO] 'setPhotoFile(null)' eliminado
-      setFormSuccess(true);
-    } catch (err) {
-      let errorMessage = "Hubo un error al enviar tu opinión. Inténtalo de nuevo.";
-      if (err.response && err.response.data && typeof err.response.data === "object") {
-        const errors = Object.entries(err.response.data)
-          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-          .join("\n");
-        errorMessage = `Por favor corrige los siguientes errores:\n${errors}`;
-      }
-      setFormError(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleNewReview = (newReview) => {
+    setReviews((prev) => [newReview, ...prev]);
   };
 
-  // --- Estados de Carga y Error Premium ---
-  if (loading) return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-emerald-50 to-cyan-50 p-4 text-center">
-      <LoadingSpinner />
-      <p className="mt-4 text-lg font-semibold text-emerald-700">Cargando detalles...</p>
-    </div>
-  );
-  if (error) return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center bg-red-50 p-4 text-center">
-      <h2 className="text-2xl font-bold text-red-700">¡Error!</h2>
-      <p className="mt-2 text-lg text-red-600">{error}</p>
-    </div>
-  );
-  if (!place) return null;
+  const handleShare = async () => {
+    const shareData = { title: place?.name, text: place?.name, url: window.location.href };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* cancelado */ }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard no disponible */ }
+  };
 
-  // --- Puntos del Mapa (Lógica sin cambios) ---
-  const points =
-    place.lat && place.lng
-      ? [
-          {
-            id: place.id,
-            name: place.name,
-            lat: Number(place.lat),
-            lng: Number(place.lng),
-            category: place.category,
-          },
-        ]
-      : [];
+  if (loading) return <PageLoader />;
 
-  // --- Formateo de Fecha (Lógica sin cambios) ---
-  const formatDate = (iso) =>
-    iso
-      ? new Date(iso).toLocaleDateString("es-ES", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })
-      : "";
-
-  return (
-    // --- 💎 Fondo con Gradiente Premium ---
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-cyan-50 pb-16">
-      
-      {/* --- 💎 Header de Gradiente (Sin Imagen) --- */}
-      <header className="bg-gradient-to-br from-emerald-700 to-cyan-800 shadow-2xl">
-        <div className="relative mx-auto max-w-7xl flex-col items-start px-4 py-16 md:py-24 lg:px-8">
-          {place.category && (
-            <span
-              className={`mb-4 w-fit rounded-full px-4 py-1.5 text-sm font-bold uppercase shadow-lg ${getCategoryStyle(place.category)}`}
-            >
-              {place.category}
-            </span>
-          )}
-          {/* --- 💎 Título con Gradiente --- */}
-          <h1 className="text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200 shadow-lg md:text-6xl lg:text-7xl">
-            {place.name}
-          </h1>
-        </div>
-      </header>
-
-      {/* --- Grid de Contenido --- */}
-      <div className="mx-auto max-w-7xl p-4 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          
-          {/* --- Columna Principal --- */}
-          <main className="flex flex-col gap-8 lg:col-span-2">
-            
-            {/* --- 💎 Tarjeta de Descripción (Glassmorphism) --- */}
-            <section className="rounded-2xl bg-white/70 p-6 shadow-xl shadow-emerald-900/10 backdrop-blur-md md:p-8">
-              <h2 className="mb-4 text-3xl font-bold text-gray-900">
-                Descubre el Lugar
-              </h2>
-              <p className="whitespace-pre-wrap text-lg leading-relaxed text-gray-700">
-                {place.description || "No hay descripción disponible para este lugar."}
-              </p>
-            </section>
-
-            {/* --- 💎 Tarjeta de Opiniones --- */}
-            <section className="rounded-2xl bg-white/70 p-6 shadow-xl shadow-emerald-900/10 backdrop-blur-md md:p-8">
-              <h2 className="mb-4 text-3xl font-bold text-gray-900">
-                Opiniones ({place.reviews?.length || 0})
-              </h2>
-              <div className="divide-y divide-emerald-200/50">
-                {place.reviews && place.reviews.length > 0 ? (
-                  place.reviews.map((r) => (
-                    <article key={r.id} className="py-6">
-                      <header className="mb-3 flex flex-col items-start gap-2">
-                        <span className="text-lg font-semibold text-gray-900">{r.author_name}</span>
-                        <div className="flex items-center" title={`${r.rating} de 5 estrellas`}>
-                          {[...Array(5)].map((_, i) => (
-                            <StarIcon key={i} className={`h-5 w-5 ${i < r.rating ? 'text-yellow-400' : 'text-gray-300'}`} />
-                          ))}
-                        </div>
-                      </header>
-                      {/* --- 💎 Estilo de Cita Premium --- */}
-                      <blockquote className="my-2 border-l-4 border-emerald-500 py-1 pl-4">
-                        <p className="italic text-gray-800 md:text-lg">"{r.comment}"</p>
-                      </blockquote>
-                      {/* [MODIFICADO] 'r.photo' <img> eliminado */}
-                      <time className="mt-3 block text-xs text-gray-500">{formatDate(r.created_at)}</time>
-                    </article>
-                  ))
-                ) : (
-                  <p className="py-4 text-lg text-gray-600">
-                    Todavía no hay opiniones para este lugar. ¡Sé el primero!
-                  </p>
-                )}
-              </div>
-            </section>
-
-            {/* --- 💎 Tarjeta de Formulario de Opinión --- */}
-            <section className="rounded-2xl bg-white/70 p-6 shadow-xl shadow-emerald-900/10 backdrop-blur-md md:p-8">
-              <h2 className="mb-6 text-3xl font-bold text-gray-900">Deja tu opinión</h2>
-              
-              {formSuccess ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-emerald-500 bg-emerald-50 p-10 text-center">
-                  <CheckIcon className="h-16 w-16 text-emerald-600" />
-                  <h3 className="mt-4 text-2xl font-semibold text-emerald-800">
-                    ¡Gracias por tu opinión!
-                  </h3>
-                  <p className="mt-1 text-gray-700">Tu comentario será visible pronto.</p>
-                  <button
-                    onClick={() => setFormSuccess(false)}
-                    className="mt-6 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-emerald-700"
-                  >
-                    Escribir otra opinión
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSendReview} className="flex flex-col gap-5">
-                  <div className="flex flex-col items-center">
-                    <label className="text-sm font-medium text-gray-700">Tu calificación</label>
-                    <StarRating
-                      rating={review.rating}
-                      setRating={(r) => setReview((prev) => ({ ...prev, rating: r }))}
-                      className="justify-center"
-                      starClassName="h-10 w-10" // Estrellas más grandes en el formulario
-                    />
-                  </div>
-
-                  {/* Campo de Nombre */}
-                  <div className="relative">
-                    <UserIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="author_name"
-                      type="text"
-                      value={review.author_name}
-                      onChange={(e) => setReview((r) => ({ ...r, author_name: e.target.value }))}
-                      placeholder="Tu nombre"
-                      required
-                      className="w-full rounded-lg border-gray-300 !bg-white py-3 pl-12 pr-4 shadow-sm placeholder:text-gray-500 focus:border-emerald-500 focus:ring-emerald-500" // 👈 AÑADIDO 'placeholder:text-gray-500'
-                    />
-                  </div>
-
-                  {/* Campo de Comentario */}
-                  <div className="relative">
-                    <ChatBubbleIcon className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-gray-400" />
-                    <textarea
-                      id="comment"
-                      value={review.comment}
-                      onChange={(e) => setReview((r) => ({ ...r, comment: e.target.value }))}
-                      placeholder="¿Qué te pareció este lugar?"
-                      rows={4}
-                      required
-                      className="w-full rounded-lg border-gray-300 !bg-white py-3 pl-12 pr-4 shadow-sm placeholder:text-gray-500 focus:border-emerald-500 focus:ring-emerald-500" // 👈 AÑADIDO 'placeholder:text-gray-500'
-                    />
-                  </div>
-                  
-                  {/* [MODIFICADO] Campo de foto eliminado */}
-                  
-                  {formError && (
-                    <div className="rounded-lg bg-red-50 p-4 text-center text-sm font-medium text-red-700">
-                      {formError}
-                    </div>
-                  )}
-
-                  <button 
-                    type="submit" 
-                    className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:from-emerald-600 hover:to-cyan-700 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:hover:-translate-y-0" 
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Enviando..." : "Enviar Opinión"}
-                  </button>
-                </form>
-              )}
-            </section>
-          </main>
-
-          {/* --- 💎 Columna Lateral (Sidebar) --- */}
-          <aside className="sticky top-6 flex flex-col gap-6 lg:top-8">
-            <div className="overflow-hidden rounded-2xl bg-white/70 shadow-xl shadow-emerald-900/10 backdrop-blur-md">
-              <div className="border-b border-gray-200 p-5">
-                <h3 className="text-xl font-bold text-gray-900">Ubicación</h3>
-              </div>
-              <div className="h-72 lg:h-80">
-                {points.length > 0 ? (
-                  <MapView 
-                    points={points} 
-                    // [MODIFICADO] Pasamos el 'selectedPoint' en lugar de 'center'
-                    // para que nuestro MapView.jsx vuele al punto
-                    selectedPoint={{ lat: points[0].lat, lng: points[0].lng }} 
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center p-4 text-gray-600">
-                    No hay datos de ubicación disponibles.
-                  </div>
-                )}
-              </div>
-              {place.address && (
-                <p className="border-t border-gray-200 p-5 text-sm text-gray-700">
-                  {place.address}
-                </p>
-              )}
-            </div>
-          </aside>
+  if (error || !place) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-cyan-950 via-teal-950 to-emerald-950 flex flex-col items-center justify-center text-center p-4">
+        <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl max-w-md">
+          <h2 className="text-xl font-bold text-red-400 mb-2">{t('common.error_title')}</h2>
+          <p className="text-slate-400 mb-4">{error || t('placeDetail.not_found')}</p>
+          <Link to="/places" className="inline-block px-4 py-2 bg-slate-800 rounded-lg text-white hover:bg-slate-700 transition-colors">
+            {t('placeDetail.back_to_places')}
+          </Link>
         </div>
       </div>
+    );
+  }
+
+  const favorite = isFavorite(place.id);
+  const points = place.lat && place.lng
+    ? [{ id: place.id, name: place.name, lat: Number(place.lat), lng: Number(place.lng), category: place.category }]
+    : [];
+  const googleMapsUrl = points.length > 0
+    ? `https://www.google.com/maps/search/?api=1&query=${points[0].lat},${points[0].lng}`
+    : null;
+
+  return (
+    <div className="bg-gradient-to-b from-cyan-950 via-teal-950 to-emerald-950 min-h-screen text-white py-12">
+      <Seo
+        title={place.name}
+        description={place.description?.slice(0, 160) || undefined}
+        path={`/places/${place.slug}`}
+        image={place.media?.[0]?.image || undefined}
+      />
+
+      <main className="max-w-6xl mx-auto px-4">
+        <Link
+          to="/places"
+          className="mb-6 inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-4 py-2 rounded-full bg-slate-900/40 border border-slate-800 hover:border-slate-600 backdrop-blur-sm"
+        >
+          <ArrowLeft className="h-4 w-4" /> {t('placeDetail.back_to_places')}
+        </Link>
+
+        <PlaceGallery place={place} />
+
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            {place.category && (
+              <span className={`mb-3 inline-block rounded-full px-3 py-1.5 text-xs font-bold uppercase shadow-sm ${getCategoryStyle(place.category)}`}>
+                {t(`places.category_${(place.category || 'otro').toLowerCase()}`, place.category)}
+              </span>
+            )}
+            <h1 className="text-4xl md:text-5xl font-extrabold">{place.name}</h1>
+            {(place.reviews_count > 0) && (
+              <div className="mt-2 flex items-center gap-2 text-cyan-200/80">
+                <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                <span className="font-semibold text-white">{Number(place.avg_rating || 0).toFixed(1)}</span>
+                <span>· {t('placeDetail.reviews_count', { count: place.reviews_count })}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleFavorite(place.id)}
+              aria-pressed={favorite}
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                favorite ? 'bg-red-500 text-white' : 'bg-slate-900/40 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-600'
+              }`}
+            >
+              <HeartIcon className="h-4 w-4" filled={favorite} />
+              {favorite ? t('placeDetail.saved') : t('placeDetail.save')}
+            </button>
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold bg-slate-900/40 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-600 transition-colors"
+            >
+              <Share2 className="h-4 w-4" />
+              {copied ? t('placeDetail.link_copied') : t('placeDetail.share')}
+            </button>
+          </div>
+        </div>
+
+        <p className="mt-6 text-lg text-cyan-200/80 whitespace-pre-wrap">
+          {place.description || t('placeDetail.no_description')}
+        </p>
+
+        {place.key_features?.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-cyan-300 mb-2">{t('placeDetail.key_features_title')}</h2>
+            <div className="flex flex-wrap gap-2">
+              {place.key_features.map((feature, i) => (
+                <span key={i} className="rounded-full bg-cyan-900/40 border border-cyan-500/20 px-3 py-1.5 text-sm text-cyan-100">
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- Ubicación y dirección: info práctica, antes de las opiniones --- */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 overflow-hidden rounded-2xl bg-cyan-900/30 border border-cyan-500/20">
+            <div className="border-b border-cyan-500/20 p-5">
+              <h3 className="text-lg font-bold text-white">{t('placeDetail.location_title')}</h3>
+            </div>
+            <div className="h-72">
+              {points.length > 0 ? (
+                <MapView points={points} selectedPoint={points[0]} detailMode />
+              ) : (
+                <div className="flex h-full items-center justify-center p-4 text-center text-slate-400">
+                  {t('placeDetail.no_location')}
+                </div>
+              )}
+            </div>
+            {googleMapsUrl && (
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 border-t border-cyan-500/20 p-3 text-sm font-semibold text-cyan-300 hover:text-white hover:bg-cyan-900/40 transition-colors"
+              >
+                {t('placeDetail.open_in_maps')} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            )}
+          </div>
+
+          <div className="rounded-2xl bg-cyan-900/30 border border-cyan-500/20 p-5">
+            <h3 className="text-lg font-bold text-white mb-2">{t('placeDetail.address_title')}</h3>
+            <p className="text-sm text-cyan-100/80">
+              {place.address || t('placeDetail.no_address')}
+            </p>
+          </div>
+        </div>
+
+        {/* --- Opiniones existentes: prueba social, después de la info práctica --- */}
+        <section className="mt-12">
+          <h2 className="text-3xl font-bold mb-6">
+            {t('placeDetail.reviews_title')}
+            {reviews.length > 0 && <span className="text-cyan-400"> ({reviews.length})</span>}
+          </h2>
+          <ReviewsList reviews={reviews} loading={reviewsLoading} />
+        </section>
+
+        {/* --- Dejar tu opinión: acción del usuario, va al final --- */}
+        <div className="mt-8">
+          <ReviewForm placeId={place.id} onReviewSubmitted={handleNewReview} />
+        </div>
+      </main>
     </div>
   );
 }

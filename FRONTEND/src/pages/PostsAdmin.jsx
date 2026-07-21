@@ -364,7 +364,7 @@ export default function PostsAdmin() {
                     onChange={(e) => setQ(e.target.value)} 
                   />
                 </div>
-                <button onClick={switchToCreate} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition-colors" title="Crear Nuevo">
+                <button onClick={switchToCreate} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition-colors" title="Crear Nuevo" aria-label="Crear nuevo post">
                   <Plus className="h-5 w-5" />
                 </button>
               </div>
@@ -438,7 +438,7 @@ export default function PostsAdmin() {
               </div>
               
               {!isCreate && (
-                <button onClick={() => deletePost(selectedId)} disabled={deleting} className="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors" title="Eliminar">
+                <button onClick={() => deletePost(selectedId)} disabled={deleting} className="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors" title="Eliminar" aria-label="Eliminar post">
                   <Trash2 className="h-5 w-5" />
                 </button>
               )}

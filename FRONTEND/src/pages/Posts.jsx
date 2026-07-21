@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "@/lib/api";
-import { 
-  Calendar, 
-  MapPin, 
-  ArrowRight, 
-  Loader2, 
+import Seo from "@/components/Seo";
+import PageLoader from "@/components/PageLoader";
+import {
+  Calendar,
+  MapPin,
+  ArrowRight,
   FileText,
   Search
 } from "lucide-react";
 
 export default function Posts() {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,18 +44,16 @@ export default function Posts() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-        <p className="animate-pulse">Cargando historias...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans relative overflow-hidden pb-20">
-      
+      <Seo
+        title="Guías y Noticias"
+        description="Guías, consejos y noticias para planificar tu visita a Jardín de las Delicias en El Torno."
+        path="/posts"
+      />
+
       {/* --- FONDO AMBIENTAL --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-900/20 rounded-full blur-[128px]"></div>
@@ -64,13 +65,13 @@ export default function Posts() {
         {/* --- HEADER DE LA PÁGINA --- */}
         <div className="text-center mb-16 space-y-4">
           <span className="text-cyan-400 font-bold tracking-widest uppercase text-xs border border-cyan-900/50 bg-cyan-950/30 px-3 py-1 rounded-full">
-            Blog & Novedades
+            {t('posts.badge')}
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight">
-            Explora el <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">Paraíso</span>
+            {t('posts.title_pre')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">{t('posts.title_accent')}</span>
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-            Descubre guías de viaje, noticias sobre eventos y los secretos mejor guardados del Jardín de las Delicias.
+            {t('posts.subtitle')}
           </p>
 
           {/* Barra de Búsqueda Pública */}
@@ -81,7 +82,7 @@ export default function Posts() {
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl leading-5 bg-slate-900/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:bg-slate-900 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all sm:text-sm shadow-lg"
-              placeholder="Buscar artículos o lugares..."
+              placeholder={t('posts.search_placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

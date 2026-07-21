@@ -1,55 +1,77 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  User, 
-  MapPin, 
-  Loader2, 
-  ExternalLink, 
-  Share2 
+import {
+  ArrowLeft,
+  Calendar,
+  User,
+  MapPin,
+  ExternalLink,
+  Share2
 } from 'lucide-react';
+import Seo from '@/components/Seo';
+import PageLoader from '@/components/PageLoader';
 
 export default function PostDetail() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setLoading(true);
     api.get(`/posts/${id}/`)
       .then(({ data }) => setPost(data))
-      .catch(() => setError('No se pudo cargar la publicación.'))
+      .catch(() => setError(t('postDetail.load_error')))
       .finally(() => setLoading(false));
   }, [id]);
 
+  const handleShare = async () => {
+    const shareData = {
+      title: post?.title,
+      text: post?.title,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // usuario canceló el share, no hacemos nada
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard no disponible
+    }
+  };
+
+  const stripHtml = (html) => (html ? html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() : "");
+
   const formatDate = (isoString) => {
     if (!isoString) return '';
-    return new Date(isoString).toLocaleDateString('es-BO', {
+    return new Date(isoString).toLocaleDateString(i18n.language?.startsWith("en") ? "en-US" : "es-BO", {
       year: 'numeric', month: 'long', day: 'numeric',
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-        <p className="animate-pulse">Cargando artículo...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   if (error || !post) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-center p-4">
         <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl max-w-md">
-          <h2 className="text-xl font-bold text-red-400 mb-2">Algo salió mal</h2>
-          <p className="text-slate-400 mb-4">{error || 'Publicación no encontrada'}</p>
+          <h2 className="text-xl font-bold text-red-400 mb-2">{t('postDetail.something_wrong')}</h2>
+          <p className="text-slate-400 mb-4">{error || t('postDetail.not_found')}</p>
           <Link to="/posts" className="px-4 py-2 bg-slate-800 rounded-lg text-white hover:bg-slate-700 transition-colors">
-            Volver al blog
+            {t('postDetail.back')}
           </Link>
         </div>
       </div>
@@ -58,7 +80,14 @@ export default function PostDetail() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pb-20 relative">
-      
+      <Seo
+        title={post.title}
+        description={stripHtml(post.body).slice(0, 160) || post.title}
+        path={`/posts/${id}`}
+        image={post.cover || undefined}
+        type="article"
+      />
+
       {/* --- ESTILOS PARA EL CONTENIDO HTML --- */}
       {/* Esto asegura que el HTML que viene del editor (negritas, listas, etc.) se vea bien en modo oscuro */}
       <style>{`
@@ -85,7 +114,7 @@ export default function PostDetail() {
           to="/posts" 
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-4 py-2 rounded-full bg-slate-900/50 border border-slate-800 hover:border-slate-600 backdrop-blur-sm"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver a noticias
+          <ArrowLeft className="h-4 w-4" /> {t('postDetail.back')}
         </Link>
       </div>
 
@@ -113,7 +142,7 @@ export default function PostDetail() {
             <span className="hidden sm:block text-slate-700">•</span>
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-purple-500" />
-              <span>{post.author?.username || 'Redacción'}</span>
+              <span>{post.author?.username || t('postDetail.editorial_team')}</span>
             </div>
           </div>
         </header>
@@ -145,8 +174,8 @@ export default function PostDetail() {
             {/* Efecto brillo */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
             
-            <h3 className="text-2xl font-bold text-white mb-2 relative z-10">¿Te interesó este artículo?</h3>
-            <p className="text-slate-400 mb-6 relative z-10">Haz clic abajo para más información o reservas.</p>
+            <h3 className="text-2xl font-bold text-white mb-2 relative z-10">{t('postDetail.cta_question')}</h3>
+            <p className="text-slate-400 mb-6 relative z-10">{t('postDetail.cta_sub')}</p>
             
             <a 
               href={post.cta_url} 
@@ -162,10 +191,14 @@ export default function PostDetail() {
         {/* 5. Footer del Post */}
         <div className="mt-12 pt-8 border-t border-slate-800 flex justify-between items-center">
           <Link to="/posts" className="text-slate-500 hover:text-white transition-colors text-sm font-medium">
-            ← Leer más artículos
+            {t('postDetail.read_more')}
           </Link>
-          <button className="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors text-sm font-medium">
-            <Share2 className="h-4 w-4" /> Compartir
+          <button
+            onClick={handleShare}
+            aria-label={t('postDetail.share')}
+            className="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors text-sm font-medium"
+          >
+            <Share2 className="h-4 w-4" /> {copied ? t('postDetail.link_copied') : t('postDetail.share')}
           </button>
         </div>
 

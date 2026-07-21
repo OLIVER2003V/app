@@ -107,6 +107,9 @@ export default function PlacesAdmin() {
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
 
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [mediaError, setMediaError] = useState(null);
+
   const fetchPlaces = async () => {
     setLoading(true);
     try {
@@ -202,6 +205,46 @@ export default function PlacesAdmin() {
     }
   };
 
+  const handleMediaUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      setMediaError("La imagen supera el máximo permitido (8MB).");
+      e.target.value = "";
+      return;
+    }
+
+    setUploadingMedia(true);
+    setMediaError(null);
+
+    const fd = new FormData();
+    fd.append("place", detail.id);
+    fd.append("image", file);
+
+    try {
+      const { data } = await api.post("/media/", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setDetail(prev => ({ ...prev, media: [data, ...(prev.media || [])] }));
+    } catch (err) {
+      setMediaError("Error al subir la foto.");
+    } finally {
+      setUploadingMedia(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleMediaDelete = async (mediaId) => {
+    if (!window.confirm("¿Eliminar esta foto?")) return;
+    try {
+      await api.delete(`/media/${mediaId}/`);
+      setDetail(prev => ({ ...prev, media: prev.media.filter(m => m.id !== mediaId) }));
+    } catch {
+      alert("Error al eliminar la foto.");
+    }
+  };
+
   const handleLocationSelect = (coords) => {
     setForm(prev => ({ ...prev, ...coords }));
   };
@@ -269,7 +312,7 @@ export default function PlacesAdmin() {
                   onChange={(e) => setQ(e.target.value)} 
                 />
               </div>
-              <button onClick={handleCreateNew} className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-500/20">
+              <button onClick={handleCreateNew} title="Nuevo lugar" aria-label="Nuevo lugar" className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-500/20">
                 <Plus className="h-5 w-5" />
               </button>
             </div>
@@ -472,16 +515,34 @@ export default function PlacesAdmin() {
                                 <ImageIcon className="h-10 w-10 text-slate-600 mx-auto mb-2" />
                                 <h3 className="text-white font-bold">Galería del Lugar</h3>
                                 <p className="text-slate-400 text-sm mb-4">Gestiona las fotos de {form.name}</p>
-                                <div className="border-2 border-dashed border-slate-700 rounded-xl p-8 hover:border-emerald-500 transition-colors cursor-pointer bg-slate-900/30">
-                                    <p className="text-sm text-emerald-400 font-bold">+ Subir nuevas fotos</p>
-                                </div>
+                                <label className="border-2 border-dashed border-slate-700 rounded-xl p-8 hover:border-emerald-500 transition-colors cursor-pointer bg-slate-900/30 block">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleMediaUpload}
+                                        disabled={uploadingMedia}
+                                    />
+                                    <p className="text-sm text-emerald-400 font-bold">
+                                        {uploadingMedia ? "Subiendo..." : "+ Subir nuevas fotos"}
+                                    </p>
+                                </label>
+                                {mediaError && (
+                                    <p className="text-red-400 text-xs mt-2">{mediaError}</p>
+                                )}
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {detail.media && detail.media.length > 0 ? (
                                     detail.media.map(m => (
                                         <div key={m.id} className="aspect-square bg-slate-900 rounded-xl overflow-hidden border border-slate-800 relative group">
                                             <img src={m.image} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                            <button className="absolute top-2 right-2 bg-red-500/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleMediaDelete(m.id)}
+                                                title="Eliminar imagen"
+                                                aria-label="Eliminar imagen"
+                                                className="absolute top-2 right-2 bg-red-500/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
                                         </div>
