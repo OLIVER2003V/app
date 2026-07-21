@@ -43,6 +43,7 @@ if _allowed_hosts_env:
 else:
     ALLOWED_HOSTS = [
         "jardinbackend-a5p0.onrender.com",
+        "www.jardindelasdelicias.com",
         "localhost",
         "127.0.0.1",
         "grieving-elene-jardindelasdelicias-354ed852.koyeb.app",
