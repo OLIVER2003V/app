@@ -35,6 +35,7 @@ if not SECRET_KEY:
         )
 
 # -----------------------------
+# -----------------------------
 # Hosts / CORS / CSRF
 # -----------------------------
 _allowed_hosts_env = os.environ.get("ALLOWED_HOSTS")
@@ -43,31 +44,37 @@ if _allowed_hosts_env:
 else:
     ALLOWED_HOSTS = [
         "jardinbackend-a5p0.onrender.com",
-        "www.jardindelasdelicias.com",
+        "jardindelasdelicias.com",             # TU DOMINIO (sin www)
+        "www.jardindelasdelicias.com",         # TU DOMINIO (con www)
         "localhost",
         "127.0.0.1",
         "grieving-elene-jardindelasdelicias-354ed852.koyeb.app",
         ".koyeb.app",
+        "*.koyeb.app",                         # Wildcard para Koyeb
+        "*"                                    # Para evitar bloqueo de hosts en prod
     ]
-RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# --- AGREGAR ESTAS LÍNEAS PARA PROXIES (KOYEB / RENDER) ---
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
+# Permite CORS para tu frontend
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
     "https://jardin-frontend.onrender.com",
-    "https://jardindelasdelicias.com",        # TU NUEVO DOMINIO (sin www)
+    "https://jardindelasdelicias.com",
     "https://www.jardindelasdelicias.com",
 ]
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True                  # Cambiar a True si manejas cookies/sesiones
 CORS_EXPOSE_HEADERS = ["Authorization", "Content-Type"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
+    "https://*.koyeb.app",                    # Permite subdominios de Koyeb
     "https://jardin-frontend.onrender.com",
-    "https://jardindelasdelicias.com",        # TU NUEVO DOMINIO (sin www)
+    "https://jardindelasdelicias.com",
     "https://www.jardindelasdelicias.com",
     "https://grieving-elene-jardindelasdelicias-354ed852.koyeb.app",
 ]
