@@ -225,22 +225,14 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),
-    # Antes era AllowAny global: cualquier vista nueva quedaba pública por
-    # accidente si alguien olvidaba poner permisos. Todas las vistas actuales
-    # (Place/Event/Post/Review/Contact/Gallery) ya declaran sus propios
-    # permisos explícitos (lectura pública, escritura editor/admin), así que
-    # este cambio no les afecta y solo endurece el default para lo nuevo.
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
-    "DEFAULT_THROTTLE_CLASSES": (
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ),
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "30/minute",
-        "user": "120/minute",
-    },
+    # Desactivamos Throttling para evitar el bloqueo 400 por IP compartida en proxy
+    # "DEFAULT_THROTTLE_CLASSES": (
+    #     "rest_framework.throttling.AnonRateThrottle",
+    #     "rest_framework.throttling.UserRateThrottle",
+    # ),
 }
 
 # -----------------------------
